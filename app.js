@@ -7,16 +7,27 @@
     'use strict';
 
     // ========================================
-    // Data Store
+    // Data Store - Multi-profile support
     // ========================================
     const STORAGE_KEY = 'babydream_data';
 
-    const defaultData = {
+    const defaultProfileData = {
         baby: { name: '', dob: '' },
+        napConfig: {
+            napsPerDay: 2,
+            wakeTime: '07:00',
+            targetBedtime: '20:00',
+            avgNapDurationMin: 90
+        },
         sleepEntries: [],
         feedEntries: [],
         diaperEntries: [],
-        currentSleep: null // { startTime: ISO string }
+        currentSleep: null
+    };
+
+    const defaultAppData = {
+        activeProfileId: null,
+        profiles: []
     };
 
     function loadData() {
@@ -24,12 +35,28 @@
             const raw = localStorage.getItem(STORAGE_KEY);
             if (raw) {
                 const parsed = JSON.parse(raw);
-                return { ...defaultData, ...parsed };
+                // Migration: old format (single baby) to new format (profiles)
+                if (parsed.baby && !parsed.profiles) {
+                    const migratedProfile = {
+                        id: generateId(),
+                        baby: parsed.baby,
+                        napConfig: { ...defaultProfileData.napConfig },
+                        sleepEntries: parsed.sleepEntries || [],
+                        feedEntries: parsed.feedEntries || [],
+                        diaperEntries: parsed.diaperEntries || [],
+                        currentSleep: parsed.currentSleep || null
+                    };
+                    return {
+                        activeProfileId: migratedProfile.id,
+                        profiles: [migratedProfile]
+                    };
+                }
+                return { ...defaultAppData, ...parsed };
             }
         } catch (e) {
             console.error('Error loading data:', e);
         }
-        return { ...defaultData };
+        return { ...defaultAppData, profiles: [] };
     }
 
     function saveData() {
@@ -41,6 +68,18 @@
     }
 
     let appData = loadData();
+
+    // Get active profile helper
+    function getActiveProfile() {
+        if (!appData.activeProfileId) return null;
+        return appData.profiles.find(p => p.id === appData.activeProfileId) || null;
+    }
+
+    function getProfileData() {
+        const profile = getActiveProfile();
+        if (!profile) return { ...defaultProfileData };
+        return profile;
+    }
 
     // ========================================
     // Utility Functions
@@ -114,6 +153,437 @@
         return labels[type] || type;
     }
 
+    function timeStringToMinutes(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
+    function minutesToTimeString(minutes) {
+        const h = Math.floor(minutes / 60) % 24;
+        const m = minutes % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    // ========================================
+    // Profile Management
+    // ========================================
+    function createProfile(name, dob) {
+        const profile = {
+            id: generateId(),
+            baby: { name, dob },
+            napConfig: { ...defaultProfileData.napConfig },
+            sleepEntries: [],
+            feedEntries: [],
+            diaperEntries: [],
+            currentSleep: null
+        };
+        appData.profiles.push(profile);
+        appData.activeProfileId = profile.id;
+        saveData();
+        refreshProfileUI();
+        refreshAll();
+        return profile;
+    }
+
+    function switchProfile(profileId) {
+        appData.activeProfileId = profileId;
+        saveData();
+        refreshAll();
+    }
+
+    function deleteProfile(profileId) {
+        appData.profiles = appData.profiles.filter(p => p.id !== profileId);
+        if (appData.activeProfileId === profileId) {
+            appData.activeProfileId = appData.profiles.length > 0 ? appData.profiles[0].id : null;
+        }
+        saveData();
+        refreshProfileUI();
+        refreshAll();
+    }
+
+    function refreshProfileUI() {
+        const select = document.getElementById('profile-select');
+        select.innerHTML = '<option value="">-- Sin perfil --</option>';
+
+        appData.profiles.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.baby.name || 'Sin nombre';
+            if (p.id === appData.activeProfileId) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        // Update profiles list in modal
+        const listEl = document.getElementById('profiles-list');
+        if (appData.profiles.length === 0) {
+            listEl.innerHTML = '<p class="empty-state">No hay perfiles creados</p>';
+        } else {
+            listEl.innerHTML = '';
+            appData.profiles.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'profile-item' + (p.id === appData.activeProfileId ? ' active' : '');
+
+                const age = p.baby.dob ? getAgeText(p.baby.dob) : '';
+
+                item.innerHTML = `
+                    <div class="profile-item-info">
+                        <span class="profile-item-name">${p.baby.name || 'Sin nombre'}</span>
+                        <span class="profile-item-age">${age}</span>
+                    </div>
+                    <div class="profile-item-actions">
+                        ${p.id !== appData.activeProfileId ?
+                        `<button class="profile-activate-btn" data-id="${p.id}">Activar</button>` :
+                        '<span class="profile-active-badge">Activo</span>'}
+                        <button class="profile-delete-btn" data-id="${p.id}" title="Eliminar">&times;</button>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+
+            listEl.querySelectorAll('.profile-activate-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    switchProfile(btn.dataset.id);
+                    refreshProfileUI();
+                });
+            });
+
+            listEl.querySelectorAll('.profile-delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!confirm('Eliminar este perfil y todos sus datos?')) return;
+                    deleteProfile(btn.dataset.id);
+                });
+            });
+        }
+    }
+
+    function getAgeText(dob) {
+        const birth = new Date(dob);
+        const now = new Date();
+        const diffMs = now - birth;
+        const days = Math.floor(diffMs / 86400000);
+
+        if (days < 30) return `${days} dias`;
+        const months = Math.floor(days / 30.44);
+        if (months < 12) return `${months} meses`;
+        const years = Math.floor(months / 12);
+        const remainMonths = months % 12;
+        return `${years}a ${remainMonths}m`;
+    }
+
+    // Profile selector change
+    document.getElementById('profile-select').addEventListener('change', (e) => {
+        const id = e.target.value;
+        appData.activeProfileId = id || null;
+        saveData();
+        refreshAll();
+    });
+
+    // Open profiles modal
+    document.getElementById('btn-profiles').addEventListener('click', () => {
+        refreshProfileUI();
+        document.getElementById('profiles-modal').classList.remove('hidden');
+    });
+
+    // Create profile
+    document.getElementById('create-profile-btn').addEventListener('click', () => {
+        const name = document.getElementById('new-profile-name').value.trim();
+        if (!name) {
+            alert('Por favor, introduce un nombre para el bebe.');
+            return;
+        }
+        const dob = document.getElementById('new-profile-dob').value;
+        createProfile(name, dob);
+        document.getElementById('new-profile-name').value = '';
+        document.getElementById('new-profile-dob').value = '';
+    });
+
+    // ========================================
+    // Prediction Algorithm
+    // ========================================
+
+    function calculatePredictions() {
+        const profile = getActiveProfile();
+        if (!profile) return null;
+
+        const config = profile.napConfig || defaultProfileData.napConfig;
+        const napsPerDay = config.napsPerDay;
+        const wakeTimeMin = timeStringToMinutes(config.wakeTime);
+        const bedtimeMin = timeStringToMinutes(config.targetBedtime);
+        const avgNapDuration = config.avgNapDurationMin; // in minutes
+
+        // Total day window from wake to bedtime
+        let dayWindowMin = bedtimeMin - wakeTimeMin;
+        if (dayWindowMin <= 0) dayWindowMin += 1440; // handle cross-midnight
+
+        // Total nap time expected
+        const totalNapTimeMin = napsPerDay * avgNapDuration;
+
+        // Total awake time expected
+        const totalAwakeTimeMin = dayWindowMin - totalNapTimeMin;
+
+        // Wake windows: there are (napsPerDay + 1) wake windows
+        // First wake window is typically shorter, last is typically longer
+        // We use a graduated approach:
+        // window[i] = baseWindow * scaleFactor[i]
+        const numWindows = napsPerDay + 1;
+        const baseWakeWindow = totalAwakeTimeMin / numWindows;
+
+        // Scale factors: first window is 0.8x, last is 1.2x, linearly interpolated
+        const wakeWindows = [];
+        for (let i = 0; i < numWindows; i++) {
+            let scale;
+            if (numWindows === 1) {
+                scale = 1;
+            } else {
+                scale = 0.8 + (0.4 * i / (numWindows - 1));
+            }
+            wakeWindows.push(Math.round(baseWakeWindow * scale));
+        }
+
+        // Get today's naps so far
+        const todayNaps = profile.sleepEntries
+            .filter(e => isToday(e.start) && e.type === 'nap')
+            .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+        const napsDone = todayNaps.length;
+
+        // Determine when the baby last woke up
+        const now = new Date();
+        let lastWakeTime;
+
+        if (profile.currentSleep) {
+            // Baby is sleeping right now
+            return {
+                nextNapTime: null,
+                nextNapLabel: 'Durmiendo ahora',
+                bedtimeTime: config.targetBedtime,
+                bedtimeLabel: 'Objetivo',
+                napsDone,
+                napsPerDay,
+                wakeWindows,
+                isSleeping: true,
+                wakeWindowMinutes: null
+            };
+        }
+
+        // Find when baby last woke
+        const allSleepToday = profile.sleepEntries
+            .filter(e => isToday(e.start) && e.end)
+            .sort((a, b) => new Date(b.end) - new Date(a.end));
+
+        if (allSleepToday.length > 0) {
+            lastWakeTime = new Date(allSleepToday[0].end);
+        } else {
+            // Use configured wake time for today
+            lastWakeTime = new Date();
+            lastWakeTime.setHours(Math.floor(wakeTimeMin / 60), wakeTimeMin % 60, 0, 0);
+            if (lastWakeTime > now) {
+                lastWakeTime = now; // Baby hasn't woken yet or no data
+            }
+        }
+
+        const awakeMinutes = (now - lastWakeTime) / 60000;
+
+        // Current wake window index
+        const currentWindowIdx = Math.min(napsDone, numWindows - 1);
+        const currentWakeWindow = wakeWindows[currentWindowIdx];
+
+        // Predict next nap time
+        let nextNapTime = null;
+        let nextNapLabel = '';
+
+        if (napsDone >= napsPerDay) {
+            // All naps done - predict bedtime instead
+            nextNapTime = null;
+            nextNapLabel = 'Siestas completadas';
+        } else {
+            // Next nap = lastWakeTime + wakeWindow
+            const nextNapDate = new Date(lastWakeTime.getTime() + currentWakeWindow * 60000);
+            if (nextNapDate > now) {
+                const remainMin = Math.round((nextNapDate - now) / 60000);
+                nextNapTime = formatTime(nextNapDate);
+                nextNapLabel = `En ${formatDuration(remainMin * 60000)}`;
+            } else {
+                // Overdue!
+                const overdueMin = Math.round((now - nextNapDate) / 60000);
+                nextNapTime = formatTime(nextNapDate);
+                nextNapLabel = `Pasada hace ${formatDuration(overdueMin * 60000)}`;
+            }
+        }
+
+        // Predict bedtime
+        let bedtimeTime = config.targetBedtime;
+        let bedtimeLabel = 'Objetivo';
+
+        if (napsDone >= napsPerDay && allSleepToday.length > 0) {
+            // All naps done - bedtime = last nap end + last wake window
+            const lastNapEnd = new Date(allSleepToday[0].end);
+            const lastWindow = wakeWindows[numWindows - 1];
+            const predictedBedtime = new Date(lastNapEnd.getTime() + lastWindow * 60000);
+            bedtimeTime = formatTime(predictedBedtime);
+
+            if (predictedBedtime > now) {
+                const remainMin = Math.round((predictedBedtime - now) / 60000);
+                bedtimeLabel = `En ${formatDuration(remainMin * 60000)}`;
+            } else {
+                bedtimeLabel = 'Ya es hora';
+            }
+        } else if (napsDone > 0) {
+            // Some naps done - estimate bedtime based on remaining schedule
+            const lastNap = todayNaps[todayNaps.length - 1];
+            const lastNapEnd = new Date(lastNap.end);
+            let estimatedTime = lastNapEnd;
+
+            for (let i = napsDone; i < napsPerDay; i++) {
+                estimatedTime = new Date(estimatedTime.getTime() + wakeWindows[i] * 60000); // wake window
+                estimatedTime = new Date(estimatedTime.getTime() + avgNapDuration * 60000); // nap
+            }
+            // Add last wake window before bed
+            estimatedTime = new Date(estimatedTime.getTime() + wakeWindows[numWindows - 1] * 60000);
+            bedtimeTime = formatTime(estimatedTime);
+            bedtimeLabel = 'Estimada';
+        }
+
+        return {
+            nextNapTime,
+            nextNapLabel,
+            bedtimeTime,
+            bedtimeLabel,
+            napsDone,
+            napsPerDay,
+            wakeWindows,
+            isSleeping: false,
+            wakeWindowMinutes: currentWakeWindow,
+            awakeMinutes: Math.round(awakeMinutes)
+        };
+    }
+
+    function refreshPredictions() {
+        const section = document.getElementById('predictions-section');
+        const profile = getActiveProfile();
+
+        if (!profile) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = '';
+        const predictions = calculatePredictions();
+        if (!predictions) return;
+
+        // Next nap
+        const nextNapTimeEl = document.getElementById('next-nap-time');
+        const nextNapDetailEl = document.getElementById('next-nap-detail');
+
+        if (predictions.isSleeping) {
+            nextNapTimeEl.textContent = 'Zzz...';
+            nextNapDetailEl.textContent = predictions.nextNapLabel;
+        } else if (predictions.nextNapTime) {
+            nextNapTimeEl.textContent = predictions.nextNapTime;
+            nextNapDetailEl.textContent = predictions.nextNapLabel;
+        } else {
+            nextNapTimeEl.textContent = '--:--';
+            nextNapDetailEl.textContent = predictions.nextNapLabel;
+        }
+
+        // Bedtime
+        document.getElementById('bedtime-prediction').textContent = predictions.bedtimeTime;
+        document.getElementById('bedtime-detail').textContent = predictions.bedtimeLabel;
+
+        // Progress bar
+        document.getElementById('naps-progress-text').textContent =
+            `${predictions.napsDone} / ${predictions.napsPerDay}`;
+        const progressPct = predictions.napsPerDay > 0 ?
+            (predictions.napsDone / predictions.napsPerDay) * 100 : 0;
+        document.getElementById('naps-progress-fill').style.width = Math.min(progressPct, 100) + '%';
+
+        // Wake window info
+        const wakeInfo = document.getElementById('wake-window-info');
+        if (predictions.isSleeping) {
+            wakeInfo.textContent = 'El bebe esta durmiendo';
+        } else if (predictions.wakeWindowMinutes) {
+            wakeInfo.textContent = `Ventana de vigilia: ${formatDuration(predictions.wakeWindowMinutes * 60000)} | Despierto: ${formatDuration(predictions.awakeMinutes * 60000)}`;
+        } else {
+            wakeInfo.textContent = 'Configura las siestas en Ajustes';
+        }
+    }
+
+    // ========================================
+    // Nap Config Preview in Settings
+    // ========================================
+    function updateNapConfigPreview() {
+        const napsPerDay = parseInt(document.getElementById('naps-per-day').value);
+        const wakeTime = document.getElementById('wake-time').value || '07:00';
+        const bedtime = document.getElementById('target-bedtime').value || '20:00';
+        const avgDuration = parseInt(document.getElementById('avg-nap-duration').value) || 90;
+
+        const wakeMin = timeStringToMinutes(wakeTime);
+        const bedMin = timeStringToMinutes(bedtime);
+        let dayWindow = bedMin - wakeMin;
+        if (dayWindow <= 0) dayWindow += 1440;
+
+        const totalNapTime = napsPerDay * avgDuration;
+        const totalAwake = dayWindow - totalNapTime;
+        const numWindows = napsPerDay + 1;
+        const baseWW = totalAwake / numWindows;
+
+        const previewEl = document.getElementById('nap-config-preview');
+
+        if (totalAwake <= 0) {
+            previewEl.innerHTML = '<p class="preview-warning">La configuracion no es valida: demasiadas siestas para el periodo del dia.</p>';
+            return;
+        }
+
+        let html = '<div class="preview-title">Horario estimado:</div><div class="preview-schedule">';
+        let currentMin = wakeMin;
+
+        for (let i = 0; i < napsPerDay; i++) {
+            const scale = numWindows === 1 ? 1 : 0.8 + (0.4 * i / (numWindows - 1));
+            const ww = Math.round(baseWW * scale);
+
+            html += `<div class="preview-item preview-awake">
+                <span class="preview-time">${minutesToTimeString(currentMin)}</span>
+                <span class="preview-bar awake-bar" style="flex: ${ww}"></span>
+                <span class="preview-label">Despierto ${formatDuration(ww * 60000)}</span>
+            </div>`;
+
+            currentMin += ww;
+
+            html += `<div class="preview-item preview-nap">
+                <span class="preview-time">${minutesToTimeString(currentMin % 1440)}</span>
+                <span class="preview-bar nap-bar" style="flex: ${avgDuration}"></span>
+                <span class="preview-label">Siesta ${i + 1} (${avgDuration}m)</span>
+            </div>`;
+
+            currentMin += avgDuration;
+        }
+
+        // Last wake window
+        const lastScale = numWindows === 1 ? 1 : 0.8 + (0.4 * (numWindows - 1) / (numWindows - 1));
+        const lastWW = Math.round(baseWW * lastScale);
+
+        html += `<div class="preview-item preview-awake">
+            <span class="preview-time">${minutesToTimeString(currentMin % 1440)}</span>
+            <span class="preview-bar awake-bar" style="flex: ${lastWW}"></span>
+            <span class="preview-label">Despierto ${formatDuration(lastWW * 60000)}</span>
+        </div>`;
+
+        html += `<div class="preview-item preview-bed">
+            <span class="preview-time">${bedtime}</span>
+            <span class="preview-label">Hora de dormir</span>
+        </div>`;
+
+        html += '</div>';
+
+        previewEl.innerHTML = html;
+    }
+
+    // Listen for changes in nap config fields
+    ['naps-per-day', 'wake-time', 'target-bedtime', 'avg-nap-duration'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateNapConfigPreview);
+        document.getElementById(id).addEventListener('input', updateNapConfigPreview);
+    });
+
     // ========================================
     // Navigation
     // ========================================
@@ -140,33 +610,40 @@
     let sleepTimerInterval = null;
 
     function startSleep() {
-        appData.currentSleep = { startTime: new Date().toISOString() };
+        const profile = getActiveProfile();
+        if (!profile) {
+            alert('Por favor, crea o selecciona un perfil de bebe primero.');
+            return;
+        }
+        profile.currentSleep = { startTime: new Date().toISOString() };
         saveData();
         updateSleepUI();
     }
 
     function stopSleep() {
-        if (!appData.currentSleep) return;
-        const start = new Date(appData.currentSleep.startTime);
+        const profile = getActiveProfile();
+        if (!profile || !profile.currentSleep) return;
+        const start = new Date(profile.currentSleep.startTime);
         const end = new Date();
         const duration = end - start;
         const hour = start.getHours();
         const type = (hour >= 19 || hour < 7) ? 'night' : 'nap';
 
-        appData.sleepEntries.push({
+        profile.sleepEntries.push({
             id: generateId(),
             start: start.toISOString(),
             end: end.toISOString(),
             duration: duration,
             type: type
         });
-        appData.currentSleep = null;
+        profile.currentSleep = null;
         saveData();
         updateSleepUI();
         refreshDashboard();
     }
 
     function updateSleepUI() {
+        const profile = getActiveProfile();
         const statusEl = document.getElementById('sleep-status');
         const timerEl = document.getElementById('sleep-timer');
         const btnTextEl = document.getElementById('sleep-btn-text');
@@ -178,7 +655,9 @@
             sleepTimerInterval = null;
         }
 
-        if (appData.currentSleep) {
+        const currentSleep = profile ? profile.currentSleep : null;
+
+        if (currentSleep) {
             statusEl.textContent = 'Durmiendo...';
             statusEl.classList.add('sleeping');
             btnTextEl.textContent = 'Detener Sueno';
@@ -187,11 +666,10 @@
             quickSleepBtn.querySelector('span:last-child').textContent = 'Detener Sueno';
 
             sleepTimerInterval = setInterval(() => {
-                const elapsed = Date.now() - new Date(appData.currentSleep.startTime).getTime();
+                const elapsed = Date.now() - new Date(currentSleep.startTime).getTime();
                 timerEl.textContent = formatTimerDisplay(elapsed);
             }, 1000);
-            // Immediate update
-            const elapsed = Date.now() - new Date(appData.currentSleep.startTime).getTime();
+            const elapsed = Date.now() - new Date(currentSleep.startTime).getTime();
             timerEl.textContent = formatTimerDisplay(elapsed);
         } else {
             statusEl.textContent = 'Despierto';
@@ -204,19 +682,25 @@
         }
     }
 
-    // Toggle sleep button
     document.getElementById('toggle-sleep-btn').addEventListener('click', () => {
-        if (appData.currentSleep) stopSleep();
+        const profile = getActiveProfile();
+        if (profile && profile.currentSleep) stopSleep();
         else startSleep();
     });
 
     document.getElementById('quick-sleep-btn').addEventListener('click', () => {
-        if (appData.currentSleep) stopSleep();
+        const profile = getActiveProfile();
+        if (profile && profile.currentSleep) stopSleep();
         else startSleep();
     });
 
-    // Manual sleep entry
     document.getElementById('save-manual-sleep').addEventListener('click', () => {
+        const profile = getActiveProfile();
+        if (!profile) {
+            alert('Por favor, crea o selecciona un perfil primero.');
+            return;
+        }
+
         const startInput = document.getElementById('manual-sleep-start');
         const endInput = document.getElementById('manual-sleep-end');
         const typeInput = document.getElementById('manual-sleep-type');
@@ -234,7 +718,7 @@
             return;
         }
 
-        appData.sleepEntries.push({
+        profile.sleepEntries.push({
             id: generateId(),
             start: start.toISOString(),
             end: end.toISOString(),
@@ -254,12 +738,18 @@
     // Feeding Tracking
     // ========================================
     document.getElementById('save-feed').addEventListener('click', () => {
+        const profile = getActiveProfile();
+        if (!profile) {
+            alert('Por favor, crea o selecciona un perfil primero.');
+            return;
+        }
+
         const type = document.getElementById('feed-type').value;
         const amount = document.getElementById('feed-amount').value;
         const duration = document.getElementById('feed-duration').value;
         const notes = document.getElementById('feed-notes').value;
 
-        appData.feedEntries.push({
+        profile.feedEntries.push({
             id: generateId(),
             time: new Date().toISOString(),
             type: type,
@@ -278,16 +768,21 @@
         alert('Toma registrada.');
     });
 
-    // Quick feed from dashboard
     document.getElementById('quick-feed-btn').addEventListener('click', () => {
         document.getElementById('feed-modal').classList.remove('hidden');
     });
 
     document.getElementById('save-quick-feed').addEventListener('click', () => {
+        const profile = getActiveProfile();
+        if (!profile) {
+            alert('Por favor, crea o selecciona un perfil primero.');
+            return;
+        }
+
         const type = document.getElementById('quick-feed-type').value;
         const amount = document.getElementById('quick-feed-amount').value;
 
-        appData.feedEntries.push({
+        profile.feedEntries.push({
             id: generateId(),
             time: new Date().toISOString(),
             type: type,
@@ -302,10 +797,14 @@
         refreshDashboard();
     });
 
-    // Close feed modal
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.getElementById('feed-modal').classList.add('hidden');
+            const modalId = btn.dataset.modal;
+            if (modalId) {
+                document.getElementById(modalId).classList.add('hidden');
+            } else {
+                document.getElementById('feed-modal').classList.add('hidden');
+            }
         });
     });
 
@@ -323,9 +822,15 @@
     });
 
     document.getElementById('save-diaper').addEventListener('click', () => {
+        const profile = getActiveProfile();
+        if (!profile) {
+            alert('Por favor, crea o selecciona un perfil primero.');
+            return;
+        }
+
         const notes = document.getElementById('diaper-notes').value;
 
-        appData.diaperEntries.push({
+        profile.diaperEntries.push({
             id: generateId(),
             time: new Date().toISOString(),
             type: selectedDiaperType,
@@ -340,7 +845,13 @@
     });
 
     document.getElementById('quick-diaper-btn').addEventListener('click', () => {
-        appData.diaperEntries.push({
+        const profile = getActiveProfile();
+        if (!profile) {
+            alert('Por favor, crea o selecciona un perfil primero.');
+            return;
+        }
+
+        profile.diaperEntries.push({
             id: generateId(),
             time: new Date().toISOString(),
             type: 'wet',
@@ -365,30 +876,20 @@
     });
 
     function getAllTodayEntries() {
+        const profile = getActiveProfile();
+        if (!profile) return [];
         const entries = [];
 
-        appData.sleepEntries.filter(e => isToday(e.start)).forEach(e => {
-            entries.push({
-                type: 'sleep',
-                time: e.start,
-                data: e
-            });
+        profile.sleepEntries.filter(e => isToday(e.start)).forEach(e => {
+            entries.push({ type: 'sleep', time: e.start, data: e });
         });
 
-        appData.feedEntries.filter(e => isToday(e.time)).forEach(e => {
-            entries.push({
-                type: 'feed',
-                time: e.time,
-                data: e
-            });
+        profile.feedEntries.filter(e => isToday(e.time)).forEach(e => {
+            entries.push({ type: 'feed', time: e.time, data: e });
         });
 
-        appData.diaperEntries.filter(e => isToday(e.time)).forEach(e => {
-            entries.push({
-                type: 'diaper',
-                time: e.time,
-                data: e
-            });
+        profile.diaperEntries.filter(e => isToday(e.time)).forEach(e => {
+            entries.push({ type: 'diaper', time: e.time, data: e });
         });
 
         entries.sort((a, b) => new Date(b.time) - new Date(a.time));
@@ -456,19 +957,20 @@
             listEl.appendChild(renderActivityItem(entry));
         });
 
-        // Delete handlers
         listEl.querySelectorAll('.delete-entry').forEach(btn => {
             btn.addEventListener('click', () => {
+                const profile = getActiveProfile();
+                if (!profile) return;
                 const type = btn.dataset.type;
                 const id = btn.dataset.id;
                 if (!confirm('Eliminar este registro?')) return;
 
                 if (type === 'sleep') {
-                    appData.sleepEntries = appData.sleepEntries.filter(e => e.id !== id);
+                    profile.sleepEntries = profile.sleepEntries.filter(e => e.id !== id);
                 } else if (type === 'feed') {
-                    appData.feedEntries = appData.feedEntries.filter(e => e.id !== id);
+                    profile.feedEntries = profile.feedEntries.filter(e => e.id !== id);
                 } else if (type === 'diaper') {
-                    appData.diaperEntries = appData.diaperEntries.filter(e => e.id !== id);
+                    profile.diaperEntries = profile.diaperEntries.filter(e => e.id !== id);
                 }
                 saveData();
                 refreshHistory();
@@ -481,18 +983,32 @@
     // Dashboard
     // ========================================
     function refreshDashboard() {
+        const profile = getActiveProfile();
+
+        if (!profile) {
+            document.getElementById('total-sleep-today').textContent = '--';
+            document.getElementById('awake-since').textContent = '--';
+            document.getElementById('feedings-today').textContent = '--';
+            document.getElementById('diapers-today').textContent = '--';
+            document.getElementById('recent-list').innerHTML =
+                '<p class="empty-state">Selecciona o crea un perfil de bebe</p>';
+            document.getElementById('predictions-section').style.display = 'none';
+            drawClock();
+            return;
+        }
+
         // Total sleep today
-        const todaySleep = appData.sleepEntries
+        const todaySleep = profile.sleepEntries
             .filter(e => isToday(e.start))
             .reduce((sum, e) => sum + e.duration, 0);
         document.getElementById('total-sleep-today').textContent = formatDuration(todaySleep);
 
         // Awake since
-        const lastSleepEnd = appData.sleepEntries
+        const lastSleepEnd = profile.sleepEntries
             .filter(e => e.end)
             .sort((a, b) => new Date(b.end) - new Date(a.end))[0];
 
-        if (appData.currentSleep) {
+        if (profile.currentSleep) {
             document.getElementById('awake-since').textContent = 'Durmiendo';
         } else if (lastSleepEnd) {
             const awakeMs = Date.now() - new Date(lastSleepEnd.end).getTime();
@@ -502,14 +1018,14 @@
         }
 
         // Feedings today
-        const feedsToday = appData.feedEntries.filter(e => isToday(e.time)).length;
+        const feedsToday = profile.feedEntries.filter(e => isToday(e.time)).length;
         document.getElementById('feedings-today').textContent = feedsToday;
 
         // Diapers today
-        const diapersToday = appData.diaperEntries.filter(e => isToday(e.time)).length;
+        const diapersToday = profile.diaperEntries.filter(e => isToday(e.time)).length;
         document.getElementById('diapers-today').textContent = diapersToday;
 
-        // Recent activity (last 5)
+        // Recent activity
         const recentList = document.getElementById('recent-list');
         const allEntries = getAllTodayEntries().slice(0, 5);
 
@@ -521,6 +1037,9 @@
                 recentList.appendChild(renderActivityItem(entry));
             });
         }
+
+        // Predictions
+        refreshPredictions();
 
         // Draw clock
         drawClock();
@@ -535,6 +1054,7 @@
         const size = canvas.width;
         const center = size / 2;
         const radius = center - 20;
+        const profile = getActiveProfile();
 
         ctx.clearRect(0, 0, size, size);
 
@@ -571,7 +1091,6 @@
             ctx.lineWidth = (i % 6 === 0) ? 2 : 1;
             ctx.stroke();
 
-            // Hour labels for every 3 hours
             if (i % 3 === 0) {
                 const labelR = radius * 1.06;
                 const lx = center + Math.cos(angle) * labelR;
@@ -584,28 +1103,45 @@
             }
         }
 
-        // Draw sleep arcs for today
-        const todaySleep = appData.sleepEntries.filter(e => isToday(e.start));
-        todaySleep.forEach(entry => {
-            drawArc(ctx, center, radius, entry.start, entry.end, '#6C63FF', 0.82);
-        });
+        if (profile) {
+            // Draw predicted nap markers on clock
+            const predictions = calculatePredictions();
+            if (predictions && predictions.nextNapTime && !predictions.isSleeping) {
+                // Draw a dashed arc indicator for predicted nap
+                const nextNapStr = predictions.nextNapTime;
+                const match = nextNapStr.match(/(\d{1,2}):(\d{2})/);
+                if (match) {
+                    const predHour = parseInt(match[1]) + parseInt(match[2]) / 60;
+                    const config = profile.napConfig || defaultProfileData.napConfig;
+                    const predDuration = config.avgNapDurationMin / 60;
+                    const endHour = predHour + predDuration;
 
-        // Current sleep
-        if (appData.currentSleep) {
-            drawArc(ctx, center, radius, appData.currentSleep.startTime, new Date().toISOString(), '#6C63FF', 0.82);
+                    drawPredictionArc(ctx, center, radius, predHour, endHour, '#6C63FF40');
+                }
+            }
+
+            // Draw sleep arcs
+            const todaySleep = profile.sleepEntries.filter(e => isToday(e.start));
+            todaySleep.forEach(entry => {
+                drawArc(ctx, center, radius, entry.start, entry.end, '#6C63FF', 0.82);
+            });
+
+            if (profile.currentSleep) {
+                drawArc(ctx, center, radius, profile.currentSleep.startTime, new Date().toISOString(), '#6C63FF', 0.82);
+            }
+
+            // Draw feed markers
+            const todayFeeds = profile.feedEntries.filter(e => isToday(e.time));
+            todayFeeds.forEach(entry => {
+                drawMarker(ctx, center, radius, entry.time, '#FF6B9D', 0.72);
+            });
+
+            // Draw diaper markers
+            const todayDiapers = profile.diaperEntries.filter(e => isToday(e.time));
+            todayDiapers.forEach(entry => {
+                drawMarker(ctx, center, radius, entry.time, '#4ECDC4', 0.65);
+            });
         }
-
-        // Draw feed markers
-        const todayFeeds = appData.feedEntries.filter(e => isToday(e.time));
-        todayFeeds.forEach(entry => {
-            drawMarker(ctx, center, radius, entry.time, '#FF6B9D', 0.72);
-        });
-
-        // Draw diaper markers
-        const todayDiapers = appData.diaperEntries.filter(e => isToday(e.time));
-        todayDiapers.forEach(entry => {
-            drawMarker(ctx, center, radius, entry.time, '#4ECDC4', 0.65);
-        });
 
         // Current time hand
         const now = new Date();
@@ -628,6 +1164,27 @@
         ctx.arc(center, center, 5, 0, Math.PI * 2);
         ctx.fillStyle = '#2D2B55';
         ctx.fill();
+    }
+
+    function drawPredictionArc(ctx, center, radius, startHour, endHour, color) {
+        const startAngle = (startHour / 24) * Math.PI * 2 - Math.PI / 2;
+        const endAngle = (endHour / 24) * Math.PI * 2 - Math.PI / 2;
+
+        const innerR = radius * 0.74;
+        const outerR = radius * 0.82;
+
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.arc(center, center, outerR, startAngle, endAngle);
+        ctx.arc(center, center, innerR, endAngle, startAngle, true);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#6C63FF80';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
     }
 
     function drawArc(ctx, center, radius, startTime, endTime, color, radiusFactor) {
@@ -701,11 +1258,7 @@
 
     function stopCurrentSound() {
         if (currentSoundNode) {
-            try {
-                currentSoundNode.stop();
-            } catch (e) {
-                // Some nodes don't have stop
-            }
+            try { currentSoundNode.stop(); } catch (e) { }
             currentSoundNode.disconnect();
             currentSoundNode = null;
         }
@@ -737,7 +1290,6 @@
         document.getElementById('now-playing-name').textContent = config.name;
         document.querySelector(`.sound-card[data-sound="${soundKey}"]`).classList.add('playing');
 
-        // Set timer if configured
         if (soundTimerMinutes > 0) {
             soundTimerTimeout = setTimeout(() => {
                 stopCurrentSound();
@@ -745,7 +1297,6 @@
         }
     }
 
-    // Sound generators using Web Audio API
     function generateWhiteNoise(ctx, destination) {
         const bufferSize = 2 * ctx.sampleRate;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
@@ -756,12 +1307,9 @@
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-
-        // Slight lowpass for softer sound
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 4000;
-
         source.connect(filter);
         filter.connect(destination);
         source.start();
@@ -769,7 +1317,6 @@
     }
 
     function generateRain(ctx, destination) {
-        // Brown noise (rain-like)
         const bufferSize = 2 * ctx.sampleRate;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
@@ -783,12 +1330,10 @@
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-
         const filter = ctx.createBiquadFilter();
         filter.type = 'bandpass';
         filter.frequency.value = 1500;
         filter.Q.value = 0.5;
-
         source.connect(filter);
         filter.connect(destination);
         source.start();
@@ -796,7 +1341,6 @@
     }
 
     function generateOcean(ctx, destination) {
-        // Modulated noise for ocean waves
         const bufferSize = 4 * ctx.sampleRate;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
@@ -812,11 +1356,9 @@
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 800;
-
         source.connect(filter);
         filter.connect(destination);
         source.start();
@@ -829,12 +1371,9 @@
         const data = buffer.getChannelData(0);
         const bpm = 70;
         const beatInterval = (60 / bpm) * ctx.sampleRate;
-
         for (let i = 0; i < bufferSize; i++) {
             const posInBeat = i % beatInterval;
             const t = posInBeat / ctx.sampleRate;
-
-            // Two-thump heartbeat
             let val = 0;
             if (t < 0.08) {
                 val = Math.sin(2 * Math.PI * 60 * t) * Math.exp(-t * 30);
@@ -844,7 +1383,6 @@
             }
             data[i] = val;
         }
-
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
@@ -857,7 +1395,6 @@
         const bufferSize = 3 * ctx.sampleRate;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
-
         for (let i = 0; i < bufferSize; i++) {
             const t = i / ctx.sampleRate;
             const cycle = t % 1.5;
@@ -867,16 +1404,13 @@
             }
             data[i] = (Math.random() * 2 - 1) * envelope * 0.5;
         }
-
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-
         const filter = ctx.createBiquadFilter();
         filter.type = 'bandpass';
         filter.frequency.value = 3000;
         filter.Q.value = 1;
-
         source.connect(filter);
         filter.connect(destination);
         source.start();
@@ -884,13 +1418,11 @@
     }
 
     function generateLullaby(ctx, destination) {
-        // Simple melodic tones
         const notes = [262, 294, 330, 349, 330, 294, 262, 247, 262, 294, 330, 294, 262, 247, 220];
         const noteLength = 0.6;
         const bufferSize = Math.ceil(notes.length * noteLength * ctx.sampleRate);
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
-
         for (let n = 0; n < notes.length; n++) {
             const freq = notes[n];
             const start = Math.floor(n * noteLength * ctx.sampleRate);
@@ -901,7 +1433,6 @@
                 data[start + i] = Math.sin(2 * Math.PI * freq * t) * envelope * 0.3;
             }
         }
-
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
@@ -911,12 +1442,10 @@
     }
 
     function generateFan(ctx, destination) {
-        // Pink noise (fan-like)
         const bufferSize = 2 * ctx.sampleRate;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-
         for (let i = 0; i < bufferSize; i++) {
             const white = Math.random() * 2 - 1;
             b0 = 0.99886 * b0 + white * 0.0555179;
@@ -928,15 +1457,12 @@
             data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
             b6 = white * 0.115926;
         }
-
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 2000;
-
         source.connect(filter);
         filter.connect(destination);
         source.start();
@@ -947,8 +1473,6 @@
         const bufferSize = 6 * ctx.sampleRate;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
-
-        // Bird chirps at random intervals
         for (let chirp = 0; chirp < 15; chirp++) {
             const chirpStart = Math.floor(Math.random() * (bufferSize - ctx.sampleRate * 0.3));
             const freq = 2000 + Math.random() * 3000;
@@ -960,7 +1484,6 @@
                 data[chirpStart + i] += Math.sin(2 * Math.PI * freqMod * t) * envelope * 0.15;
             }
         }
-
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
@@ -970,23 +1493,17 @@
     }
 
     function generateWomb(ctx, destination) {
-        // Low rumble + muffled heartbeat
         const bufferSize = 4 * ctx.sampleRate;
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         let lastOut = 0;
-
         const bpm = 75;
         const beatInterval = (60 / bpm) * ctx.sampleRate;
-
         for (let i = 0; i < bufferSize; i++) {
-            // Low rumble
             const white = Math.random() * 2 - 1;
             data[i] = (lastOut + 0.01 * white) / 1.01;
             lastOut = data[i];
             data[i] *= 5;
-
-            // Heartbeat overlay
             const posInBeat = i % beatInterval;
             const t = posInBeat / ctx.sampleRate;
             if (t < 0.07) {
@@ -996,22 +1513,18 @@
                 data[i] += Math.sin(2 * Math.PI * 35 * t2) * Math.exp(-t2 * 30) * 0.2;
             }
         }
-
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-
         const filter = ctx.createBiquadFilter();
         filter.type = 'lowpass';
         filter.frequency.value = 300;
-
         source.connect(filter);
         filter.connect(destination);
         source.start();
         return source;
     }
 
-    // Sound card click handlers
     document.querySelectorAll('.sound-card').forEach(card => {
         card.addEventListener('click', () => {
             const soundKey = card.dataset.sound;
@@ -1023,19 +1536,14 @@
         });
     });
 
-    // Stop button
     document.getElementById('stop-sound').addEventListener('click', stopCurrentSound);
 
-    // Volume slider
     document.getElementById('volume-slider').addEventListener('input', (e) => {
         if (audioContext && currentSoundNode) {
-            // Find gain node in the chain
-            const nodes = audioContext.destination;
-            // We'll reconnect with new gain
+            // Volume control placeholder
         }
     });
 
-    // Timer options
     document.querySelectorAll('.timer-opt-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.timer-opt-btn').forEach(b => b.classList.remove('active'));
@@ -1059,14 +1567,15 @@
     });
 
     function refreshStats() {
+        const profile = getActiveProfile();
+        if (!profile) return;
+
         const days = statsPeriod === 'week' ? 7 : 30;
         const since = getDaysAgo(days);
 
-        // Sleep stats
-        const periodSleep = appData.sleepEntries.filter(e => new Date(e.start) >= since);
+        const periodSleep = profile.sleepEntries.filter(e => new Date(e.start) >= since);
         const totalSleepMs = periodSleep.reduce((sum, e) => sum + e.duration, 0);
         const avgSleepMs = days > 0 ? totalSleepMs / days : 0;
-
         document.getElementById('avg-sleep').textContent = formatDuration(avgSleepMs);
 
         const naps = periodSleep.filter(e => e.type === 'nap');
@@ -1082,8 +1591,7 @@
         const avgWakings = days > 0 ? (nightWakings / days).toFixed(1) : 0;
         document.getElementById('night-wakings').textContent = avgWakings;
 
-        // Feed stats
-        const periodFeeds = appData.feedEntries.filter(e => new Date(e.time) >= since);
+        const periodFeeds = profile.feedEntries.filter(e => new Date(e.time) >= since);
         const avgFeeds = days > 0 ? (periodFeeds.length / days).toFixed(1) : 0;
         document.getElementById('avg-feeds').textContent = avgFeeds;
 
@@ -1093,8 +1601,7 @@
             : 0;
         document.getElementById('avg-feed-amount').textContent = avgAmount > 0 ? avgAmount + ' ml' : '--';
 
-        // Diaper stats
-        const periodDiapers = appData.diaperEntries.filter(e => new Date(e.time) >= since);
+        const periodDiapers = profile.diaperEntries.filter(e => new Date(e.time) >= since);
         const avgDiapers = days > 0 ? (periodDiapers.length / days).toFixed(1) : 0;
         document.getElementById('avg-diapers').textContent = avgDiapers;
 
@@ -1102,7 +1609,6 @@
         const dirtyCount = periodDiapers.filter(e => e.type === 'dirty' || e.type === 'both').length;
         document.getElementById('diaper-breakdown').textContent = `${wetCount} / ${dirtyCount}`;
 
-        // Draw charts
         drawSleepChart(days);
         drawPatternChart();
     }
@@ -1112,20 +1618,21 @@
         const ctx = canvas.getContext('2d');
         const w = canvas.width;
         const h = canvas.height;
+        const profile = getActiveProfile();
         ctx.clearRect(0, 0, w, h);
+        if (!profile) return;
 
         const displayDays = Math.min(days, 7);
         const barWidth = (w - 60) / displayDays;
         const maxHours = 18;
 
-        // Collect data
         const dailyData = [];
         for (let i = displayDays - 1; i >= 0; i--) {
             const dayStart = getDaysAgo(i);
             const dayEnd = new Date(dayStart);
             dayEnd.setDate(dayEnd.getDate() + 1);
 
-            const daySleep = appData.sleepEntries.filter(e => {
+            const daySleep = profile.sleepEntries.filter(e => {
                 const d = new Date(e.start);
                 return d >= dayStart && d < dayEnd;
             });
@@ -1135,7 +1642,6 @@
             dailyData.push({ hours: totalHours, label });
         }
 
-        // Y axis
         ctx.strokeStyle = '#E8E6FF';
         ctx.lineWidth = 1;
         for (let h2 = 0; h2 <= maxHours; h2 += 6) {
@@ -1144,38 +1650,29 @@
             ctx.moveTo(40, y);
             ctx.lineTo(w - 10, y);
             ctx.stroke();
-
             ctx.fillStyle = '#7B78AA';
             ctx.font = '10px sans-serif';
             ctx.textAlign = 'right';
             ctx.fillText(h2 + 'h', 35, y + 4);
         }
 
-        // Bars
         dailyData.forEach((d, i) => {
             const barH = (d.hours / maxHours) * (h - 50);
             const x = 45 + i * barWidth;
             const y = h - 30 - barH;
-
-            // Bar gradient
             const gradient = ctx.createLinearGradient(x, y, x, h - 30);
             gradient.addColorStop(0, '#6C63FF');
             gradient.addColorStop(1, '#8B85FF');
-
             ctx.fillStyle = gradient;
             ctx.beginPath();
             ctx.roundRect(x + 4, y, barWidth - 8, barH, [4, 4, 0, 0]);
             ctx.fill();
-
-            // Value label
             if (d.hours > 0) {
                 ctx.fillStyle = '#2D2B55';
                 ctx.font = 'bold 10px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(d.hours.toFixed(1), x + barWidth / 2, y - 6);
             }
-
-            // Day label
             ctx.fillStyle = '#7B78AA';
             ctx.font = '10px sans-serif';
             ctx.textAlign = 'center';
@@ -1188,13 +1685,14 @@
         const ctx = canvas.getContext('2d');
         const w = canvas.width;
         const h = canvas.height;
+        const profile = getActiveProfile();
         ctx.clearRect(0, 0, w, h);
+        if (!profile) return;
 
         const days = 7;
         const rowHeight = (h - 40) / days;
         const hourWidth = (w - 60) / 24;
 
-        // Header hours
         ctx.fillStyle = '#7B78AA';
         ctx.font = '10px sans-serif';
         ctx.textAlign = 'center';
@@ -1202,25 +1700,21 @@
             ctx.fillText(String(hr).padStart(2, '0'), 50 + hr * hourWidth, 12);
         }
 
-        // Draw rows
         for (let i = 0; i < days; i++) {
             const dayStart = getDaysAgo(days - 1 - i);
             const dayEnd = new Date(dayStart);
             dayEnd.setDate(dayEnd.getDate() + 1);
             const y = 20 + i * rowHeight;
 
-            // Day label
             ctx.fillStyle = '#7B78AA';
             ctx.font = '10px sans-serif';
             ctx.textAlign = 'right';
             ctx.fillText(dayStart.toLocaleDateString('es-ES', { weekday: 'short' }), 38, y + rowHeight / 2 + 4);
 
-            // Background row
             ctx.fillStyle = i % 2 === 0 ? '#F8F7FF' : '#FFFFFF';
             ctx.fillRect(45, y, w - 55, rowHeight);
 
-            // Sleep blocks
-            const daySleep = appData.sleepEntries.filter(e => {
+            const daySleep = profile.sleepEntries.filter(e => {
                 const d = new Date(e.start);
                 return d >= dayStart && d < dayEnd;
             });
@@ -1230,10 +1724,8 @@
                 const end = new Date(entry.end);
                 const startHour = start.getHours() + start.getMinutes() / 60;
                 const endHour = end.getHours() + end.getMinutes() / 60;
-
                 const x1 = 45 + startHour * hourWidth;
                 const blockW = (endHour - startHour) * hourWidth;
-
                 ctx.fillStyle = entry.type === 'night' ? '#6C63FFB0' : '#8B85FFB0';
                 ctx.beginPath();
                 ctx.roundRect(x1, y + 3, Math.max(blockW, 2), rowHeight - 6, 3);
@@ -1246,16 +1738,36 @@
     // Settings
     // ========================================
     document.getElementById('btn-settings').addEventListener('click', () => {
-        document.getElementById('baby-name').value = appData.baby.name;
-        document.getElementById('baby-dob').value = appData.baby.dob;
+        const profile = getActiveProfile();
+        if (profile) {
+            document.getElementById('baby-name').value = profile.baby.name;
+            document.getElementById('baby-dob').value = profile.baby.dob;
+            const config = profile.napConfig || defaultProfileData.napConfig;
+            document.getElementById('naps-per-day').value = config.napsPerDay;
+            document.getElementById('wake-time').value = config.wakeTime;
+            document.getElementById('target-bedtime').value = config.targetBedtime;
+            document.getElementById('avg-nap-duration').value = config.avgNapDurationMin;
+        }
+        updateNapConfigPreview();
         document.getElementById('settings-modal').classList.remove('hidden');
     });
 
     document.getElementById('close-settings').addEventListener('click', () => {
-        appData.baby.name = document.getElementById('baby-name').value;
-        appData.baby.dob = document.getElementById('baby-dob').value;
-        saveData();
+        const profile = getActiveProfile();
+        if (profile) {
+            profile.baby.name = document.getElementById('baby-name').value;
+            profile.baby.dob = document.getElementById('baby-dob').value;
+            profile.napConfig = {
+                napsPerDay: parseInt(document.getElementById('naps-per-day').value),
+                wakeTime: document.getElementById('wake-time').value || '07:00',
+                targetBedtime: document.getElementById('target-bedtime').value || '20:00',
+                avgNapDurationMin: parseInt(document.getElementById('avg-nap-duration').value) || 90
+            };
+            saveData();
+            refreshProfileUI();
+        }
         document.getElementById('settings-modal').classList.add('hidden');
+        refreshDashboard();
     });
 
     document.getElementById('export-data').addEventListener('click', () => {
@@ -1270,10 +1782,16 @@
     });
 
     document.getElementById('clear-data').addEventListener('click', () => {
-        if (!confirm('Estas seguro de que quieres borrar TODOS los datos? Esta accion no se puede deshacer.')) return;
+        if (!confirm('Estas seguro de que quieres borrar TODOS los datos del perfil activo? Esta accion no se puede deshacer.')) return;
         if (!confirm('Confirmacion final: Se eliminaran todos los registros permanentemente.')) return;
-        appData = { ...defaultData };
-        saveData();
+        const profile = getActiveProfile();
+        if (profile) {
+            profile.sleepEntries = [];
+            profile.feedEntries = [];
+            profile.diaperEntries = [];
+            profile.currentSleep = null;
+            saveData();
+        }
         refreshDashboard();
         refreshHistory();
         refreshStats();
@@ -1291,19 +1809,25 @@
     });
 
     // ========================================
+    // Refresh All
+    // ========================================
+    function refreshAll() {
+        updateSleepUI();
+        refreshDashboard();
+        refreshHistory();
+    }
+
+    // ========================================
     // Initialize
     // ========================================
     function init() {
+        refreshProfileUI();
         updateSleepUI();
         refreshDashboard();
 
-        // Auto-refresh dashboard every minute
         setInterval(() => {
             if (document.getElementById('tab-dashboard').classList.contains('active')) {
                 refreshDashboard();
-            }
-            if (appData.currentSleep) {
-                // Update awake-since on dashboard
             }
         }, 60000);
     }
