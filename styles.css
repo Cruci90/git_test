@@ -1,0 +1,963 @@
+/* ============================================
+   BabyDream - Baby Sleep Tracker
+   Mobile-first responsive design
+   ============================================ */
+
+:root {
+    --primary: #6C63FF;
+    --primary-light: #8B85FF;
+    --primary-dark: #4A42DB;
+    --sleep: #6C63FF;
+    --sleep-light: rgba(108, 99, 255, 0.15);
+    --feed: #FF6B9D;
+    --feed-light: rgba(255, 107, 157, 0.15);
+    --diaper: #4ECDC4;
+    --diaper-light: rgba(78, 205, 196, 0.15);
+    --bg: #F0F2FF;
+    --card-bg: #FFFFFF;
+    --text: #2D2B55;
+    --text-light: #7B78AA;
+    --border: #E8E6FF;
+    --danger: #FF6B6B;
+    --success: #51CF66;
+    --shadow: 0 2px 12px rgba(108, 99, 255, 0.1);
+    --shadow-hover: 0 4px 20px rgba(108, 99, 255, 0.2);
+    --radius: 16px;
+    --radius-sm: 10px;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 80px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================
+   Header
+   ============================================ */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(108, 99, 255, 0.3);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.baby-icon {
+    font-size: 1.6rem;
+}
+
+.app-header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   Bottom Navigation
+   ============================================ */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.05);
+    padding: 4px 0;
+}
+
+.nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 4px;
+    border: none;
+    background: none;
+    color: var(--text-light);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    font-family: var(--font);
+}
+
+.nav-btn .nav-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.nav-btn.active {
+    color: var(--primary);
+}
+
+.nav-btn.active .nav-label {
+    font-weight: 600;
+}
+
+/* ============================================
+   Tab Content
+   ============================================ */
+.tab-content {
+    display: none;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   Clock Section (Dashboard)
+   ============================================ */
+.clock-section {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.clock-section h2 {
+    font-size: 1rem;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.clock-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+#clock-canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.clock-legend {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.sleep-color { background: var(--sleep); }
+.feed-color { background: var(--feed); }
+.diaper-color { background: var(--diaper); }
+
+/* ============================================
+   Quick Stats
+   ============================================ */
+.quick-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+}
+
+.stat-icon {
+    font-size: 1.6rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    color: var(--text-light);
+}
+
+/* ============================================
+   Quick Actions
+   ============================================ */
+.quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 8px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+}
+
+.action-btn .action-icon {
+    font-size: 1.6rem;
+}
+
+.action-btn.sleep-btn {
+    background: var(--sleep-light);
+    color: var(--sleep);
+}
+
+.action-btn.sleep-btn:hover {
+    background: var(--sleep);
+    color: white;
+}
+
+.action-btn.sleep-btn.active-sleep {
+    background: var(--sleep);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.action-btn.feed-btn {
+    background: var(--feed-light);
+    color: var(--feed);
+}
+
+.action-btn.feed-btn:hover {
+    background: var(--feed);
+    color: white;
+}
+
+.action-btn.diaper-btn {
+    background: var(--diaper-light);
+    color: var(--diaper);
+}
+
+.action-btn.diaper-btn:hover {
+    background: var(--diaper);
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(108, 99, 255, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(108, 99, 255, 0); }
+}
+
+/* ============================================
+   Activity List
+   ============================================ */
+.recent-activity h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+    color: var(--text);
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card-bg);
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+}
+
+.activity-item .item-icon {
+    font-size: 1.4rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.activity-item .item-icon.sleep-icon { background: var(--sleep-light); }
+.activity-item .item-icon.feed-icon { background: var(--feed-light); }
+.activity-item .item-icon.diaper-icon { background: var(--diaper-light); }
+
+.activity-item .item-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-item .item-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.activity-item .item-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.activity-item .item-time {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+.activity-item .delete-entry {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+.activity-item .delete-entry:hover {
+    opacity: 1;
+    color: var(--danger);
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    padding: 24px;
+}
+
+/* ============================================
+   Tracker Sections
+   ============================================ */
+.tracker-section {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+.tracker-section h2 {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+}
+
+/* Sleep Timer */
+.sleep-timer-display {
+    text-align: center;
+    padding: 16px 0;
+}
+
+.sleep-status {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.sleep-status.sleeping {
+    color: var(--sleep);
+    font-weight: 600;
+}
+
+.timer-display {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+
+.big-action-btn {
+    padding: 14px 40px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+}
+
+.big-action-btn.sleep-btn {
+    background: var(--sleep);
+    color: white;
+}
+
+.big-action-btn.sleep-btn:hover {
+    background: var(--primary-dark);
+    box-shadow: var(--shadow-hover);
+}
+
+.big-action-btn.sleep-btn.is-sleeping {
+    background: var(--danger);
+}
+
+.big-action-btn.sleep-btn.is-sleeping:hover {
+    background: #e55a5a;
+}
+
+/* Manual Entry */
+.manual-entry {
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+    padding-top: 16px;
+}
+
+.manual-entry h3 {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 12px;
+}
+
+/* Form Controls */
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.form-row label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.form-row input,
+.form-row select {
+    padding: 10px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.save-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+    background: var(--primary);
+    color: white;
+    margin-top: 4px;
+}
+
+.save-btn:hover {
+    opacity: 0.9;
+    box-shadow: var(--shadow-hover);
+}
+
+.save-btn.feed-btn {
+    background: var(--feed);
+}
+
+.save-btn.diaper-btn {
+    background: var(--diaper);
+}
+
+.delete-btn {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--danger);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: transparent;
+    color: var(--danger);
+    margin-top: 8px;
+    font-family: var(--font);
+    transition: all 0.2s;
+}
+
+.delete-btn:hover {
+    background: var(--danger);
+    color: white;
+}
+
+/* Button Group (Diaper type) */
+.btn-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.option-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: var(--bg);
+    color: var(--text-light);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+}
+
+.option-btn.active {
+    border-color: var(--diaper);
+    background: var(--diaper-light);
+    color: var(--diaper);
+}
+
+/* Filter Buttons */
+.filter-btns {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.filter-btn {
+    padding: 6px 16px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+}
+
+.filter-btn.active {
+    border-color: var(--primary);
+    background: var(--sleep-light);
+    color: var(--primary);
+}
+
+/* ============================================
+   Sounds Section
+   ============================================ */
+.sounds-section {
+    text-align: center;
+}
+
+.sounds-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+}
+
+.sounds-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 20px;
+}
+
+.now-playing {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: fadeIn 0.3s ease;
+}
+
+.now-playing.hidden {
+    display: none;
+}
+
+#now-playing-name {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.sound-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    justify-content: center;
+}
+
+.volume-slider {
+    width: 120px;
+    accent-color: white;
+}
+
+.stop-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: background 0.2s;
+}
+
+.stop-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.sounds-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.sound-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 8px;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+}
+
+.sound-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.sound-card.playing {
+    border-color: var(--primary);
+    background: var(--sleep-light);
+}
+
+.sound-emoji {
+    font-size: 2rem;
+}
+
+.sound-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+/* Sound Timer */
+.sound-timer-section {
+    text-align: center;
+}
+
+.sound-timer-section h3 {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 12px;
+}
+
+.timer-options {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.timer-opt-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+}
+
+.timer-opt-btn.active {
+    border-color: var(--primary);
+    background: var(--sleep-light);
+    color: var(--primary);
+}
+
+/* ============================================
+   Stats Section
+   ============================================ */
+.stats-section h2 {
+    font-size: 1.3rem;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.stats-period {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.period-btn {
+    padding: 8px 24px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font);
+}
+
+.period-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
+}
+
+.stats-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+.stats-card h3 {
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+    color: var(--text);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-desc {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.chart-container {
+    width: 100%;
+    overflow: hidden;
+}
+
+.chart-container canvas {
+    width: 100%;
+    height: auto;
+}
+
+/* ============================================
+   Modal
+   ============================================ */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 440px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-small {
+    max-width: 360px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    font-size: 1.1rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.setting-group {
+    margin-bottom: 20px;
+}
+
+.setting-group h3 {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 12px;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (min-width: 600px) {
+    .quick-stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .sounds-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    body {
+        padding-bottom: 0;
+    }
+
+    .bottom-nav {
+        position: sticky;
+        top: 60px;
+        border-top: none;
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        max-width: 500px;
+        margin: 0 auto;
+        border-radius: 0 0 var(--radius) var(--radius);
+    }
+
+    .tab-content {
+        padding: 30px 20px;
+    }
+}
