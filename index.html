@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BabyDream - Seguimiento del Sueno del Bebe</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <span class="baby-icon">&#x1F476;</span>
+                <h1>BabyDream</h1>
+            </div>
+            <div class="header-right">
+                <button id="btn-settings" class="icon-btn" title="Configuracion">&#x2699;</button>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-tab="dashboard">
+                <span class="nav-icon">&#x1F3E0;</span>
+                <span class="nav-label">Inicio</span>
+            </button>
+            <button class="nav-btn" data-tab="tracker">
+                <span class="nav-icon">&#x23F1;</span>
+                <span class="nav-label">Registro</span>
+            </button>
+            <button class="nav-btn" data-tab="sounds">
+                <span class="nav-icon">&#x1F3B5;</span>
+                <span class="nav-label">Sonidos</span>
+            </button>
+            <button class="nav-btn" data-tab="stats">
+                <span class="nav-icon">&#x1F4CA;</span>
+                <span class="nav-label">Estadisticas</span>
+            </button>
+        </nav>
+
+        <!-- Dashboard Tab -->
+        <main id="tab-dashboard" class="tab-content active">
+            <section class="clock-section">
+                <h2>Reloj de Actividad - 24h</h2>
+                <div class="clock-container">
+                    <canvas id="clock-canvas" width="320" height="320"></canvas>
+                </div>
+                <div class="clock-legend">
+                    <span class="legend-item"><span class="legend-color sleep-color"></span> Sueno</span>
+                    <span class="legend-item"><span class="legend-color feed-color"></span> Alimentacion</span>
+                    <span class="legend-item"><span class="legend-color diaper-color"></span> Panal</span>
+                </div>
+            </section>
+
+            <section class="quick-stats">
+                <div class="stat-card">
+                    <span class="stat-icon">&#x1F634;</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="total-sleep-today">0h 0m</span>
+                        <span class="stat-label">Sueno hoy</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">&#x23F0;</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="awake-since">0h 0m</span>
+                        <span class="stat-label">Despierto hace</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">&#x1F37C;</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="feedings-today">0</span>
+                        <span class="stat-label">Tomas hoy</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">&#x1F476;</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="diapers-today">0</span>
+                        <span class="stat-label">Panales hoy</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <button id="quick-sleep-btn" class="action-btn sleep-btn">
+                    <span class="action-icon">&#x1F31B;</span>
+                    <span>Iniciar Sueno</span>
+                </button>
+                <button id="quick-feed-btn" class="action-btn feed-btn">
+                    <span class="action-icon">&#x1F37C;</span>
+                    <span>Registrar Toma</span>
+                </button>
+                <button id="quick-diaper-btn" class="action-btn diaper-btn">
+                    <span class="action-icon">&#x1F9F7;</span>
+                    <span>Cambio Panal</span>
+                </button>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="recent-activity">
+                <h3>Actividad Reciente</h3>
+                <div id="recent-list" class="activity-list">
+                    <p class="empty-state">No hay actividad registrada todavia</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Tracker Tab -->
+        <main id="tab-tracker" class="tab-content">
+            <!-- Sleep Timer -->
+            <section class="tracker-section">
+                <h2>&#x1F634; Sueno</h2>
+                <div class="sleep-timer-display">
+                    <div id="sleep-status" class="sleep-status">Despierto</div>
+                    <div id="sleep-timer" class="timer-display">00:00:00</div>
+                    <button id="toggle-sleep-btn" class="big-action-btn sleep-btn">
+                        <span id="sleep-btn-text">Iniciar Sueno</span>
+                    </button>
+                </div>
+
+                <div class="manual-entry">
+                    <h3>Registro Manual</h3>
+                    <div class="form-row">
+                        <label>Inicio:</label>
+                        <input type="datetime-local" id="manual-sleep-start">
+                    </div>
+                    <div class="form-row">
+                        <label>Fin:</label>
+                        <input type="datetime-local" id="manual-sleep-end">
+                    </div>
+                    <div class="form-row">
+                        <label>Tipo:</label>
+                        <select id="manual-sleep-type">
+                            <option value="nap">Siesta</option>
+                            <option value="night">Nocturno</option>
+                        </select>
+                    </div>
+                    <button id="save-manual-sleep" class="save-btn">Guardar Sueno</button>
+                </div>
+            </section>
+
+            <!-- Feeding Tracker -->
+            <section class="tracker-section">
+                <h2>&#x1F37C; Alimentacion</h2>
+                <div class="feed-options">
+                    <div class="form-row">
+                        <label>Tipo:</label>
+                        <select id="feed-type">
+                            <option value="breast-left">Pecho Izquierdo</option>
+                            <option value="breast-right">Pecho Derecho</option>
+                            <option value="bottle">Biberon</option>
+                            <option value="solids">Solidos</option>
+                        </select>
+                    </div>
+                    <div class="form-row" id="feed-amount-row">
+                        <label>Cantidad (ml):</label>
+                        <input type="number" id="feed-amount" placeholder="150" min="0" max="500">
+                    </div>
+                    <div class="form-row">
+                        <label>Duracion (min):</label>
+                        <input type="number" id="feed-duration" placeholder="15" min="0" max="120">
+                    </div>
+                    <div class="form-row">
+                        <label>Notas:</label>
+                        <input type="text" id="feed-notes" placeholder="Notas opcionales...">
+                    </div>
+                    <button id="save-feed" class="save-btn feed-btn">Registrar Toma</button>
+                </div>
+            </section>
+
+            <!-- Diaper Tracker -->
+            <section class="tracker-section">
+                <h2>&#x1F9F7; Panal</h2>
+                <div class="diaper-options">
+                    <div class="form-row">
+                        <label>Tipo:</label>
+                        <div class="btn-group">
+                            <button class="option-btn active" data-diaper="wet">Mojado</button>
+                            <button class="option-btn" data-diaper="dirty">Sucio</button>
+                            <button class="option-btn" data-diaper="both">Ambos</button>
+                            <button class="option-btn" data-diaper="dry">Seco</button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>Notas:</label>
+                        <input type="text" id="diaper-notes" placeholder="Notas opcionales...">
+                    </div>
+                    <button id="save-diaper" class="save-btn diaper-btn">Registrar Panal</button>
+                </div>
+            </section>
+
+            <!-- History -->
+            <section class="tracker-section">
+                <h2>&#x1F4CB; Historial del Dia</h2>
+                <div class="filter-btns">
+                    <button class="filter-btn active" data-filter="all">Todo</button>
+                    <button class="filter-btn" data-filter="sleep">Sueno</button>
+                    <button class="filter-btn" data-filter="feed">Tomas</button>
+                    <button class="filter-btn" data-filter="diaper">Panales</button>
+                </div>
+                <div id="history-list" class="activity-list">
+                    <p class="empty-state">No hay registros hoy</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Sounds Tab -->
+        <main id="tab-sounds" class="tab-content">
+            <section class="sounds-section">
+                <h2>&#x1F3B5; Sonidos para Dormir</h2>
+                <p class="sounds-subtitle">Sonidos relajantes para ayudar a tu bebe a dormir</p>
+
+                <div id="now-playing" class="now-playing hidden">
+                    <span id="now-playing-name">--</span>
+                    <div class="sound-controls">
+                        <input type="range" id="volume-slider" min="0" max="100" value="70" class="volume-slider">
+                        <button id="stop-sound" class="stop-btn">&#x23F9; Detener</button>
+                    </div>
+                </div>
+
+                <div class="sounds-grid">
+                    <button class="sound-card" data-sound="white-noise">
+                        <span class="sound-emoji">&#x1F4A8;</span>
+                        <span class="sound-name">Ruido Blanco</span>
+                    </button>
+                    <button class="sound-card" data-sound="rain">
+                        <span class="sound-emoji">&#x1F327;</span>
+                        <span class="sound-name">Lluvia</span>
+                    </button>
+                    <button class="sound-card" data-sound="ocean">
+                        <span class="sound-emoji">&#x1F30A;</span>
+                        <span class="sound-name">Oceano</span>
+                    </button>
+                    <button class="sound-card" data-sound="heartbeat">
+                        <span class="sound-emoji">&#x1F497;</span>
+                        <span class="sound-name">Latido</span>
+                    </button>
+                    <button class="sound-card" data-sound="shush">
+                        <span class="sound-emoji">&#x1F92B;</span>
+                        <span class="sound-name">Shh Shh</span>
+                    </button>
+                    <button class="sound-card" data-sound="lullaby">
+                        <span class="sound-emoji">&#x1F3B6;</span>
+                        <span class="sound-name">Nana</span>
+                    </button>
+                    <button class="sound-card" data-sound="fan">
+                        <span class="sound-emoji">&#x1F300;</span>
+                        <span class="sound-name">Ventilador</span>
+                    </button>
+                    <button class="sound-card" data-sound="birds">
+                        <span class="sound-emoji">&#x1F426;</span>
+                        <span class="sound-name">Pajaros</span>
+                    </button>
+                    <button class="sound-card" data-sound="womb">
+                        <span class="sound-emoji">&#x1FAC0;</span>
+                        <span class="sound-name">Utero</span>
+                    </button>
+                </div>
+
+                <!-- Sleep Timer for Sounds -->
+                <div class="sound-timer-section">
+                    <h3>Temporizador</h3>
+                    <div class="timer-options">
+                        <button class="timer-opt-btn" data-minutes="15">15 min</button>
+                        <button class="timer-opt-btn" data-minutes="30">30 min</button>
+                        <button class="timer-opt-btn" data-minutes="45">45 min</button>
+                        <button class="timer-opt-btn" data-minutes="60">1 hora</button>
+                        <button class="timer-opt-btn active" data-minutes="0">Continuo</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Stats Tab -->
+        <main id="tab-stats" class="tab-content">
+            <section class="stats-section">
+                <h2>&#x1F4CA; Estadisticas</h2>
+
+                <div class="stats-period">
+                    <button class="period-btn active" data-period="week">7 Dias</button>
+                    <button class="period-btn" data-period="month">30 Dias</button>
+                </div>
+
+                <!-- Sleep Stats -->
+                <div class="stats-card">
+                    <h3>&#x1F634; Resumen de Sueno</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number" id="avg-sleep">--</span>
+                            <span class="stat-desc">Promedio diario</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="avg-naps">--</span>
+                            <span class="stat-desc">Siestas promedio</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="longest-sleep">--</span>
+                            <span class="stat-desc">Sueno mas largo</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="night-wakings">--</span>
+                            <span class="stat-desc">Despertares nocturnos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sleep Chart -->
+                <div class="stats-card">
+                    <h3>Horas de Sueno por Dia</h3>
+                    <div class="chart-container">
+                        <canvas id="sleep-chart" width="360" height="200"></canvas>
+                    </div>
+                </div>
+
+                <!-- Feeding Stats -->
+                <div class="stats-card">
+                    <h3>&#x1F37C; Alimentacion</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number" id="avg-feeds">--</span>
+                            <span class="stat-desc">Tomas diarias</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="avg-feed-amount">--</span>
+                            <span class="stat-desc">ml promedio</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diaper Stats -->
+                <div class="stats-card">
+                    <h3>&#x1F9F7; Panales</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number" id="avg-diapers">--</span>
+                            <span class="stat-desc">Cambios diarios</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="diaper-breakdown">--</span>
+                            <span class="stat-desc">Mojado / Sucio</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sleep Pattern Chart -->
+                <div class="stats-card">
+                    <h3>Patron de Sueno (ultimos 7 dias)</h3>
+                    <div class="chart-container">
+                        <canvas id="pattern-chart" width="360" height="250"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Configuracion</h2>
+                    <button id="close-settings" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <h3>Perfil del Bebe</h3>
+                        <div class="form-row">
+                            <label>Nombre:</label>
+                            <input type="text" id="baby-name" placeholder="Nombre del bebe">
+                        </div>
+                        <div class="form-row">
+                            <label>Fecha de nacimiento:</label>
+                            <input type="date" id="baby-dob">
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <h3>Datos</h3>
+                        <button id="export-data" class="save-btn">Exportar Datos (JSON)</button>
+                        <button id="clear-data" class="delete-btn">Borrar Todos los Datos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feed Modal -->
+        <div id="feed-modal" class="modal hidden">
+            <div class="modal-content modal-small">
+                <div class="modal-header">
+                    <h2>Registrar Toma Rapida</h2>
+                    <button class="close-btn close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label>Tipo:</label>
+                        <select id="quick-feed-type">
+                            <option value="breast-left">Pecho Izquierdo</option>
+                            <option value="breast-right">Pecho Derecho</option>
+                            <option value="bottle">Biberon</option>
+                            <option value="solids">Solidos</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>Cantidad (ml):</label>
+                        <input type="number" id="quick-feed-amount" placeholder="150" min="0" max="500">
+                    </div>
+                    <button id="save-quick-feed" class="save-btn feed-btn">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
