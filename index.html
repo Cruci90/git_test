@@ -15,9 +15,19 @@
                 <h1>BabyDream</h1>
             </div>
             <div class="header-right">
+                <button id="btn-profiles" class="icon-btn" title="Perfiles">&#x1F465;</button>
                 <button id="btn-settings" class="icon-btn" title="Configuracion">&#x2699;</button>
             </div>
         </header>
+
+        <!-- Profile Selector Bar -->
+        <div id="profile-bar" class="profile-bar">
+            <div class="profile-selector">
+                <select id="profile-select" class="profile-select">
+                    <option value="">-- Sin perfil --</option>
+                </select>
+            </div>
+        </div>
 
         <!-- Navigation -->
         <nav class="bottom-nav">
@@ -41,6 +51,41 @@
 
         <!-- Dashboard Tab -->
         <main id="tab-dashboard" class="tab-content active">
+            <!-- Predictions Section -->
+            <section id="predictions-section" class="predictions-section">
+                <h2>&#x1F52E; Predicciones</h2>
+                <div class="predictions-grid">
+                    <div class="prediction-card next-nap-card">
+                        <div class="prediction-icon">&#x1F634;</div>
+                        <div class="prediction-info">
+                            <span class="prediction-label">Proxima siesta</span>
+                            <span class="prediction-value" id="next-nap-time">--:--</span>
+                            <span class="prediction-detail" id="next-nap-detail"></span>
+                        </div>
+                    </div>
+                    <div class="prediction-card bedtime-card">
+                        <div class="prediction-icon">&#x1F319;</div>
+                        <div class="prediction-info">
+                            <span class="prediction-label">Hora de dormir</span>
+                            <span class="prediction-value" id="bedtime-prediction">--:--</span>
+                            <span class="prediction-detail" id="bedtime-detail"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="prediction-progress" id="prediction-progress">
+                    <div class="progress-label">
+                        <span>Siestas hoy</span>
+                        <span id="naps-progress-text">0 / 0</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="naps-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="wake-window-info" id="wake-window-info">
+                        Ventana de vigilia: --
+                    </div>
+                </div>
+            </section>
+
             <section class="clock-section">
                 <h2>Reloj de Actividad - 24h</h2>
                 <div class="clock-container">
@@ -356,6 +401,39 @@
             </section>
         </main>
 
+        <!-- Profiles Modal -->
+        <div id="profiles-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>&#x1F476; Perfiles de Bebes</h2>
+                    <button class="close-btn close-modal" data-modal="profiles-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Create new profile -->
+                    <div class="setting-group">
+                        <h3>Crear Nuevo Perfil</h3>
+                        <div class="form-row">
+                            <label>Nombre del bebe:</label>
+                            <input type="text" id="new-profile-name" placeholder="Nombre">
+                        </div>
+                        <div class="form-row">
+                            <label>Fecha de nacimiento:</label>
+                            <input type="date" id="new-profile-dob">
+                        </div>
+                        <button id="create-profile-btn" class="save-btn">Crear Perfil</button>
+                    </div>
+
+                    <!-- Existing profiles -->
+                    <div class="setting-group">
+                        <h3>Perfiles Existentes</h3>
+                        <div id="profiles-list" class="profiles-list">
+                            <p class="empty-state">No hay perfiles creados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Settings Modal -->
         <div id="settings-modal" class="modal hidden">
             <div class="modal-content">
@@ -375,6 +453,37 @@
                             <input type="date" id="baby-dob">
                         </div>
                     </div>
+
+                    <!-- Nap Configuration -->
+                    <div class="setting-group">
+                        <h3>&#x1F52E; Configuracion de Siestas</h3>
+                        <div class="form-row">
+                            <label>Numero de siestas por dia:</label>
+                            <select id="naps-per-day">
+                                <option value="1">1 siesta</option>
+                                <option value="2" selected>2 siestas</option>
+                                <option value="3">3 siestas</option>
+                                <option value="4">4 siestas</option>
+                                <option value="5">5 siestas</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>Hora de despertar habitual:</label>
+                            <input type="time" id="wake-time" value="07:00">
+                        </div>
+                        <div class="form-row">
+                            <label>Hora de dormir objetivo:</label>
+                            <input type="time" id="target-bedtime" value="20:00">
+                        </div>
+                        <div class="form-row">
+                            <label>Duracion media de siesta (minutos):</label>
+                            <input type="number" id="avg-nap-duration" value="90" min="15" max="180" step="5">
+                        </div>
+                        <div class="nap-config-preview" id="nap-config-preview">
+                            <!-- Preview of calculated wake windows -->
+                        </div>
+                    </div>
+
                     <div class="setting-group">
                         <h3>Datos</h3>
                         <button id="export-data" class="save-btn">Exportar Datos (JSON)</button>
@@ -389,7 +498,7 @@
             <div class="modal-content modal-small">
                 <div class="modal-header">
                     <h2>Registrar Toma Rapida</h2>
-                    <button class="close-btn close-modal">&times;</button>
+                    <button class="close-btn close-modal" data-modal="feed-modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-row">

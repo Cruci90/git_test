@@ -79,6 +79,11 @@ body {
     letter-spacing: -0.5px;
 }
 
+.header-right {
+    display: flex;
+    gap: 8px;
+}
+
 .icon-btn {
     background: rgba(255, 255, 255, 0.2);
     border: none;
@@ -96,6 +101,340 @@ body {
 
 .icon-btn:hover {
     background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   Profile Selector Bar
+   ============================================ */
+.profile-bar {
+    background: var(--card-bg);
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 60px;
+    z-index: 99;
+}
+
+.profile-selector {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.profile-select {
+    width: 100%;
+    padding: 8px 14px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.profile-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+/* ============================================
+   Predictions Section
+   ============================================ */
+.predictions-section {
+    margin-bottom: 24px;
+}
+
+.predictions-section h2 {
+    font-size: 1rem;
+    color: var(--text-light);
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.predictions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.prediction-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.prediction-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.next-nap-card::before {
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+}
+
+.bedtime-card::before {
+    background: linear-gradient(90deg, #2D2B55, #4A42DB);
+}
+
+.prediction-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+
+.prediction-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.prediction-label {
+    font-size: 0.7rem;
+    color: var(--text-light);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.prediction-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+}
+
+.prediction-detail {
+    font-size: 0.72rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.prediction-progress {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.progress-bar {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.wake-window-info {
+    font-size: 0.72rem;
+    color: var(--text-light);
+    text-align: center;
+}
+
+/* ============================================
+   Profiles List (Modal)
+   ============================================ */
+.profiles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.profile-item.active {
+    border-color: var(--primary);
+    background: var(--sleep-light);
+}
+
+.profile-item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-item-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.profile-item-age {
+    font-size: 0.75rem;
+    color: var(--text-light);
+}
+
+.profile-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-activate-btn {
+    padding: 6px 14px;
+    border: 2px solid var(--primary);
+    border-radius: 50px;
+    background: transparent;
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.2s;
+}
+
+.profile-activate-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.profile-active-badge {
+    padding: 6px 14px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.profile-delete-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: none;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.profile-delete-btn:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: var(--danger);
+}
+
+/* ============================================
+   Nap Config Preview
+   ============================================ */
+.nap-config-preview {
+    margin-top: 16px;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+}
+
+.preview-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.preview-warning {
+    color: var(--danger);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 8px;
+}
+
+.preview-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.preview-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    padding: 4px 0;
+}
+
+.preview-time {
+    font-weight: 600;
+    color: var(--text);
+    width: 40px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.preview-bar {
+    height: 6px;
+    border-radius: 3px;
+    min-width: 10px;
+}
+
+.awake-bar {
+    background: #FFD93D;
+}
+
+.nap-bar {
+    background: var(--primary);
+}
+
+.preview-label {
+    color: var(--text-light);
+    white-space: nowrap;
+}
+
+.preview-awake .preview-label {
+    color: #B8960F;
+}
+
+.preview-nap .preview-label {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.preview-bed {
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+.preview-bed .preview-label {
+    font-weight: 600;
+    color: var(--text);
 }
 
 /* ============================================
@@ -948,7 +1287,7 @@ body {
 
     .bottom-nav {
         position: sticky;
-        top: 60px;
+        top: 108px;
         border-top: none;
         border-bottom: 1px solid var(--border);
         box-shadow: var(--shadow);
