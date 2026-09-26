@@ -3082,7 +3082,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       title: 'Exportar copia', footer: false,
       body: `<p class="muted small">Guarda este texto en un lugar seguro o compártelo con tu pareja para importarlo en otro dispositivo.</p>
         <textarea id="f-export" class="code" rows="8" readonly>${U.esc(json)}</textarea>
-        <div class="btn-row"><button type="button" class="btn primary" data-act="copy-export">${icon('copy')}Copiar</button><button type="button" class="btn soft" data-act="download-export">${icon('download')}Descargar archivo</button></div>`
+        <div class="btn-row"><button type="button" class="btn primary" data-act="copy-export">${icon('copy')}Copiar</button>${window.self === window.top ? '' : '<!-- dentro de un marco las descargas están bloqueadas -->'}<button type="button" class="btn soft" data-act="download-export" ${window.self === window.top ? '' : 'hidden'}>${icon('download')}Descargar archivo</button></div>`
     });
   };
   N.actions['copy-export'] = () => { const ta = document.getElementById('f-export'); try { navigator.clipboard.writeText(ta.value).then(() => UI.toast('Copia copiada'), () => { ta.select(); UI.toast('Texto seleccionado: cópialo con Ctrl+C'); }); } catch (e) { ta.select(); } };
