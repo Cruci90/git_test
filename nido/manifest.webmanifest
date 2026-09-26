@@ -1,0 +1,10 @@
+{
+  "name": "Nido · Cuaderno del bebé",
+  "short_name": "Nido",
+  "lang": "es",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F1F5F3",
+  "theme_color": "#F1F5F3",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
