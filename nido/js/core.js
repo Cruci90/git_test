@@ -142,7 +142,31 @@
   N.S = S;
 
   S.baby = () => Store.state.babies.find((b) => b.id === Store.state.activeBabyId) || null;
-  S.ageMonths = (at) => { const b = S.baby(); return b ? U.age(b.birth, at).decimal : 0; };
+
+  /* ---- Edad corregida ----
+     En prematuros (< 37 semanas) se descuenta lo que faltó hasta la semana 40
+     para valorar crecimiento, desarrollo y sueño, hasta los 2 años. Las
+     vacunas y revisiones siguen la edad cronológica. */
+  S.prematureDays = (b = S.baby()) => {
+    if (!b || !b.gestWeeks) return 0;
+    const ga = Number(b.gestWeeks) * 7 + (Number(b.gestDays) || 0);
+    return ga > 0 && ga < 37 * 7 ? 40 * 7 - ga : 0;
+  };
+  S.chronoMonths = (at = Date.now()) => { const b = S.baby(); return b ? U.age(b.birth, at).decimal : 0; };
+  S.ageMonths = (at = Date.now()) => {
+    const b = S.baby(); if (!b) return 0;
+    const chrono = U.age(b.birth, at).decimal, pd = S.prematureDays(b);
+    return !pd || chrono >= 24 ? chrono : Math.max(0, chrono - pd / 30.4375);
+  };
+  S.dueDate = (b = S.baby()) => U.dayKey(U.addDays(U.parseDay(b.birth), S.prematureDays(b)));
+  /* Texto de edad corregida, o '' si no aplica. */
+  S.correctedText = (at = Date.now()) => {
+    const b = S.baby(); const pd = S.prematureDays(b);
+    if (!pd || U.age(b.birth, at).months >= 24) return '';
+    const due = U.parseDay(S.dueDate(b));
+    if (U.dayStart(at) < due) { const w = Math.ceil((due - U.dayStart(at)) / (7 * DAY)); return `${w} semana${w > 1 ? 's' : ''} antes de su fecha prevista`; }
+    return U.ageText(S.dueDate(b), at);
+  };
 
   /* ---- Sueño ---- */
   S.sleeps = () => Store.list('sleeps').filter((s) => s.end).sort((a, b) => a.start - b.start);
@@ -177,44 +201,103 @@
   S.activeSleep = () => { const t = Store.state.timers.sleep; return t && t.babyId === Store.state.activeBabyId ? t : null; };
   S.activeBreast = () => { const t = Store.state.timers.breast; return t && t.babyId === Store.state.activeBabyId ? t : null; };
 
-  /* Predicción de próxima siesta y hora de dormir a partir de la última
-     vigilia y de las ventanas típicas para la edad, ajustadas con la media
-     real de los últimos 7 días. */
-  S.predict = () => {
-    const now = Date.now();
-    const norm = S.sleepNorm();
-    const sleeps = S.sleeps();
-    const last = sleeps[sleeps.length - 1];
-    if (!last || S.activeSleep()) return null;
-    // Ventanas reales recientes (vigilia entre sueños, solo de día)
-    const recent = sleeps.filter((s) => s.start > now - 7 * DAY);
-    const gaps = [];
-    for (let i = 1; i < recent.length; i++) {
-      const g = (recent[i].start - recent[i - 1].end) / MIN;
-      const h = new Date(recent[i].start).getHours();
-      if (g > 30 && g < 360 && h >= 7 && h < 21) gaps.push(g);
+  /* ---- Ritmo aprendido y plan del día ----
+     Para cada uno de los últimos 7 días completos se reconstruye su forma:
+     despertar de la mañana, siestas y hora de acostarse. De ahí salen el
+     número habitual de siestas y, por posición, la ventana de vigilia antes
+     de cada siesta y la duración de cada una. Se mezcla 70 % real y 30 %
+     tabla por edad, limitado a un rango saludable. */
+  const hourOf = (t) => { const d = new Date(t); return d.getHours() + d.getMinutes() / 60; };
+  S.dayShape = (key) => {
+    const d0 = U.parseDay(key), all = S.sleeps();
+    const morning = all.filter((s) => s.type === 'night' && s.end >= d0 + 4 * HOUR && s.end <= d0 + 11 * HOUR).pop();
+    const naps = all.filter((s) => s.type === 'nap' && s.start >= d0 && s.start < d0 + DAY);
+    const bed = all.find((s) => s.type === 'night' && s.start >= d0 + 16 * HOUR && s.start < d0 + DAY + 3 * HOUR);
+    return { key, wake: morning ? morning.end : null, naps, bed: bed ? bed.start : null };
+  };
+
+  S.learnRhythm = (now = Date.now()) => {
+    const norm = S.sleepNorm(S.ageMonths(now));
+    const days = [];
+    for (let i = 1; i <= 7; i++) {
+      const sh = S.dayShape(U.dayKey(U.addDays(now, -i)));
+      if (sh.wake && sh.bed && sh.naps.length) days.push(sh);
     }
-    const typical = (norm.ww[0] + norm.ww[1]) / 2;
-    const learned = gaps.length >= 5 ? U.avg(gaps) : typical;
-    const ww = Math.round(U.clamp(learned * 0.6 + typical * 0.4, norm.ww[0], norm.ww[1] + 20));
-    const todayKey = U.today();
-    const napsToday = S.sleeps().filter((s) => s.type === 'nap' && U.dayKey(s.start) === todayKey).length;
-    const expectedNaps = Math.round((norm.naps[0] + norm.naps[1]) / 2);
-    // La última ventana del día suele ser la más larga (+20 %)
-    const bedtimeWW = Math.round(ww * 1.2);
-    const nextNap = last.end + ww * MIN;
-    const napsLeft = Math.max(0, expectedNaps - napsToday);
-    const bedtime = napsLeft > 0
-      ? nextNap + (napsLeft * 55 + (napsLeft - 1) * ww + bedtimeWW) * MIN
-      : last.end + bedtimeWW * MIN;
-    const bed = new Date(bedtime); const bh = bed.getHours() + bed.getMinutes() / 60;
-    const bedClamped = bh < 18.5 ? U.dayStart(bedtime) + 18.5 * HOUR : bh > 21 ? U.dayStart(bedtime) + 21 * HOUR : bedtime;
+    const counts = days.map((d) => d.naps.length).sort((a, b) => a - b);
+    const expected = counts.length >= 3 ? counts[Math.floor(counts.length / 2)] : Math.round((norm.naps[0] + norm.naps[1]) / 2);
+    const same = days.filter((d) => d.naps.length === expected);
+    const lo = norm.ww[0] * 0.8, hi = norm.ww[1] * 1.25;
+    const windows = [];
+    for (let i = 0; i <= expected; i++) {
+      // La vigilia se alarga a lo largo del día: la primera es la más corta y la de antes de dormir, la más larga.
+      const typical = norm.ww[0] + (norm.ww[1] - norm.ww[0]) * (expected ? i / expected : 0.5);
+      const samples = same.map((d) => ((i === expected ? d.bed : d.naps[i].start) - (i === 0 ? d.wake : d.naps[i - 1].end)) / MIN).filter((g) => g > 20 && g < 420);
+      const learned = samples.length >= 2 ? U.avg(samples) : null;
+      windows.push(Math.round(U.clamp(learned != null ? learned * 0.7 + typical * 0.3 : typical, lo, hi)));
+    }
+    const fallback = expected <= 2 ? [80, 90] : [55, 85, 40, 30, 30];
+    const durations = [];
+    for (let i = 0; i < expected; i++) {
+      const s = same.map((d) => (d.naps[i].end - d.naps[i].start) / MIN);
+      durations.push(Math.round(s.length >= 2 ? U.avg(s) : fallback[i] || 35));
+    }
+    const wakes = days.map((d) => hourOf(d.wake));
+    return { expected, windows, durations, norm, days: days.length, learned: same.length >= 3, wakeHour: wakes.length ? U.avg(wakes) : 7 };
+  };
+
+  S.dayPlan = (now = Date.now()) => {
+    const r = S.learnRhythm(now);
+    const d0 = U.dayStart(now), today = S.dayShape(U.dayKey(now));
+    const active = S.activeSleep();
+    const activeNap = active && hourOf(active.start) >= 6.5 && hourOf(active.start) < 18.5;
+    const items = [];
+    // Sin despertar registrado (aún duerme o no se anotó la noche): se usa su hora habitual.
+    const realWake = today.wake || d0 + r.wakeHour * HOUR;
+    items.push({ kind: 'wake', t: realWake, state: today.wake ? 'done' : 'planned' });
+    let cursor = realWake, i = 0;
+    today.naps.forEach((s) => { items.push({ kind: 'nap', idx: i, start: s.start, end: s.end, state: 'done' }); cursor = s.end; i++; });
+    if (activeNap) {
+      const end = Math.max(active.start + (r.durations[i] || 40) * MIN, now + 5 * MIN);
+      items.push({ kind: 'nap', idx: i, start: active.start, end, state: 'now' }); cursor = end; i++;
+    }
+    for (; i < r.expected; i++) {
+      let start = cursor + r.windows[i] * MIN; const overdue = start < now;
+      if (overdue) start = now;
+      if (hourOf(start) > 18 || U.dayKey(start) !== U.dayKey(now)) break;
+      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[i] * MIN, state: overdue ? 'overdue' : 'planned', window: r.windows[i] });
+      cursor = start + r.durations[i] * MIN;
+    }
+    const bedWindow = r.windows[r.expected];
+    let bed = cursor + bedWindow * MIN;
+    // Si la última siesta empujaría la noche más allá de las 21:00, se acorta a una siesta corta.
+    const lastPlanned = items[items.length - 1];
+    if (hourOf(bed) > 21 && lastPlanned.kind === 'nap' && lastPlanned.state === 'planned' && lastPlanned.end - lastPlanned.start > 30 * MIN) {
+      lastPlanned.end = lastPlanned.start + 30 * MIN; lastPlanned.short = true; bed = lastPlanned.end + bedWindow * MIN;
+    }
+    let bedState = 'planned';
+    if (today.bed) { bed = today.bed; bedState = 'done'; }
+    else if (active && !activeNap) { bed = active.start; bedState = 'done'; }
+    else {
+      const h = hourOf(bed);
+      if (h < 18.5) { bed = d0 + 18.5 * HOUR; bedState = 'adjusted'; }
+      else if (h > 21 || U.dayKey(bed) !== U.dayKey(now)) { bed = d0 + 21 * HOUR; bedState = 'adjusted'; }
+    }
+    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow });
+    const next = items.find((x) => x.kind === 'nap' && (x.state === 'planned' || x.state === 'overdue'));
+    return { items, rhythm: r, next, bed, napsDone: today.naps.length };
+  };
+
+  /* Estado de vigilia actual con la próxima siesta y la hora de dormir del plan. */
+  S.predict = (now = Date.now()) => {
+    const sleeps = S.sleeps(); const last = sleeps[sleeps.length - 1];
+    if (!last || S.activeSleep()) return null;
+    const plan = S.dayPlan(now), r = plan.rhythm;
+    const ww = plan.next ? plan.next.window : r.windows[r.expected];
     const awakeMin = (now - last.end) / MIN;
-    const lastWasNight = last.type === 'night' && new Date(last.end).getHours() < 12;
     return {
-      awakeSince: last.end, awakeMin, ww, windowRange: norm.ww,
-      nextNap: napsLeft > 0 ? nextNap : null, bedtime: bedClamped, napsToday, expectedNaps,
-      progress: U.clamp(awakeMin / ww, 0, 1.4), lastWasNight, learned: gaps.length >= 5
+      awakeSince: last.end, awakeMin, ww, windowRange: r.norm.ww,
+      nextNap: plan.next ? plan.next.start : null, bedtime: plan.bed, napsToday: plan.napsDone, expectedNaps: r.expected,
+      progress: U.clamp(awakeMin / ww, 0, 1.4), learned: r.learned, plan
     };
   };
 
@@ -283,7 +366,7 @@
     const [L, M, Sg] = S.lms(metric, sex, months);
     return Math.abs(L) < 1e-6 ? M * Math.exp(Sg * z) : M * Math.pow(1 + L * Sg * z, 1 / L);
   };
-  S.measureAge = (m) => { const b = S.baby(); return U.age(b.birth, U.parseDay(m.date)).decimal; };
+  S.measureAge = (m) => S.ageMonths(U.parseDay(m.date));
 
   /* ---- Salud y agenda ---- */
   S.appointments = () => Store.list('appointments').sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));

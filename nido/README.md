@@ -7,6 +7,7 @@ Funciona sin servidor, sin cuenta y sin dependencias. Los datos se quedan en el 
 ## Cómo abrirla
 
 - Abre `index.html` en el navegador (doble clic vale), o sírvela con cualquier servidor estático: `npx serve nido`.
+- Servida por http(s) se puede **instalar** en el móvil (Añadir a pantalla de inicio) y funciona **sin conexión** gracias a `sw.js`. Al publicar una versión nueva, sube `VERSION` en `sw.js`.
 - Para tener un único archivo portable: `node build.mjs` genera `dist/nido.html` con todo en línea.
 - La primera vez se carga una demo: Lucía, 6 meses y medio, tres semanas de registros y dos semanas de BLW. Desde **Ajustes** puedes borrar la demo y añadir a tu bebé.
 
@@ -15,16 +16,18 @@ Funciona sin servidor, sin cuenta y sin dependencias. Los datos se quedan en el 
 | Sección | Qué hace |
 |---|---|
 | **Hoy** | Edad exacta, estado en vivo (durmiendo, dando el pecho o despierta con la ventana de vigilia), predicción de próxima siesta y hora de dormir, resumen del día, reloj de 24 h, pendientes (citas, vacunas, alérgenos que mantener, vitamina D, fiebre) e idea de alimento para hoy. |
-| **Sueño** | Cronómetro, registro manual, horas por día frente al rango recomendado, patrón de 14 días con tomas superpuestas, medias (despertares, tramo más largo, hora de acostarse y despertar) y guía por edad. |
+| **Sueño** | Cronómetro, **plan del día** (siestas hechas y previstas con la hora de dormir, aprendido de sus últimos 7 días), **sonidos para dormir** sintetizados (ruido blanco, rosa y marrón, shhh, útero, latido, lluvia, olas y nana de Brahms) con temporizador y apagado suave, registro manual, horas por día frente al rango recomendado, patrón de 14 días con tomas superpuestas, medias (despertares, tramo más largo, hora de acostarse y despertar) y guía por edad. |
 | **Tomas** | Cronómetro de pecho con cambio de lado y pausa, sugerencia del lado que toca, biberón (materna, fórmula, mixta), extracciones y pañales con color de la caca y avisos. |
 | **BLW** | Reto de 100 alimentos, catálogo de 71 alimentos con cómo ofrecerlos a los 6 y 9 meses, marcas de alérgeno y riesgo de atragantamiento, seguimiento de los 9 alérgenos (3 exposiciones y mantenimiento), arcoíris semanal, registro de comidas con cantidad, gusto, reacciones, arcadas y guía de seguridad. |
 | **Crecimiento** | Peso, longitud y perímetro craneal con percentil calculado por el método LMS de la OMS (0‑24 meses), curva con bandas P3–P97 y P15–P85, ganancia de peso en g/día y tabla histórica. |
 | **Salud** | Citas con preguntas para la consulta y lo que dijo el pediatra, sugerencia de la próxima revisión del programa de salud infantil, calendario vacunal (España 2025) con fecha y lote, medicación, temperatura y ficha médica con teléfonos de urgencia. |
 | **Calendario** | Vista mensual con citas, vacunas previstas, hitos, eventos y el "cumplemés". |
 | **Hitos y dientes** | 23 hitos del desarrollo con su rango habitual frente a la edad actual, y odontograma de los 20 dientes de leche (notación FDI). |
-| **Diario** | Recuerdos con estado de ánimo y foto (se reduce a 1000 px para que quepa en el almacenamiento local). |
+| **Diario** | Recuerdos con estado de ánimo y foto. Las fotos se reducen a 1000 px y se guardan en IndexedDB, sin el límite de ~5 MB de localStorage. |
 | **Informe** | Resumen de crecimiento, sueño, tomas, BLW, vacunas, fiebre, desarrollo y preguntas pendientes, que se copia como texto. |
-| **Ajustes** | Tema claro/noche/automático, varios bebés, quién registra (mamá, papá, abuela…), exportar e importar copia de seguridad. |
+| **Ajustes** | Tema claro/noche/automático, varios bebés con semanas de gestación, quién registra (mamá, papá, abuela…), copia de seguridad con fotos, espacio usado e instalación en el móvil. |
+
+**Prematuros:** si el bebé nació antes de la semana 37, Nido usa su **edad corregida** (descontando lo que faltó hasta la semana 40) para percentiles, curvas, hitos y sueño hasta los 2 años. Vacunas y revisiones siguen la edad cronológica.
 
 ## Arquitectura
 
@@ -37,6 +40,8 @@ js/data.js          Datos de referencia estáticos: tablas LMS de la OMS, catál
                     alérgenos, vacunas, revisiones, hitos, dientes, sueño por edad
 js/core.js          Utilidades (fechas, edad, formato), Store (localStorage + suscripción),
                     selectores de dominio (S.*) e iconos SVG
+js/media.js         Fotos en IndexedDB: guardar, cargar, migrar, limpiar y exportar
+js/sounds.js        Sonidos para dormir sintetizados con Web Audio y temporizador
 js/charts.js        Gráficos SVG propios: barras de sueño, patrón 24 h, curva OMS,
                     anillo de progreso, mini barras y reloj del día
 js/ui.js            Enrutador por hash, navegación, hoja inferior, campos de formulario,
@@ -45,7 +50,9 @@ js/actions.js       Formularios y acciones (data-act) de cada tipo de registro
 js/views-*.js       Vistas: daily (Hoy, Sueño, Tomas), care (BLW, Crecimiento, Salud),
                     more (Calendario, Hitos, Diario, Informe, Ajustes, Bienvenida)
 js/demo.js          Generador determinista de datos de ejemplo relativos a hoy
-js/app.js           Arranque y delegación de eventos
+js/app.js           Arranque, delegación de eventos, instalación y service worker
+sw.js               Caché para uso sin conexión
+tests/              Tests de los cálculos (node --test, sin dependencias)
 ```
 
 Decisiones principales:
@@ -53,8 +60,17 @@ Decisiones principales:
 - **Un único estado serializable.** Colecciones planas (`sleeps`, `feeds`, `meals`…) donde cada registro lleva `babyId`. Así varios bebés comparten el mismo esquema y exportar es un `JSON.stringify`.
 - **Lo derivado no se guarda.** El estado de cada alimento, los alérgenos, los percentiles, las predicciones de sueño y el calendario vacunal se calculan desde los registros. No hay datos duplicados que se desincronicen.
 - **Render declarativo simple.** Cada vista es una función que devuelve HTML; cualquier cambio en el Store vuelve a pintar la vista actual. Los eventos se gestionan por delegación con `data-act`.
-- **Predicción de siestas.** Parte de la ventana de vigilia típica para la edad y la ajusta con la media real de los últimos 7 días (60 % real, 40 % tabla), limitada al rango saludable.
+- **Plan de siestas.** Reconstruye cada uno de los últimos 7 días (despertar, siestas y hora de acostarse) y aprende, por posición, la ventana de vigilia antes de cada siesta, la de antes de dormir y la duración de cada siesta. Mezcla 70 % real y 30 % tabla por edad, limitado a un rango saludable, y replanifica el resto del día con cada registro. La hora de dormir se mantiene entre 18:30 y 21:00.
 - **Percentiles.** Método LMS de la OMS con interpolación mensual: `z = ((X/M)^L − 1) / (L·S)`.
+
+## Tests
+
+```
+cd nido
+npm test
+```
+
+Cubren la edad en meses de calendario, la edad corregida, los percentiles OMS (contrastados con valores publicados de la tabla de puntuaciones z), el reparto del sueño entre días, el plan de siestas, el estado de alimentos y alérgenos y la coherencia de la demo.
 
 ## Aviso
 

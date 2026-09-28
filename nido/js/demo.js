@@ -33,7 +33,7 @@
     const st = {
       version: 1, activeBabyId: babyId,
       settings: { theme: 'auto', caregiver: 'Mamá' },
-      babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
+      babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', gestWeeks: 39, gestDays: 4, birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
       milestones: {}, teeth: {}, timers: {},
       sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: []
     };
@@ -57,6 +57,7 @@
       let cur = wake;
       naps.forEach(([ww, dur, dj], i) => {
         const s = cur + ww * MIN + jit(15), e = s + dur * MIN + jit(dj);
+        if (s <= now && e > now) st.timers.sleep = { babyId, start: s }; // siesta en curso
         if (e < now) add('sleeps', { start: s, end: e, type: 'nap', place: i === 2 && r() < 0.5 ? 'Carrito' : pick(['Cuna', 'Cuna', 'Brazos', 'Cuna']), quality: pick([2, 3, 3]) });
         breast(s - 10 * MIN);
         cur = e;
@@ -73,6 +74,7 @@
       for (let i = 0; i < pts.length - 1; i++) {
         const s = i === 0 ? pts[0] : pts[i] + (12 + r() * 18) * MIN;
         const e = pts[i + 1];
+        if (s <= now && e > now) st.timers.sleep = { babyId, start: s }; // noche en curso
         if (e < now) add('sleeps', { start: s, end: e, type: 'night', place: pick(['Cuna', 'Cuna', 'Colecho']), quality: 3 });
         if (i > 0) breast(pts[i] + 2 * MIN, true);
       }

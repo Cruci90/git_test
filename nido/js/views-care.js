@@ -126,7 +126,7 @@
         trend = metric === 'weight' ? `+${Math.round((diff * 1000) / Math.max(1, days))} g/día desde el ${U.date(prev.date)} (${U.num(diff * 1000, 0)} g en ${Math.round(days)} días)` : `${diff >= 0 ? '+' : ''}${U.num(diff, 1)} cm desde el ${U.date(prev.date)}`;
       }
       const rows = S.measures().slice().reverse();
-      return UI.head('Crecimiento', `Curvas de la OMS para ${b.sex === 'm' ? 'niños' : 'niñas'} de 0 a 2 años`, `<button type="button" class="btn primary" data-act="form-measure">${icon('plus')}Nueva medida</button>`) + `
+      return UI.head('Crecimiento', `Curvas de la OMS para ${b.sex === 'm' ? 'niños' : 'niñas'} de 0 a 2 años${S.prematureDays() ? ' · por edad corregida' : ''}`, `<button type="button" class="btn primary" data-act="form-measure">${icon('plus')}Nueva medida</button>`) + `
       <div class="kpis three">${summary}</div>
       ${W.card(`${M.label} (${M.unit})`, `<div class="chart-top">${UI.seg('growthMetric', [['weight', 'Peso'], ['length', 'Longitud'], ['head', 'P. craneal']], metric)}
         <ul class="legend"><li><i class="lg-dot"></i>${U.esc(b.name)}</li><li><i class="lg-p50"></i>Mediana (P50)</li><li><i class="lg-pin"></i>P15–P85</li><li><i class="lg-pout"></i>P3–P97</li></ul></div>
@@ -163,7 +163,7 @@
     },
     citas() {
       const b = S.baby(); const up = S.upcoming(); const past = S.appointments().filter((a) => a.date < U.today() || a.done).reverse();
-      const ageNow = S.ageMonths();
+      const ageNow = S.chronoMonths(); // revisiones por edad cronológica
       const nextCheck = N.CHECKUPS.find((c) => c.m > ageNow);
       const scheduled = nextCheck && S.appointments().some((a) => a.title.toLowerCase().includes(nextCheck.name.toLowerCase().replace('revisión ', '')));
       const suggestDate = nextCheck && (() => { const d = new Date(U.parseDay(b.birth)); d.setMonth(d.getMonth() + Math.floor(nextCheck.m)); return U.dayKey(d.getTime()); })();
@@ -199,6 +199,7 @@
       const row = (k, v) => `<div><dt>${k}</dt><dd>${v ? U.esc(v) : '<span class="muted">—</span>'}</dd></div>`;
       return `<div class="grid-2">${W.card('Datos de ' + U.esc(b.name), `<dl class="facts">
           ${row('Nacimiento', `${U.dateLong(b.birth)} de ${new Date(U.parseDay(b.birth)).getFullYear()}${b.birthTime ? ', ' + b.birthTime : ''}`)}
+          ${row('Gestación', b.gestWeeks ? `${b.gestWeeks}+${b.gestDays || 0} semanas${S.prematureDays(b) ? ` · prematuro, fecha prevista ${U.date(S.dueDate(b), true)}` : ''}` : '')}
           ${row('Al nacer', [b.birthWeight && U.num(b.birthWeight, 2) + ' kg', b.birthLength && U.num(b.birthLength, 1) + ' cm', b.birthHead && 'PC ' + U.num(b.birthHead, 1) + ' cm'].filter(Boolean).join(' · '))}
           ${row('Grupo sanguíneo', b.blood)}${row('Alergias conocidas', b.allergies || 'Ninguna conocida')}
           ${row('Pediatra', b.pediatrician)}${row('Centro de salud', b.center)}${row('Tarjeta sanitaria', b.healthCard)}${row('Notas', b.notes)}</dl>`)}

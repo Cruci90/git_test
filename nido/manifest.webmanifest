@@ -6,5 +6,45 @@
   "display": "standalone",
   "background_color": "#F1F5F3",
   "theme_color": "#F1F5F3",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "id": "./",
+  "scope": "./",
+  "description": "Cuaderno del bebé: sueño, tomas, BLW, crecimiento, salud y diario.",
+  "orientation": "portrait",
+  "shortcuts": [
+    {
+      "name": "Registrar",
+      "url": "./index.html#hoy"
+    },
+    {
+      "name": "Sueño",
+      "url": "./index.html#sueno"
+    },
+    {
+      "name": "BLW",
+      "url": "./index.html#blw"
+    }
+  ]
 }

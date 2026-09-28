@@ -226,7 +226,7 @@
       onMount: (form) => {
         const prev = form.querySelector('#pc-preview');
         const upd = () => {
-          const d = UI.formData(form); const age = U.age(b.birth, U.parseDay(d.date || U.today())).decimal;
+          const d = UI.formData(form); const age = S.ageMonths(U.parseDay(d.date || U.today()));
           prev.innerHTML = ['weight', 'length', 'head'].map((k) => {
             const v = parseFloat(d[k]); if (!v) return '';
             const p = S.percentile(k, b.sex, age, v);
@@ -345,26 +345,36 @@
   });
   F.diary = (rec) => {
     const r = rec || { date: U.today(), mood: 'feliz', text: '', photo: null };
-    let photo = r.photo;
+    // Foto nueva (dataURL) o la que ya tenía: en IndexedDB (photoId) o en línea (photo).
+    let photo = r.photo || null, photoId = r.photoId || null;
+    const shown = photo || (photoId && N.Media.src(photoId));
     UI.sheet({
       title: rec ? 'Editar recuerdo' : 'Nuevo recuerdo',
       body: f.date('date', 'Día', r.date) + f.chips('mood', 'Cómo estaba', N.MOODS.map((m) => [m.id, `${m.emoji} ${m.name}`]), r.mood) +
         f.area('text', 'Qué pasó', r.text, 'Una primera vez, una frase, algo que no quieres olvidar…') +
-        `<div class="fld full"><span>Foto</span><label class="photo-drop" id="photo-drop">${photo ? `<img src="${photo}" alt="">` : `${icon('camera')}<span>Añadir foto</span>`}<input type="file" id="f-photo" accept="image/*" hidden></label></div>`,
+        `<div class="fld full"><span>Foto</span><label class="photo-drop" id="photo-drop">${photoId && !shown ? `<img data-photo="${photoId}" alt="">` : shown ? `<img src="${shown}" alt="">` : `${icon('camera')}<span>Añadir foto</span>`}<input type="file" id="f-photo" accept="image/*" hidden></label></div>`,
       onMount: (form) => {
+        N.Media.hydrate(form);
         form.addEventListener('change', async (e) => {
           if (e.target.id !== 'f-photo') return;
           const file = e.target.files[0]; if (!file) return;
-          try { photo = await shrink(file); form.querySelector('#photo-drop').innerHTML = `<img src="${photo}" alt=""><input type="file" id="f-photo" accept="image/*" hidden>`; }
+          try { photo = await shrink(file); photoId = null; form.querySelector('#photo-drop').innerHTML = `<img src="${photo}" alt=""><input type="file" id="f-photo" accept="image/*" hidden>`; }
           catch (err) { UI.toast('No se pudo leer la imagen'); }
         });
       },
       onDelete: rec && (() => { UI.closeSheet(); UI.removeWithUndo('diary', rec.id, 'Recuerdo eliminado'); }),
       onSubmit: (x) => {
-        if (!x.text.trim() && !photo) { UI.toast('Escribe algo o añade una foto'); return false; }
-        const data = { date: x.date, mood: x.mood, text: x.text.trim(), photo };
-        rec ? Store.update('diary', rec.id, data) : Store.add('diary', data);
-        UI.toast(Store.persistent ? 'Recuerdo guardado' : 'Guardado en esta sesión (el navegador no permite almacenamiento)');
+        if (!x.text.trim() && !photo && !photoId) { UI.toast('Escribe algo o añade una foto'); return false; }
+        const save = (media) => {
+          const data = { date: x.date, mood: x.mood, text: x.text.trim(), photoId: media.photoId || null, photo: media.photo || null };
+          rec ? Store.update('diary', rec.id, data) : Store.add('diary', data);
+          UI.toast(Store.persistent ? 'Recuerdo guardado' : 'Guardado en esta sesión (el navegador no permite almacenamiento)');
+        };
+        if (photo && !r.photoId) {
+          // Foto nueva: a IndexedDB; si no se puede, se queda en línea.
+          N.Media.put(photo).then((id) => save({ photoId: id }), () => save({ photo }));
+        } else if (photo && r.photoId) N.Media.put(photo, r.photoId).then(() => save({ photoId: r.photoId }), () => save({ photo }));
+        else save({ photoId, photo: null });
       }
     });
   };
@@ -394,6 +404,8 @@
       title: rec ? `Perfil de ${U.esc(rec.name)}` : 'Añadir bebé',
       body: f.text('name', 'Nombre', r.name, 'required autocomplete="off"') +
         f.row(f.chips('sex', 'Sexo (para las curvas OMS)', [['f', 'Niña'], ['m', 'Niño']], r.sex), f.date('birth', 'Fecha de nacimiento', r.birth)) +
+        f.row(f.num('gestWeeks', 'Semanas de gestación', r.gestWeeks, 'min="22" max="43" placeholder="40"', 'sem'), f.num('gestDays', 'Días', r.gestDays, 'min="0" max="6" placeholder="0"', 'd')) +
+        '<p class="hint">Si nació antes de la semana 37, Nido usará su edad corregida para crecimiento, hitos y sueño hasta los 2 años.</p>' +
         f.row(f.num('birthWeight', 'Peso al nacer', r.birthWeight, 'step="0.01"', 'kg'), f.num('birthLength', 'Longitud', r.birthLength, 'step="0.1"', 'cm'), f.num('birthHead', 'P. craneal', r.birthHead, 'step="0.1"', 'cm')) +
         f.row(f.text('blood', 'Grupo sanguíneo', r.blood), f.text('allergies', 'Alergias conocidas', r.allergies)) +
         f.row(f.text('pediatrician', 'Pediatra', r.pediatrician), f.text('center', 'Centro de salud', r.center)) +
@@ -408,7 +420,7 @@
       onSubmit: (x) => {
         if (!x.name.trim()) { UI.toast('Escribe el nombre'); return false; }
         const n = (k) => (x[k] ? parseFloat(x[k]) : null);
-        const data = { name: x.name.trim(), sex: x.sex, birth: x.birth, birthWeight: n('birthWeight'), birthLength: n('birthLength'), birthHead: n('birthHead'), blood: x.blood, allergies: x.allergies, pediatrician: x.pediatrician, center: x.center, healthCard: x.healthCard, notes: x.notes };
+        const data = { name: x.name.trim(), sex: x.sex, birth: x.birth, gestWeeks: n('gestWeeks'), gestDays: n('gestDays'), birthWeight: n('birthWeight'), birthLength: n('birthLength'), birthHead: n('birthHead'), blood: x.blood, allergies: x.allergies, pediatrician: x.pediatrician, center: x.center, healthCard: x.healthCard, notes: x.notes };
         if (rec) { Object.assign(rec, data); Store.commit(); UI.toast('Perfil actualizado'); return; }
         const b = Object.assign({ id: U.uid() }, data);
         Store.state.babies.push(b); Store.state.activeBabyId = b.id;
@@ -462,6 +474,7 @@
         ${tile('form-appt', 'calendar', 'Cita médica', 'Con preguntas', 'c-growth')}
         ${tile('form-pump', 'pump', 'Extracción', 'Leche extraída', 'c-feed')}
         ${tile('form-diary', 'book', 'Recuerdo', 'Nota y foto', 'c-mile')}
+        ${tile('go-sounds', 'moon', 'Sonidos', N.Sounds.state.key ? 'Sonando ahora' : 'Ruido blanco, nana…', 'c-sleep')}
       </div>
       <div class="qa-diapers"><span>Pañal en un toque</span>
         <button type="button" class="btn soft" data-act="diaper-quick" data-kind="wet">Pipí</button>
@@ -507,4 +520,5 @@
   A.undo = () => { if (UI._undo) { UI._undo(); UI._undo = null; document.getElementById('toast').hidden = true; } };
   A.seg = (el) => { UI.st.seg[el.dataset.seg] = el.dataset.val; UI.render(); };
   A.go = (el) => UI.go(el.dataset.to);
+  A['go-sounds'] = () => { UI.closeSheet(); UI.go('sueno'); setTimeout(() => { const el = document.getElementById('sonidos'); el && el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); };
 })(window.Nido = window.Nido || {});

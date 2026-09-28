@@ -7,6 +7,9 @@
   <meta name="theme-color" content="#0D1519" media="(prefers-color-scheme: dark)">
   <meta name="description" content="Nido: registro completo del bebé. Sueño, tomas, BLW, crecimiento con curvas OMS, citas, vacunas, hitos y diario.">
   <title>Nido</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Nido">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400;500;600;700&display=swap">
@@ -714,6 +717,57 @@ form[data-kind="wet"] .only-poo { display: none; }
 .tl-item time small { display: block; font-size: 11px; font-weight: 500; }
 .lg-star { color: var(--c-mile); font-size: 12px; }
 
+/* ---------- Plan del día ---------- */
+.plan { list-style: none; margin: 0; padding: 0; position: relative; }
+.plan::before { content: ""; position: absolute; left: 61px; top: 12px; bottom: 12px; width: 2px; background: var(--line); }
+.plan-it { display: grid; grid-template-columns: 50px 24px minmax(0, 1fr); align-items: center; gap: 0 4px; padding: 7px 0; position: relative; }
+.plan-it time { font-weight: 700; font-size: 14px; text-align: right; padding-right: 6px; }
+.plan-it span { display: flex; flex-direction: column; min-width: 0; }
+.plan-it b { font-size: 14px; font-weight: 600; }
+.plan-it small { font-size: 12.5px; color: var(--ink-3); }
+.plan-dot { width: 12px; height: 12px; margin-left: 6px; border-radius: 50%; border: 2px solid var(--c-sleep); background: var(--surface); position: relative; z-index: 1; }
+.plan-it.is-done .plan-dot { background: var(--c-sleep); }
+.plan-it.is-done b, .plan-it.is-done time { color: var(--ink-2); }
+.plan-it.k-wake .plan-dot { border-color: var(--c-mile); }
+.plan-it.k-wake.is-done .plan-dot { background: var(--c-mile); }
+.plan-it.is-planned time, .plan-it.is-adjusted time { color: var(--c-sleep); }
+.plan-it.is-planned .plan-dot, .plan-it.is-adjusted .plan-dot { border-style: dashed; }
+.plan-it.is-now .plan-dot { background: var(--c-sleep); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-sleep) 25%, transparent); }
+.plan-it.is-overdue .plan-dot { border-color: var(--warn); background: var(--warn-soft); }
+.plan-it.is-overdue small { color: var(--warn); font-weight: 600; }
+.plan-it.k-bed .plan-dot { border-color: var(--night-2); }
+.plan-it.k-bed.is-done .plan-dot { background: var(--night-2); }
+.plan-foot { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); }
+.plan-foot .ic { width: 16px; height: 16px; color: var(--c-sleep); flex: none; margin-top: 1px; }
+
+/* ---------- Sonidos ---------- */
+.snd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.snd { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); text-align: left; min-width: 0; }
+.snd-e { font-size: 20px; margin-bottom: 4px; }
+.snd b { font-size: 13.5px; font-weight: 600; }
+.snd small { font-size: 11.5px; color: var(--ink-3); }
+.snd:hover { border-color: var(--c-sleep); }
+.snd.on { background: color-mix(in srgb, var(--c-sleep) 14%, var(--surface)); border-color: var(--c-sleep); }
+.snd.on small { color: var(--c-sleep); font-weight: 700; }
+@media (prefers-reduced-motion: no-preference) { .snd.on .snd-e { animation: breathe 3s ease-in-out infinite; } }
+@keyframes breathe { 50% { transform: scale(1.18); } }
+.snd-ctrl { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 8px; }
+.snd-vol { display: flex; align-items: center; gap: 8px; flex: 1 1 160px; color: var(--ink-3); }
+.snd-vol input { flex: 1; accent-color: var(--c-sleep); }
+.ic.sm { width: 16px; height: 16px; }
+.player {
+  position: fixed; z-index: 32; left: 16px; right: 88px; bottom: calc(var(--tab-h) + 22px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 16px;
+  background: var(--night-1); color: #EEF0FF; box-shadow: var(--shadow-lg);
+}
+.player .pl-e { font-size: 20px; }
+.player .pl-t { display: flex; flex-direction: column; flex: 1; min-width: 0; text-decoration: none; }
+.player b { font-size: 14px; }
+.player small { font-size: 12px; color: #C9CCFF; }
+.player .icon-btn { color: #EEF0FF; }
+.player .icon-btn:hover { background: rgba(255, 255, 255, .12); }
+@media (min-width: 960px) { .player { left: 14px; right: auto; width: calc(var(--side-w) - 28px); bottom: 56px; } }
+
 </style>
 </head>
 <body>
@@ -725,6 +779,7 @@ form[data-kind="wet"] .only-poo { display: none; }
   <button type="button" class="fab" data-act="quick-add" aria-label="Registrar">
     <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
   </button>
+  <div id="player" class="player c-sleep" role="status" aria-live="polite" hidden></div>
   <div id="sheet" class="sheet-root" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <div id="tip" class="tip" role="tooltip" hidden></div>
@@ -1225,7 +1280,31 @@ form[data-kind="wet"] .only-poo { display: none; }
   N.S = S;
 
   S.baby = () => Store.state.babies.find((b) => b.id === Store.state.activeBabyId) || null;
-  S.ageMonths = (at) => { const b = S.baby(); return b ? U.age(b.birth, at).decimal : 0; };
+
+  /* ---- Edad corregida ----
+     En prematuros (< 37 semanas) se descuenta lo que faltó hasta la semana 40
+     para valorar crecimiento, desarrollo y sueño, hasta los 2 años. Las
+     vacunas y revisiones siguen la edad cronológica. */
+  S.prematureDays = (b = S.baby()) => {
+    if (!b || !b.gestWeeks) return 0;
+    const ga = Number(b.gestWeeks) * 7 + (Number(b.gestDays) || 0);
+    return ga > 0 && ga < 37 * 7 ? 40 * 7 - ga : 0;
+  };
+  S.chronoMonths = (at = Date.now()) => { const b = S.baby(); return b ? U.age(b.birth, at).decimal : 0; };
+  S.ageMonths = (at = Date.now()) => {
+    const b = S.baby(); if (!b) return 0;
+    const chrono = U.age(b.birth, at).decimal, pd = S.prematureDays(b);
+    return !pd || chrono >= 24 ? chrono : Math.max(0, chrono - pd / 30.4375);
+  };
+  S.dueDate = (b = S.baby()) => U.dayKey(U.addDays(U.parseDay(b.birth), S.prematureDays(b)));
+  /* Texto de edad corregida, o '' si no aplica. */
+  S.correctedText = (at = Date.now()) => {
+    const b = S.baby(); const pd = S.prematureDays(b);
+    if (!pd || U.age(b.birth, at).months >= 24) return '';
+    const due = U.parseDay(S.dueDate(b));
+    if (U.dayStart(at) < due) { const w = Math.ceil((due - U.dayStart(at)) / (7 * DAY)); return `${w} semana${w > 1 ? 's' : ''} antes de su fecha prevista`; }
+    return U.ageText(S.dueDate(b), at);
+  };
 
   /* ---- Sueño ---- */
   S.sleeps = () => Store.list('sleeps').filter((s) => s.end).sort((a, b) => a.start - b.start);
@@ -1260,44 +1339,103 @@ form[data-kind="wet"] .only-poo { display: none; }
   S.activeSleep = () => { const t = Store.state.timers.sleep; return t && t.babyId === Store.state.activeBabyId ? t : null; };
   S.activeBreast = () => { const t = Store.state.timers.breast; return t && t.babyId === Store.state.activeBabyId ? t : null; };
 
-  /* Predicción de próxima siesta y hora de dormir a partir de la última
-     vigilia y de las ventanas típicas para la edad, ajustadas con la media
-     real de los últimos 7 días. */
-  S.predict = () => {
-    const now = Date.now();
-    const norm = S.sleepNorm();
-    const sleeps = S.sleeps();
-    const last = sleeps[sleeps.length - 1];
-    if (!last || S.activeSleep()) return null;
-    // Ventanas reales recientes (vigilia entre sueños, solo de día)
-    const recent = sleeps.filter((s) => s.start > now - 7 * DAY);
-    const gaps = [];
-    for (let i = 1; i < recent.length; i++) {
-      const g = (recent[i].start - recent[i - 1].end) / MIN;
-      const h = new Date(recent[i].start).getHours();
-      if (g > 30 && g < 360 && h >= 7 && h < 21) gaps.push(g);
+  /* ---- Ritmo aprendido y plan del día ----
+     Para cada uno de los últimos 7 días completos se reconstruye su forma:
+     despertar de la mañana, siestas y hora de acostarse. De ahí salen el
+     número habitual de siestas y, por posición, la ventana de vigilia antes
+     de cada siesta y la duración de cada una. Se mezcla 70 % real y 30 %
+     tabla por edad, limitado a un rango saludable. */
+  const hourOf = (t) => { const d = new Date(t); return d.getHours() + d.getMinutes() / 60; };
+  S.dayShape = (key) => {
+    const d0 = U.parseDay(key), all = S.sleeps();
+    const morning = all.filter((s) => s.type === 'night' && s.end >= d0 + 4 * HOUR && s.end <= d0 + 11 * HOUR).pop();
+    const naps = all.filter((s) => s.type === 'nap' && s.start >= d0 && s.start < d0 + DAY);
+    const bed = all.find((s) => s.type === 'night' && s.start >= d0 + 16 * HOUR && s.start < d0 + DAY + 3 * HOUR);
+    return { key, wake: morning ? morning.end : null, naps, bed: bed ? bed.start : null };
+  };
+
+  S.learnRhythm = (now = Date.now()) => {
+    const norm = S.sleepNorm(S.ageMonths(now));
+    const days = [];
+    for (let i = 1; i <= 7; i++) {
+      const sh = S.dayShape(U.dayKey(U.addDays(now, -i)));
+      if (sh.wake && sh.bed && sh.naps.length) days.push(sh);
     }
-    const typical = (norm.ww[0] + norm.ww[1]) / 2;
-    const learned = gaps.length >= 5 ? U.avg(gaps) : typical;
-    const ww = Math.round(U.clamp(learned * 0.6 + typical * 0.4, norm.ww[0], norm.ww[1] + 20));
-    const todayKey = U.today();
-    const napsToday = S.sleeps().filter((s) => s.type === 'nap' && U.dayKey(s.start) === todayKey).length;
-    const expectedNaps = Math.round((norm.naps[0] + norm.naps[1]) / 2);
-    // La última ventana del día suele ser la más larga (+20 %)
-    const bedtimeWW = Math.round(ww * 1.2);
-    const nextNap = last.end + ww * MIN;
-    const napsLeft = Math.max(0, expectedNaps - napsToday);
-    const bedtime = napsLeft > 0
-      ? nextNap + (napsLeft * 55 + (napsLeft - 1) * ww + bedtimeWW) * MIN
-      : last.end + bedtimeWW * MIN;
-    const bed = new Date(bedtime); const bh = bed.getHours() + bed.getMinutes() / 60;
-    const bedClamped = bh < 18.5 ? U.dayStart(bedtime) + 18.5 * HOUR : bh > 21 ? U.dayStart(bedtime) + 21 * HOUR : bedtime;
+    const counts = days.map((d) => d.naps.length).sort((a, b) => a - b);
+    const expected = counts.length >= 3 ? counts[Math.floor(counts.length / 2)] : Math.round((norm.naps[0] + norm.naps[1]) / 2);
+    const same = days.filter((d) => d.naps.length === expected);
+    const lo = norm.ww[0] * 0.8, hi = norm.ww[1] * 1.25;
+    const windows = [];
+    for (let i = 0; i <= expected; i++) {
+      // La vigilia se alarga a lo largo del día: la primera es la más corta y la de antes de dormir, la más larga.
+      const typical = norm.ww[0] + (norm.ww[1] - norm.ww[0]) * (expected ? i / expected : 0.5);
+      const samples = same.map((d) => ((i === expected ? d.bed : d.naps[i].start) - (i === 0 ? d.wake : d.naps[i - 1].end)) / MIN).filter((g) => g > 20 && g < 420);
+      const learned = samples.length >= 2 ? U.avg(samples) : null;
+      windows.push(Math.round(U.clamp(learned != null ? learned * 0.7 + typical * 0.3 : typical, lo, hi)));
+    }
+    const fallback = expected <= 2 ? [80, 90] : [55, 85, 40, 30, 30];
+    const durations = [];
+    for (let i = 0; i < expected; i++) {
+      const s = same.map((d) => (d.naps[i].end - d.naps[i].start) / MIN);
+      durations.push(Math.round(s.length >= 2 ? U.avg(s) : fallback[i] || 35));
+    }
+    const wakes = days.map((d) => hourOf(d.wake));
+    return { expected, windows, durations, norm, days: days.length, learned: same.length >= 3, wakeHour: wakes.length ? U.avg(wakes) : 7 };
+  };
+
+  S.dayPlan = (now = Date.now()) => {
+    const r = S.learnRhythm(now);
+    const d0 = U.dayStart(now), today = S.dayShape(U.dayKey(now));
+    const active = S.activeSleep();
+    const activeNap = active && hourOf(active.start) >= 6.5 && hourOf(active.start) < 18.5;
+    const items = [];
+    // Sin despertar registrado (aún duerme o no se anotó la noche): se usa su hora habitual.
+    const realWake = today.wake || d0 + r.wakeHour * HOUR;
+    items.push({ kind: 'wake', t: realWake, state: today.wake ? 'done' : 'planned' });
+    let cursor = realWake, i = 0;
+    today.naps.forEach((s) => { items.push({ kind: 'nap', idx: i, start: s.start, end: s.end, state: 'done' }); cursor = s.end; i++; });
+    if (activeNap) {
+      const end = Math.max(active.start + (r.durations[i] || 40) * MIN, now + 5 * MIN);
+      items.push({ kind: 'nap', idx: i, start: active.start, end, state: 'now' }); cursor = end; i++;
+    }
+    for (; i < r.expected; i++) {
+      let start = cursor + r.windows[i] * MIN; const overdue = start < now;
+      if (overdue) start = now;
+      if (hourOf(start) > 18 || U.dayKey(start) !== U.dayKey(now)) break;
+      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[i] * MIN, state: overdue ? 'overdue' : 'planned', window: r.windows[i] });
+      cursor = start + r.durations[i] * MIN;
+    }
+    const bedWindow = r.windows[r.expected];
+    let bed = cursor + bedWindow * MIN;
+    // Si la última siesta empujaría la noche más allá de las 21:00, se acorta a una siesta corta.
+    const lastPlanned = items[items.length - 1];
+    if (hourOf(bed) > 21 && lastPlanned.kind === 'nap' && lastPlanned.state === 'planned' && lastPlanned.end - lastPlanned.start > 30 * MIN) {
+      lastPlanned.end = lastPlanned.start + 30 * MIN; lastPlanned.short = true; bed = lastPlanned.end + bedWindow * MIN;
+    }
+    let bedState = 'planned';
+    if (today.bed) { bed = today.bed; bedState = 'done'; }
+    else if (active && !activeNap) { bed = active.start; bedState = 'done'; }
+    else {
+      const h = hourOf(bed);
+      if (h < 18.5) { bed = d0 + 18.5 * HOUR; bedState = 'adjusted'; }
+      else if (h > 21 || U.dayKey(bed) !== U.dayKey(now)) { bed = d0 + 21 * HOUR; bedState = 'adjusted'; }
+    }
+    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow });
+    const next = items.find((x) => x.kind === 'nap' && (x.state === 'planned' || x.state === 'overdue'));
+    return { items, rhythm: r, next, bed, napsDone: today.naps.length };
+  };
+
+  /* Estado de vigilia actual con la próxima siesta y la hora de dormir del plan. */
+  S.predict = (now = Date.now()) => {
+    const sleeps = S.sleeps(); const last = sleeps[sleeps.length - 1];
+    if (!last || S.activeSleep()) return null;
+    const plan = S.dayPlan(now), r = plan.rhythm;
+    const ww = plan.next ? plan.next.window : r.windows[r.expected];
     const awakeMin = (now - last.end) / MIN;
-    const lastWasNight = last.type === 'night' && new Date(last.end).getHours() < 12;
     return {
-      awakeSince: last.end, awakeMin, ww, windowRange: norm.ww,
-      nextNap: napsLeft > 0 ? nextNap : null, bedtime: bedClamped, napsToday, expectedNaps,
-      progress: U.clamp(awakeMin / ww, 0, 1.4), lastWasNight, learned: gaps.length >= 5
+      awakeSince: last.end, awakeMin, ww, windowRange: r.norm.ww,
+      nextNap: plan.next ? plan.next.start : null, bedtime: plan.bed, napsToday: plan.napsDone, expectedNaps: r.expected,
+      progress: U.clamp(awakeMin / ww, 0, 1.4), learned: r.learned, plan
     };
   };
 
@@ -1366,7 +1504,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     const [L, M, Sg] = S.lms(metric, sex, months);
     return Math.abs(L) < 1e-6 ? M * Math.exp(Sg * z) : M * Math.pow(1 + L * Sg * z, 1 / L);
   };
-  S.measureAge = (m) => { const b = S.baby(); return U.age(b.birth, U.parseDay(m.date)).decimal; };
+  S.measureAge = (m) => S.ageMonths(U.parseDay(m.date));
 
   /* ---- Salud y agenda ---- */
   S.appointments = () => Store.list('appointments').sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
@@ -1628,6 +1766,90 @@ form[data-kind="wet"] .only-poo { display: none; }
 </script>
   <script>
 /* ==========================================================================
+   Nido · Fotos en IndexedDB
+   localStorage tiene ~5 MB, suficiente para los registros pero no para
+   fotos. Las fotos del diario se guardan aparte en IndexedDB y el registro
+   solo lleva su `photoId`. Si IndexedDB no está disponible, la foto se
+   guarda en línea como antes (`photo`), así nada se pierde.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, Store } = N;
+  const DB = 'nido-media', STORE = 'photos';
+  let dbp = null;
+
+  const open = () => dbp || (dbp = new Promise((res) => {
+    try {
+      const req = indexedDB.open(DB, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(STORE);
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => res(null);
+      req.onblocked = () => res(null);
+    } catch (e) { res(null); }
+  }));
+  const tx = async (mode, fn) => {
+    const db = await open(); if (!db) throw new Error('IndexedDB no disponible');
+    return new Promise((res, rej) => {
+      const t = db.transaction(STORE, mode), st = t.objectStore(STORE); let out;
+      const r = fn(st); if (r) r.onsuccess = () => { out = r.result; };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  };
+
+  const cache = new Map();
+  const Media = {
+    async available() { return !!(await open()); },
+    async put(dataUrl, id = 'ph_' + U.uid()) { await tx('readwrite', (s) => s.put(dataUrl, id)); cache.set(id, dataUrl); return id; },
+    async get(id) { if (cache.has(id)) return cache.get(id); const v = await tx('readonly', (s) => s.get(id)); if (v) cache.set(id, v); return v || null; },
+    async del(id) { cache.delete(id); await tx('readwrite', (s) => s.delete(id)); },
+    async keys() { return (await tx('readonly', (s) => s.getAllKeys())) || []; },
+    async clear() { cache.clear(); try { await tx('readwrite', (s) => s.clear()); } catch (e) { /* sin IndexedDB */ } },
+    /* URL ya cargada (para pintar sin parpadeo) o '' si hay que esperar. */
+    src(id) { return cache.get(id) || ''; },
+    /* Rellena <img data-photo> tras cada render. */
+    hydrate(root) {
+      root.querySelectorAll('img[data-photo]').forEach(async (img) => {
+        if (img.getAttribute('src')) return;
+        const v = await Media.get(img.dataset.photo).catch(() => null);
+        if (v) img.src = v; else img.closest('.has-photo')?.classList.remove('has-photo');
+      });
+    },
+    /* Pasa a IndexedDB las fotos que aún estén en línea (datos antiguos o importados). */
+    async migrate() {
+      if (!(await this.available())) return 0;
+      let n = 0;
+      for (const d of Store.state.diary) {
+        if (d.photo && !d.photoId) { d.photoId = await this.put(d.photo); delete d.photo; n++; }
+      }
+      if (n) Store.commit();
+      return n;
+    },
+    /* Borra fotos que ya no usa ningún recuerdo (p. ej. tras eliminar uno). */
+    async gc() {
+      if (!(await this.available())) return;
+      const used = new Set(Store.state.diary.map((d) => d.photoId).filter(Boolean));
+      for (const k of await this.keys()) if (!used.has(k)) await this.del(k);
+    },
+    async exportAll() {
+      const out = {};
+      for (const d of Store.state.diary) if (d.photoId) { const v = await this.get(d.photoId).catch(() => null); if (v) out[d.photoId] = v; }
+      return out;
+    },
+    async importAll(map) {
+      if (!(await this.available())) return false;
+      for (const [id, v] of Object.entries(map || {})) await this.put(v, id);
+      return true;
+    },
+    async usage() {
+      try { const e = await navigator.storage.estimate(); return e; } catch (e) { return null; }
+    }
+  };
+  N.Media = Media;
+})(window.Nido = window.Nido || {});
+
+</script>
+  <script>
+/* ==========================================================================
    Nido · Capa de interfaz
    Enrutador por hash, hoja inferior (formularios), confirmaciones, avisos,
    tooltip global y temporizadores en vivo.
@@ -1696,6 +1918,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     main.dataset.view = id;
     main.innerHTML = view.render();
     if (view.mount) view.mount(main);
+    N.Media.hydrate(main);
     UI.tick();
     if (same) window.scrollTo(0, y); else window.scrollTo(0, 0);
     document.title = `${N.S.baby() ? N.S.baby().name + ' · ' : ''}Nido`;
@@ -1770,9 +1993,9 @@ form[data-kind="wet"] .only-poo { display: none; }
 
   /* ---------- Avisos ---------- */
   let toastT;
-  UI.toast = (msg, undo) => {
+  UI.toast = (msg, undo, label = 'Deshacer') => {
     const el = document.getElementById('toast');
-    el.innerHTML = `<span>${msg}</span>${undo ? '<button type="button" class="link" data-act="undo">Deshacer</button>' : ''}`;
+    el.innerHTML = `<span>${msg}</span>${undo ? `<button type="button" class="link" data-act="undo">${label}</button>` : ''}`;
     el.hidden = false; el.classList.remove('out');
     UI._undo = undo;
     clearTimeout(toastT);
@@ -1811,6 +2034,7 @@ form[data-kind="wet"] .only-poo { display: none; }
   /* ---------- Temporizadores en vivo ---------- */
   UI.tick = () => {
     document.querySelectorAll('[data-since]').forEach((el) => { el.textContent = U.clock(Date.now() - Number(el.dataset.since)); });
+    document.querySelectorAll('[data-until]').forEach((el) => { el.textContent = U.clock(Number(el.dataset.until) - Date.now()); });
     document.querySelectorAll('[data-ago]').forEach((el) => { el.textContent = U.ago(Number(el.dataset.ago)); });
     const b = N.S.activeBreast();
     if (b) document.querySelectorAll('[data-breast]').forEach((el) => {
@@ -1826,6 +2050,162 @@ form[data-kind="wet"] .only-poo { display: none; }
     if (t === 'auto') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', t);
   };
+})(window.Nido = window.Nido || {});
+
+</script>
+  <script>
+/* ==========================================================================
+   Nido · Sonidos para dormir
+   Todos los sonidos se sintetizan en el navegador con Web Audio: no hay
+   archivos que descargar y funcionan sin conexión. Temporizador con
+   apagado gradual y reproductor flotante mientras suenan.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, icon } = N;
+
+  /* Ruido base: blanco, rosa (Voss‑McCartney aproximado) o marrón (paseo aleatorio). */
+  function noise(ctx, seconds, kind) {
+    const len = Math.floor(seconds * ctx.sampleRate), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    let last = 0, b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      if (kind === 'brown') { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+      else if (kind === 'pink') {
+        b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
+        b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
+        d[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
+      } else d[i] = w * 0.5;
+    }
+    return buf;
+  }
+  function loop(ctx, buf, out, filter) {
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    if (filter) { const f = ctx.createBiquadFilter(); Object.assign(f, { type: filter.type }); f.frequency.value = filter.f; if (filter.q) f.Q.value = filter.q; src.connect(f); f.connect(out); }
+    else src.connect(out);
+    src.start(); return src;
+  }
+  /* Modula un buffer con una envolvente t → [0,1]. */
+  function shaped(ctx, seconds, kind, env) {
+    const buf = noise(ctx, seconds, kind), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] *= env(i / ctx.sampleRate);
+    return buf;
+  }
+  function beat(t, bpm, amp) {
+    const p = t % (60 / bpm); let v = 0;
+    if (p < 0.08) v = Math.sin(2 * Math.PI * 55 * p) * Math.exp(-p * 30);
+    else if (p > 0.15 && p < 0.23) { const q = p - 0.15; v = Math.sin(2 * Math.PI * 48 * q) * Math.exp(-q * 25) * 0.7; }
+    return v * amp;
+  }
+
+  const GEN = {
+    white: (ctx, out) => loop(ctx, noise(ctx, 3, 'white'), out, { type: 'lowpass', f: 5000 }),
+    pink: (ctx, out) => loop(ctx, noise(ctx, 3, 'pink'), out, { type: 'lowpass', f: 2200 }),
+    brown: (ctx, out) => loop(ctx, noise(ctx, 3, 'brown'), out, { type: 'lowpass', f: 900 }),
+    rain: (ctx, out) => {
+      const buf = noise(ctx, 4, 'pink'), d = buf.getChannelData(0);
+      for (let k = 0; k < 900; k++) { const at = Math.floor(Math.random() * (d.length - 400)); for (let i = 0; i < 300; i++) d[at + i] += (Math.random() * 2 - 1) * Math.exp(-i / 40) * 0.5; }
+      return loop(ctx, buf, out, { type: 'bandpass', f: 1800, q: 0.4 });
+    },
+    ocean: (ctx, out) => loop(ctx, shaped(ctx, 10, 'brown', (t) => 0.25 + 0.75 * Math.pow(Math.sin(Math.PI * t / 10), 2)), out, { type: 'lowpass', f: 1100 }),
+    shush: (ctx, out) => loop(ctx, shaped(ctx, 1.6, 'white', (t) => (t < 1.1 ? Math.sin(Math.PI * t / 1.1) : 0)), out, { type: 'bandpass', f: 3200, q: 0.9 }),
+    heart: (ctx, out) => {
+      const len = Math.floor(60 / 70 * 4 * ctx.sampleRate), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = beat(i / ctx.sampleRate, 70, 0.9);
+      return loop(ctx, buf, out);
+    },
+    womb: (ctx, out) => {
+      const len = Math.floor(60 / 75 * 6 * ctx.sampleRate), buf = noise(ctx, len / ctx.sampleRate, 'brown'), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = d[i] * 1.2 + beat(i / ctx.sampleRate, 75, 0.45);
+      return loop(ctx, buf, out, { type: 'lowpass', f: 380 });
+    },
+    lullaby: (ctx, out) => {
+      // Nana de Brahms (Do mayor), notas en Hz y duración en pulsos.
+      const E4 = 329.6, G4 = 392, C5 = 523.3, B4 = 493.9, A4 = 440, D4 = 293.7, F4 = 349.2;
+      const song = [[E4, .5], [E4, .5], [G4, 2], [E4, .5], [E4, .5], [G4, 2], [E4, .5], [G4, .5], [C5, 1], [B4, 1.5], [A4, .5], [A4, 1], [G4, 1],
+        [D4, .5], [E4, .5], [F4, 1], [D4, 1], [D4, .5], [E4, .5], [F4, 2], [D4, .5], [F4, .5], [B4, .5], [A4, .5], [G4, 1], [B4, 1], [C5, 2.5]];
+      const beatS = 0.62, total = U.sum(song, (n) => n[1]) * beatS + 1.5;
+      const len = Math.floor(total * ctx.sampleRate), buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      let t0 = 0;
+      song.forEach(([f, b]) => {
+        const s = Math.floor(t0 * ctx.sampleRate), n = Math.floor((b * beatS + 0.8) * ctx.sampleRate);
+        for (let i = 0; i < n && s + i < len; i++) {
+          const t = i / ctx.sampleRate, env = Math.min(1, t * 30) * Math.exp(-t * 1.6);
+          d[s + i] += (Math.sin(2 * Math.PI * f * t) + 0.25 * Math.sin(4 * Math.PI * f * t) + 0.1 * Math.sin(6 * Math.PI * f * t)) * env * 0.18;
+        }
+        t0 += b * beatS;
+      });
+      return loop(ctx, buf, out, { type: 'lowpass', f: 2500 });
+    }
+  };
+
+  const Sounds = {
+    list: [
+      { id: 'white', name: 'Ruido blanco', emoji: '〰️', hint: 'Clásico, tapa ruidos' },
+      { id: 'pink', name: 'Ruido rosa', emoji: '🌬️', hint: 'Más suave, como un ventilador' },
+      { id: 'brown', name: 'Ruido marrón', emoji: '🌊', hint: 'Grave y envolvente' },
+      { id: 'shush', name: 'Shhh', emoji: '🤫', hint: 'Para calmar en brazos' },
+      { id: 'womb', name: 'Útero', emoji: '🫧', hint: 'Recién nacidos' },
+      { id: 'heart', name: 'Latido', emoji: '💗', hint: '70 pulsaciones' },
+      { id: 'rain', name: 'Lluvia', emoji: '🌧️', hint: 'Lluvia constante' },
+      { id: 'ocean', name: 'Olas', emoji: '🐚', hint: 'Vaivén lento' },
+      { id: 'lullaby', name: 'Nana de Brahms', emoji: '🎵', hint: 'Caja de música' }
+    ],
+    state: { key: null, until: null, volume: 0.45, minutes: 30 },
+    _ctx: null, _src: null, _gain: null, _timer: null,
+
+    play(key) {
+      if (this.state.key === key) { this.stop(); return; }
+      this.stop(true);
+      try {
+        const ctx = this._ctx || (this._ctx = new (window.AudioContext || window.webkitAudioContext)());
+        if (ctx.state === 'suspended') ctx.resume();
+        const g = ctx.createGain(); g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(this.state.volume, ctx.currentTime + 1.5); g.connect(ctx.destination);
+        this._gain = g; this._src = GEN[key](ctx, g); this.state.key = key;
+        this.setTimer(this.state.minutes, true);
+      } catch (e) { N.UI.toast('Este navegador no puede reproducir sonidos'); this.stop(); }
+      this.changed();
+    },
+    /* Apagado con fundido de 12 s (o inmediato). */
+    stop(quiet) {
+      clearTimeout(this._timer); this._timer = null;
+      const src = this._src, g = this._gain, ctx = this._ctx;
+      if (src && g && ctx && !quiet) {
+        g.gain.cancelScheduledValues(ctx.currentTime); g.gain.setValueAtTime(g.gain.value, ctx.currentTime); g.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6);
+        setTimeout(() => { try { src.stop(); src.disconnect(); } catch (e) { /* ya parado */ } }, 700);
+      } else if (src) { try { src.stop(); src.disconnect(); } catch (e) { /* ya parado */ } }
+      this._src = null; this._gain = null;
+      this.state.key = null; this.state.until = null;
+      if (!quiet) this.changed();
+    },
+    fadeOut() {
+      const g = this._gain, ctx = this._ctx, src = this._src; if (!g) return;
+      g.gain.cancelScheduledValues(ctx.currentTime); g.gain.setValueAtTime(g.gain.value, ctx.currentTime); g.gain.linearRampToValueAtTime(0, ctx.currentTime + 12);
+      this._timer = setTimeout(() => { try { src.stop(); } catch (e) { /* ya parado */ } this._src = null; this._gain = null; this.state.key = null; this.state.until = null; this.changed(); }, 12000);
+    },
+    setTimer(min, silent) {
+      this.state.minutes = min;
+      clearTimeout(this._timer);
+      if (this.state.key && min) { this.state.until = Date.now() + min * U.MIN; this._timer = setTimeout(() => this.fadeOut(), min * U.MIN - 12000); }
+      else this.state.until = null;
+      if (!silent) this.changed();
+    },
+    setVolume(v) {
+      this.state.volume = v;
+      if (this._gain && this._ctx) { this._gain.gain.cancelScheduledValues(this._ctx.currentTime); this._gain.gain.setTargetAtTime(v, this._ctx.currentTime, 0.1); }
+    },
+    changed() { this.renderPlayer(); if (N.UI.current() === 'sueno') N.UI.render(); },
+    renderPlayer() {
+      const el = document.getElementById('player'); if (!el) return;
+      const s = this.list.find((x) => x.id === this.state.key);
+      el.hidden = !s;
+      if (s) el.innerHTML = `<span class="pl-e" aria-hidden="true">${s.emoji}</span><a href="#sueno" class="pl-t"><b>${s.name}</b><small>${this.state.until ? `se apaga en <span data-until="${this.state.until}"></span>` : 'sin temporizador'}</small></a><button type="button" class="icon-btn sm" data-act="sound-stop" aria-label="Parar sonido">${icon('stop')}</button>`;
+      N.UI.tick();
+    }
+  };
+  N.Sounds = Sounds;
+  N.actions.sound = (el) => Sounds.play(el.dataset.key);
+  N.actions['sound-stop'] = () => Sounds.stop();
 })(window.Nido = window.Nido || {});
 
 </script>
@@ -2058,7 +2438,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       onMount: (form) => {
         const prev = form.querySelector('#pc-preview');
         const upd = () => {
-          const d = UI.formData(form); const age = U.age(b.birth, U.parseDay(d.date || U.today())).decimal;
+          const d = UI.formData(form); const age = S.ageMonths(U.parseDay(d.date || U.today()));
           prev.innerHTML = ['weight', 'length', 'head'].map((k) => {
             const v = parseFloat(d[k]); if (!v) return '';
             const p = S.percentile(k, b.sex, age, v);
@@ -2177,26 +2557,36 @@ form[data-kind="wet"] .only-poo { display: none; }
   });
   F.diary = (rec) => {
     const r = rec || { date: U.today(), mood: 'feliz', text: '', photo: null };
-    let photo = r.photo;
+    // Foto nueva (dataURL) o la que ya tenía: en IndexedDB (photoId) o en línea (photo).
+    let photo = r.photo || null, photoId = r.photoId || null;
+    const shown = photo || (photoId && N.Media.src(photoId));
     UI.sheet({
       title: rec ? 'Editar recuerdo' : 'Nuevo recuerdo',
       body: f.date('date', 'Día', r.date) + f.chips('mood', 'Cómo estaba', N.MOODS.map((m) => [m.id, `${m.emoji} ${m.name}`]), r.mood) +
         f.area('text', 'Qué pasó', r.text, 'Una primera vez, una frase, algo que no quieres olvidar…') +
-        `<div class="fld full"><span>Foto</span><label class="photo-drop" id="photo-drop">${photo ? `<img src="${photo}" alt="">` : `${icon('camera')}<span>Añadir foto</span>`}<input type="file" id="f-photo" accept="image/*" hidden></label></div>`,
+        `<div class="fld full"><span>Foto</span><label class="photo-drop" id="photo-drop">${photoId && !shown ? `<img data-photo="${photoId}" alt="">` : shown ? `<img src="${shown}" alt="">` : `${icon('camera')}<span>Añadir foto</span>`}<input type="file" id="f-photo" accept="image/*" hidden></label></div>`,
       onMount: (form) => {
+        N.Media.hydrate(form);
         form.addEventListener('change', async (e) => {
           if (e.target.id !== 'f-photo') return;
           const file = e.target.files[0]; if (!file) return;
-          try { photo = await shrink(file); form.querySelector('#photo-drop').innerHTML = `<img src="${photo}" alt=""><input type="file" id="f-photo" accept="image/*" hidden>`; }
+          try { photo = await shrink(file); photoId = null; form.querySelector('#photo-drop').innerHTML = `<img src="${photo}" alt=""><input type="file" id="f-photo" accept="image/*" hidden>`; }
           catch (err) { UI.toast('No se pudo leer la imagen'); }
         });
       },
       onDelete: rec && (() => { UI.closeSheet(); UI.removeWithUndo('diary', rec.id, 'Recuerdo eliminado'); }),
       onSubmit: (x) => {
-        if (!x.text.trim() && !photo) { UI.toast('Escribe algo o añade una foto'); return false; }
-        const data = { date: x.date, mood: x.mood, text: x.text.trim(), photo };
-        rec ? Store.update('diary', rec.id, data) : Store.add('diary', data);
-        UI.toast(Store.persistent ? 'Recuerdo guardado' : 'Guardado en esta sesión (el navegador no permite almacenamiento)');
+        if (!x.text.trim() && !photo && !photoId) { UI.toast('Escribe algo o añade una foto'); return false; }
+        const save = (media) => {
+          const data = { date: x.date, mood: x.mood, text: x.text.trim(), photoId: media.photoId || null, photo: media.photo || null };
+          rec ? Store.update('diary', rec.id, data) : Store.add('diary', data);
+          UI.toast(Store.persistent ? 'Recuerdo guardado' : 'Guardado en esta sesión (el navegador no permite almacenamiento)');
+        };
+        if (photo && !r.photoId) {
+          // Foto nueva: a IndexedDB; si no se puede, se queda en línea.
+          N.Media.put(photo).then((id) => save({ photoId: id }), () => save({ photo }));
+        } else if (photo && r.photoId) N.Media.put(photo, r.photoId).then(() => save({ photoId: r.photoId }), () => save({ photo }));
+        else save({ photoId, photo: null });
       }
     });
   };
@@ -2226,6 +2616,8 @@ form[data-kind="wet"] .only-poo { display: none; }
       title: rec ? `Perfil de ${U.esc(rec.name)}` : 'Añadir bebé',
       body: f.text('name', 'Nombre', r.name, 'required autocomplete="off"') +
         f.row(f.chips('sex', 'Sexo (para las curvas OMS)', [['f', 'Niña'], ['m', 'Niño']], r.sex), f.date('birth', 'Fecha de nacimiento', r.birth)) +
+        f.row(f.num('gestWeeks', 'Semanas de gestación', r.gestWeeks, 'min="22" max="43" placeholder="40"', 'sem'), f.num('gestDays', 'Días', r.gestDays, 'min="0" max="6" placeholder="0"', 'd')) +
+        '<p class="hint">Si nació antes de la semana 37, Nido usará su edad corregida para crecimiento, hitos y sueño hasta los 2 años.</p>' +
         f.row(f.num('birthWeight', 'Peso al nacer', r.birthWeight, 'step="0.01"', 'kg'), f.num('birthLength', 'Longitud', r.birthLength, 'step="0.1"', 'cm'), f.num('birthHead', 'P. craneal', r.birthHead, 'step="0.1"', 'cm')) +
         f.row(f.text('blood', 'Grupo sanguíneo', r.blood), f.text('allergies', 'Alergias conocidas', r.allergies)) +
         f.row(f.text('pediatrician', 'Pediatra', r.pediatrician), f.text('center', 'Centro de salud', r.center)) +
@@ -2240,7 +2632,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       onSubmit: (x) => {
         if (!x.name.trim()) { UI.toast('Escribe el nombre'); return false; }
         const n = (k) => (x[k] ? parseFloat(x[k]) : null);
-        const data = { name: x.name.trim(), sex: x.sex, birth: x.birth, birthWeight: n('birthWeight'), birthLength: n('birthLength'), birthHead: n('birthHead'), blood: x.blood, allergies: x.allergies, pediatrician: x.pediatrician, center: x.center, healthCard: x.healthCard, notes: x.notes };
+        const data = { name: x.name.trim(), sex: x.sex, birth: x.birth, gestWeeks: n('gestWeeks'), gestDays: n('gestDays'), birthWeight: n('birthWeight'), birthLength: n('birthLength'), birthHead: n('birthHead'), blood: x.blood, allergies: x.allergies, pediatrician: x.pediatrician, center: x.center, healthCard: x.healthCard, notes: x.notes };
         if (rec) { Object.assign(rec, data); Store.commit(); UI.toast('Perfil actualizado'); return; }
         const b = Object.assign({ id: U.uid() }, data);
         Store.state.babies.push(b); Store.state.activeBabyId = b.id;
@@ -2294,6 +2686,7 @@ form[data-kind="wet"] .only-poo { display: none; }
         ${tile('form-appt', 'calendar', 'Cita médica', 'Con preguntas', 'c-growth')}
         ${tile('form-pump', 'pump', 'Extracción', 'Leche extraída', 'c-feed')}
         ${tile('form-diary', 'book', 'Recuerdo', 'Nota y foto', 'c-mile')}
+        ${tile('go-sounds', 'moon', 'Sonidos', N.Sounds.state.key ? 'Sonando ahora' : 'Ruido blanco, nana…', 'c-sleep')}
       </div>
       <div class="qa-diapers"><span>Pañal en un toque</span>
         <button type="button" class="btn soft" data-act="diaper-quick" data-kind="wet">Pipí</button>
@@ -2339,6 +2732,7 @@ form[data-kind="wet"] .only-poo { display: none; }
   A.undo = () => { if (UI._undo) { UI._undo(); UI._undo = null; document.getElementById('toast').hidden = true; } };
   A.seg = (el) => { UI.st.seg[el.dataset.seg] = el.dataset.val; UI.render(); };
   A.go = (el) => UI.go(el.dataset.to);
+  A['go-sounds'] = () => { UI.closeSheet(); UI.go('sueno'); setTimeout(() => { const el = document.getElementById('sonidos'); el && el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); };
 })(window.Nido = window.Nido || {});
 
 </script>
@@ -2434,6 +2828,41 @@ form[data-kind="wet"] .only-poo { display: none; }
   };
   W.card = (title, body, opts = {}) => `<section class="card ${opts.cls || ''}">${title ? `<header class="card-h"><h2>${title}</h2>${opts.act || ''}</header>` : ''}${body}</section>`;
 
+  /* Plan del día: lo que ya ha pasado y lo previsto, con las ventanas aprendidas. */
+  W.plan = () => {
+    const p = S.dayPlan(), r = p.rhythm, now = Date.now();
+    const napName = (x) => `Siesta ${x.idx + 1}`;
+    const row = (x) => {
+      let t, title, sub;
+      if (x.kind === 'wake') { t = U.time(x.t); title = 'Despertar'; sub = x.state === 'done' ? 'registrado' : 'hora habitual'; }
+      else if (x.kind === 'nap') {
+        const dur = U.dur((x.end - x.start) / U.MIN);
+        t = `${x.state === 'done' || x.state === 'now' ? '' : '~'}${U.time(x.start)}`;
+        title = `${napName(x)} · ${x.state === 'done' ? dur : '~' + dur}`;
+        sub = x.state === 'done' ? `${U.time(x.start)} – ${U.time(x.end)}`
+          : x.state === 'now' ? 'durmiendo ahora'
+          : x.state === 'overdue' ? 'ya toca: busca señales de sueño'
+          : `en ${U.dur((x.start - now) / U.MIN)} · tras ${U.dur(x.window)} despierta${x.short ? ' · corta para no retrasar la noche' : ''}`;
+      } else {
+        t = `${x.state === 'done' ? '' : '~'}${U.time(x.t)}`; title = 'A la cama';
+        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'adjusted' ? 'ajustado a un horario razonable (18:30–21:00)' : `tras ${U.dur(x.window)} despierta`;
+      }
+      return `<li class="plan-it is-${x.state} k-${x.kind}"><time>${t}</time><i class="plan-dot" aria-hidden="true"></i><span><b>${title}</b><small>${sub}</small></span></li>`;
+    };
+    const ws = r.windows.map((w, i) => (i === r.expected ? `cama ${U.dur(w, true)}` : U.dur(w, true))).join(' · ');
+    return W.card('Plan de hoy', `<ol class="plan">${p.items.map(row).join('')}</ol>
+      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}</span></p>`, { cls: 'c-sleep' });
+  };
+
+  /* Sonidos para dormir con temporizador de apagado. */
+  W.sounds = () => {
+    const st = N.Sounds.state;
+    return W.card('Sonidos para dormir', `<div class="snd-grid">${N.Sounds.list.map((s) => `<button type="button" class="snd ${st.key === s.id ? 'on' : ''}" data-act="sound" data-key="${s.id}" aria-pressed="${st.key === s.id}"><span class="snd-e" aria-hidden="true">${s.emoji}</span><b>${s.name}</b><small>${st.key === s.id ? 'sonando' : s.hint}</small></button>`).join('')}</div>
+      <div class="snd-ctrl"><label class="snd-vol">${icon('sun', 'sm')}<span class="sr-only">Volumen</span><input type="range" id="snd-vol" min="0" max="100" value="${Math.round(st.volume * 100)}" aria-label="Volumen"></label>
+        ${UI.seg('sndTimer', [[15, '15 min'], [30, '30 min'], [60, '1 h'], [0, 'Sin fin']], st.minutes)}</div>
+      <p class="muted small">Se apaga suavemente al terminar. Pon el móvil lejos de la cuna y el volumen bajo (menos de 50 dB).</p>`, { cls: 'c-sleep' });
+  };
+
   /* ======================= HOY ======================= */
   V.hoy = {
     render() {
@@ -2451,7 +2880,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       <header class="hello">
         <div><p class="eyebrow">${hello} · ${U.dateLong(Date.now())}</p>
         <h1>${U.esc(b.name)} tiene <span class="hl">${U.ageText(b.birth)}</span></h1>
-        <p class="vsub">Semana ${a.weeks + 1} de vida · día ${a.totalDays + 1}</p></div>
+        <p class="vsub">Semana ${a.weeks + 1} de vida · día ${a.totalDays + 1}${S.correctedText() ? ` · <b>edad corregida: ${S.correctedText()}</b>` : ''}</p></div>
         <button type="button" class="btn primary hide-sm" data-act="quick-add">${icon('plus')}Registrar</button>
       </header>
       <div class="grid-hoy">
@@ -2472,6 +2901,7 @@ form[data-kind="wet"] .only-poo { display: none; }
           ${W.card('Hoy, hora a hora', W.timeline(S.timeline(key), { who: true }), { act: `<a class="link" href="#sueno">Ver patrón</a>` })}
         </div>
         <aside class="col-side">
+          ${W.plan()}
           ${W.card('Su día en 24 horas', `<div class="clock-wrap">${Charts.dayClock(sd.blocks, feeds.filter((f) => f.kind !== 'solids').map((f) => f.time), Date.now())}
             <ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul></div>`)}
           ${V.hoy.reminders()}
@@ -2533,9 +2963,9 @@ form[data-kind="wet"] .only-poo { display: none; }
       const list = S.sleeps().slice(-40).reverse();
       const groups = {}; list.forEach((s) => { (groups[U.dayKey(s.end)] = groups[U.dayKey(s.end)] || []).push(s); });
 
-      return UI.head('Sueño', `Ventanas de vigilia y siestas para ${U.ageText(S.baby().birth)}`, `<button type="button" class="btn soft" data-act="form-sleep">${icon('plus')}Añadir sueño</button>`) + `
+      return UI.head('Sueño', `Ventanas de vigilia y siestas para ${S.correctedText() ? S.correctedText() + ' de edad corregida' : U.ageText(S.baby().birth)}`, `<button type="button" class="btn soft" data-act="form-sleep">${icon('plus')}Añadir sueño</button>`) + `
       <div class="grid-2">
-        <div class="stack">${W.live()}
+        <div class="stack">${W.live()}${W.plan()}
           <div class="kpis three">
             ${W.kpi('Media diaria', U.dur(avgTotal), `${inRange ? UI.pill('En rango', 'good') : UI.pill('Fuera de rango', 'warn')} ${norm.total[0]}–${norm.total[1]} h`, 'c-sleep')}
             ${W.kpi('Noche', U.dur(U.avg(nights, (n) => n.total)), `${U.num(U.avg(nights, (n) => n.wakes), 1)} despertares · tramo más largo ${U.dur(U.avg(nights, (n) => n.longest))}`, 'c-sleep')}
@@ -2545,9 +2975,12 @@ form[data-kind="wet"] .only-poo { display: none; }
             ${W.kpi('Ventana ideal', `${U.dur(norm.ww[0], true)}–${U.dur(norm.ww[1], true)}`, `${norm.naps[0] === norm.naps[1] ? norm.naps[0] : norm.naps.join('–')} siestas a esta edad`, 'c-sleep')}
           </div>
         </div>
+        <div class="stack">
         ${W.card('Horas de sueño por día', `<div class="chart-top">${UI.seg('sleepRange', [[7, '7 días'], [14, '14 días'], [30, '30 días']], range)}
           <ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siestas</li><li><i class="lg-band"></i>Recomendado</li></ul></div>
           ${Charts.sleepBars(days, norm.total)}`)}
+        <div id="sonidos">${W.sounds()}</div>
+        </div>
       </div>
       ${W.card('Patrón de las últimas dos semanas', `<div class="scroll-x">${Charts.pattern(rows, { feeds: true })}</div><ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul>`)}
       <div class="grid-2">
@@ -2567,6 +3000,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     if (el.dataset.seg === 'sleepRange') { UI.st.sleepRange = +el.dataset.val; UI.render(); return; }
     if (el.dataset.seg === 'growthMetric') { UI.st.growthMetric = el.dataset.val; UI.render(); return; }
     if (el.dataset.seg === 'foodFilter') { UI.st.foodFilter = el.dataset.val; UI.render(); return; }
+    if (el.dataset.seg === 'sndTimer') { N.Sounds.setTimer(+el.dataset.val); return; }
     orig(el);
   })(N.actions.seg);
 
@@ -2763,7 +3197,7 @@ form[data-kind="wet"] .only-poo { display: none; }
         trend = metric === 'weight' ? `+${Math.round((diff * 1000) / Math.max(1, days))} g/día desde el ${U.date(prev.date)} (${U.num(diff * 1000, 0)} g en ${Math.round(days)} días)` : `${diff >= 0 ? '+' : ''}${U.num(diff, 1)} cm desde el ${U.date(prev.date)}`;
       }
       const rows = S.measures().slice().reverse();
-      return UI.head('Crecimiento', `Curvas de la OMS para ${b.sex === 'm' ? 'niños' : 'niñas'} de 0 a 2 años`, `<button type="button" class="btn primary" data-act="form-measure">${icon('plus')}Nueva medida</button>`) + `
+      return UI.head('Crecimiento', `Curvas de la OMS para ${b.sex === 'm' ? 'niños' : 'niñas'} de 0 a 2 años${S.prematureDays() ? ' · por edad corregida' : ''}`, `<button type="button" class="btn primary" data-act="form-measure">${icon('plus')}Nueva medida</button>`) + `
       <div class="kpis three">${summary}</div>
       ${W.card(`${M.label} (${M.unit})`, `<div class="chart-top">${UI.seg('growthMetric', [['weight', 'Peso'], ['length', 'Longitud'], ['head', 'P. craneal']], metric)}
         <ul class="legend"><li><i class="lg-dot"></i>${U.esc(b.name)}</li><li><i class="lg-p50"></i>Mediana (P50)</li><li><i class="lg-pin"></i>P15–P85</li><li><i class="lg-pout"></i>P3–P97</li></ul></div>
@@ -2800,7 +3234,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     },
     citas() {
       const b = S.baby(); const up = S.upcoming(); const past = S.appointments().filter((a) => a.date < U.today() || a.done).reverse();
-      const ageNow = S.ageMonths();
+      const ageNow = S.chronoMonths(); // revisiones por edad cronológica
       const nextCheck = N.CHECKUPS.find((c) => c.m > ageNow);
       const scheduled = nextCheck && S.appointments().some((a) => a.title.toLowerCase().includes(nextCheck.name.toLowerCase().replace('revisión ', '')));
       const suggestDate = nextCheck && (() => { const d = new Date(U.parseDay(b.birth)); d.setMonth(d.getMonth() + Math.floor(nextCheck.m)); return U.dayKey(d.getTime()); })();
@@ -2836,6 +3270,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       const row = (k, v) => `<div><dt>${k}</dt><dd>${v ? U.esc(v) : '<span class="muted">—</span>'}</dd></div>`;
       return `<div class="grid-2">${W.card('Datos de ' + U.esc(b.name), `<dl class="facts">
           ${row('Nacimiento', `${U.dateLong(b.birth)} de ${new Date(U.parseDay(b.birth)).getFullYear()}${b.birthTime ? ', ' + b.birthTime : ''}`)}
+          ${row('Gestación', b.gestWeeks ? `${b.gestWeeks}+${b.gestDays || 0} semanas${S.prematureDays(b) ? ` · prematuro, fecha prevista ${U.date(S.dueDate(b), true)}` : ''}` : '')}
           ${row('Al nacer', [b.birthWeight && U.num(b.birthWeight, 2) + ' kg', b.birthLength && U.num(b.birthLength, 1) + ' cm', b.birthHead && 'PC ' + U.num(b.birthHead, 1) + ' cm'].filter(Boolean).join(' · '))}
           ${row('Grupo sanguíneo', b.blood)}${row('Alergias conocidas', b.allergies || 'Ninguna conocida')}
           ${row('Pediatra', b.pediatrician)}${row('Centro de salud', b.center)}${row('Tarjeta sanitaria', b.healthCard)}${row('Notas', b.notes)}</dl>`)}
@@ -2926,7 +3361,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       const groups = Object.entries(N.MILESTONE_AREAS).map(([area, A]) => {
         const ms = N.MILESTONES.filter((m) => m.area === area);
         return W.card(A.name, `<ul class="ms">${ms.map((m) => {
-          const d = map[m.id]; const at = d ? U.age(b.birth, U.parseDay(d)).decimal : null;
+          const d = map[m.id]; const at = d ? S.ageMonths(U.parseDay(d)) : null;
           const state = d ? 'done' : age > m.to ? 'late' : age >= m.from ? 'now' : 'next';
           return `<li><button type="button" class="ms-row ms-${state}" data-act="form-milestone" data-id="${m.id}">
             <span class="ms-check">${d ? icon('check') : ''}</span>
@@ -2935,7 +3370,7 @@ form[data-kind="wet"] .only-poo { display: none; }
           </button></li>`;
         }).join('')}</ul>`);
       });
-      return `<p class="muted small pad-b">${done} hitos conseguidos. La barra muestra el rango habitual (0–24 meses); la línea vertical es la edad actual. Si ves que pasa el rango sin avances, coméntalo en la próxima revisión.</p><div class="grid-3">${groups.join('')}</div>`;
+      return `<p class="muted small pad-b">${S.prematureDays() ? `Se comparan con su edad corregida (${S.correctedText()}). ` : ''}${done} hitos conseguidos. La barra muestra el rango habitual (0–24 meses); la línea vertical es la edad actual. Si ves que pasa el rango sin avances, coméntalo en la próxima revisión.</p><div class="grid-3">${groups.join('')}</div>`;
     },
     teeth() {
       const map = Store.babyMap('teeth'); const n = Object.keys(map).length;
@@ -2972,8 +3407,9 @@ form[data-kind="wet"] .only-poo { display: none; }
       return UI.head('Diario', 'Primeras veces y recuerdos', `<button type="button" class="btn primary" data-act="form-diary">${icon('plus')}Nuevo recuerdo</button>`) +
         (items.length ? `<div class="diary">${items.map((d) => {
           const mood = N.MOODS.find((x) => x.id === d.mood) || N.MOODS[0];
-          return `<article class="entry ${d.photo ? 'has-photo' : ''}" data-act="form-diary" data-id="${d.id}" tabindex="0">
-            ${d.photo ? `<img src="${d.photo}" alt="Foto del ${U.date(d.date, true)}">` : ''}
+          const src = d.photo || (d.photoId && N.Media.src(d.photoId));
+          return `<article class="entry ${d.photo || d.photoId ? 'has-photo' : ''}" data-act="form-diary" data-id="${d.id}" tabindex="0">
+            ${src ? `<img src="${src}" alt="Foto del ${U.date(d.date, true)}">` : d.photoId ? `<img data-photo="${d.photoId}" alt="Foto del ${U.date(d.date, true)}">` : ''}
             <div class="entry-b"><header><span class="mood" title="${mood.name}">${mood.emoji}</span><span><b>${U.dateLong(d.date)}</b><small>${U.ageText(b.birth, U.parseDay(d.date))}</small></span></header>
             <p>${U.esc(d.text)}</p></div></article>`;
         }).join('')}</div>` : UI.empty('book', 'El diario está vacío', 'Guarda aquí las primeras veces, frases y fotos.', `<button type="button" class="btn primary" data-act="form-diary">Escribir el primero</button>`));
@@ -3008,7 +3444,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     text(d) {
       const b = S.baby(); const L = [];
       L.push(`INFORME DE ${b.name.toUpperCase()} · ${U.dateLong(Date.now())}`);
-      L.push(`Edad: ${U.ageText(b.birth)} (nacimiento ${U.date(b.birth, true)})`);
+      L.push(`Edad: ${U.ageText(b.birth)} (nacimiento ${U.date(b.birth, true)})${S.prematureDays(b) ? ` · prematuro de ${b.gestWeeks}+${b.gestDays || 0} semanas · edad corregida ${S.correctedText()}` : ''}`);
       L.push('', 'CRECIMIENTO'); d.meas.forEach((m) => L.push(`- ${N.METRICS[m.k].label}: ${U.num(m.v, N.METRICS[m.k].digits)} ${N.METRICS[m.k].unit} (P${Math.round(m.p)}, ${U.date(m.date)})`));
       L.push('', 'SUEÑO (media 7 días)', `- Total ${U.dur(d.sleep.total)} · ${U.num(d.sleep.naps, 1)} siestas (${U.dur(d.sleep.day)}) · ${U.num(d.sleep.wakes, 1)} despertares/noche · tramo más largo ${U.dur(d.sleep.longest)}`);
       L.push('', 'ALIMENTACIÓN (media 7 días)', `- ${U.num(d.feeds.perDay, 1)} tomas/día (${U.num(d.feeds.breast, 1)} al pecho)${d.feeds.ml ? ` · ${Math.round(d.feeds.ml)} ml/día en biberón` : ''}`, `- BLW: ${d.foods} alimentos probados`);
@@ -3026,7 +3462,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       const alDone = d.allergens.filter((a) => a.state === 'done' || a.state === 'maintain');
       return UI.head('Informe para el pediatra', 'Resumen listo para llevar a consulta', `<button type="button" class="btn primary" data-act="copy-report">${icon('copy')}Copiar resumen</button>`) + `
       <article class="report">
-        <header class="rep-h"><div>${UI.logo()}</div><div><h2>${U.esc(b.name)}</h2><p>${U.ageText(b.birth)} · nacida/o el ${U.date(b.birth, true)}${b.blood ? ' · ' + U.esc(b.blood) : ''}</p></div>
+        <header class="rep-h"><div>${UI.logo()}</div><div><h2>${U.esc(b.name)}</h2><p>${U.ageText(b.birth)}${S.correctedText() ? ` (corregida: ${S.correctedText()})` : ''} · nacida/o el ${U.date(b.birth, true)}${b.blood ? ' · ' + U.esc(b.blood) : ''}</p></div>
           <div class="rep-date"><small>Generado</small><b>${U.date(Date.now(), true)}</b>${d.next ? `<small>Próxima cita: ${U.date(d.next.date)}</small>` : ''}</div></header>
         <div class="rep-grid">
           <section><h3>${icon('ruler')} Crecimiento</h3><dl class="facts">${d.meas.map((m) => `<div><dt>${N.METRICS[m.k].label}</dt><dd><b>${U.num(m.v, N.METRICS[m.k].digits)} ${N.METRICS[m.k].unit}</b> · P${Math.round(m.p)} <small>(${U.date(m.date)})</small></dd></div>`).join('')}</dl></section>
@@ -3062,11 +3498,26 @@ form[data-kind="wet"] .only-poo { display: none; }
         ${W.card('Quién registra', `<p>Ahora mismo: <b>${U.esc(s.caregiver)}</b></p><button type="button" class="btn soft" data-act="caregiver">${icon('users')}Cambiar cuidador</button>`)}
         ${W.card('Bebés', `<div class="baby-list">${Store.state.babies.map((b) => `<button type="button" class="baby-row" data-act="pick-edit-baby" data-id="${b.id}"><span class="avatar" style="--av:${b.sex === 'm' ? 'var(--c-sleep)' : 'var(--c-feed)'}">${U.esc(b.name[0])}</span><span><b>${U.esc(b.name)}</b><small>${U.ageText(b.birth)}</small></span>${icon('edit')}</button>`).join('')}
           <button type="button" class="baby-row add" data-act="new-baby"><span class="avatar">+</span><span><b>Añadir bebé</b></span></button></div>`)}
-        ${W.card('Tus datos', `<p class="muted small">Todo se guarda solo en este dispositivo (${(bytes / 1024).toFixed(0)} KB). Nada sale de tu navegador.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
+        ${W.card('Tus datos', `<p class="muted small">Todo se guarda solo en este dispositivo: registros ${(bytes / 1024).toFixed(0)} KB<span id="storage-est"></span>. Nada sale de tu navegador. La copia incluye las fotos.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
           <div class="btn-row"><button type="button" class="btn soft" data-act="export">${icon('download')}Exportar copia</button><button type="button" class="btn soft" data-act="import">${icon('upload')}Importar copia</button></div>
           <div class="btn-row"><button type="button" class="btn soft" data-act="load-demo">${icon('spark')}Cargar datos de ejemplo</button><button type="button" class="btn ghost danger" data-act="wipe">${icon('trash')}Borrar todo</button></div>`)}
-        ${W.card('Fuentes', `<ul class="sources"><li>Curvas de crecimiento: OMS, Child Growth Standards (2006).</li><li>Calendario vacunal: Consejo Interterritorial del SNS, calendario común 2025.</li><li>Sueño: recomendaciones de la AASM y la AAP.</li><li>BLW y alérgenos: AEP y ESPGHAN.</li></ul><p class="muted small">Nido es una herramienta de registro. No sustituye el consejo de tu pediatra.</p>`, { cls: 'span-2' })}
+        ${W.card('Fuentes', `<ul class="sources"><li>Curvas de crecimiento: OMS, Child Growth Standards (2006).</li><li>Calendario vacunal: Consejo Interterritorial del SNS, calendario común 2025.</li><li>Sueño: recomendaciones de la AASM y la AAP.</li><li>BLW y alérgenos: AEP y ESPGHAN.</li></ul><p class="muted small">Nido es una herramienta de registro. No sustituye el consejo de tu pediatra.</p>`)}
+        ${W.card('Nido en tu móvil', this.install())}
       </div>`;
+    },
+    install() {
+      const I = N.install;
+      if (I.standalone()) return `<p>${UI.pill('Instalada', 'good')} Nido está en tu pantalla de inicio y funciona sin conexión.</p>`;
+      if (I.framed()) return '<p class="muted small">Abre Nido en su propia pestaña (no dentro de otra página) para instalarla y usarla sin conexión.</p>';
+      return `<p class="muted small">Instálala para abrirla como una app, a pantalla completa y sin conexión.${I.offline() ? ' Ya está preparada para funcionar sin internet.' : ''}</p>
+        ${I.prompt ? `<div class="btn-row"><button type="button" class="btn primary" data-act="install">${icon('download')}Instalar Nido</button></div>` : ''}
+        <dl class="guide pad-t"><div><dt>iPhone y iPad</dt><dd>En Safari, toca Compartir y después «Añadir a pantalla de inicio».</dd></div><div><dt>Android</dt><dd>En Chrome, menú ⋮ y «Instalar aplicación».</dd></div></dl>`;
+    },
+    mount(root) {
+      N.Media.usage().then((e) => {
+        const el = root.querySelector('#storage-est');
+        if (e && e.usage != null && el) el.textContent = ` · total con fotos ${(e.usage / 1048576).toFixed(1)} MB de ${Math.round(e.quota / 1048576)} MB disponibles`;
+      });
     }
   };
   N.actions.seg = ((orig) => (el) => {
@@ -3074,10 +3525,12 @@ form[data-kind="wet"] .only-poo { display: none; }
     orig(el);
   })(N.actions.seg);
   N.actions['pick-edit-baby'] = (el) => { Store.state.activeBabyId = el.dataset.id; Store.commit(); N.Forms.baby(S.baby()); };
-  N.actions['load-demo'] = () => UI.confirm('¿Cargar datos de ejemplo?', 'Se sustituirán los datos actuales por tres semanas de ejemplo de Lucía, 6 meses.', 'Cargar ejemplo', () => { N.seedDemo(); UI.go('hoy'); UI.toast('Datos de ejemplo cargados'); });
-  N.actions.wipe = () => UI.confirm('¿Borrar todos los datos?', 'Se eliminarán todos los bebés y registros de este dispositivo. Exporta antes una copia si quieres conservarlos.', 'Borrar todo', () => { Store.reset(); UI.go('hoy'); });
-  N.actions.export = () => {
-    const json = JSON.stringify(Store.state);
+  N.actions['load-demo'] = () => UI.confirm('¿Cargar datos de ejemplo?', 'Se sustituirán los datos actuales por tres semanas de ejemplo de Lucía, 6 meses.', 'Cargar ejemplo', () => { N.seedDemo(); N.Media.gc(); UI.go('hoy'); UI.toast('Datos de ejemplo cargados'); });
+  N.actions.wipe = () => UI.confirm('¿Borrar todos los datos?', 'Se eliminarán todos los bebés y registros de este dispositivo. Exporta antes una copia si quieres conservarlos.', 'Borrar todo', () => { Store.reset(); N.Media.clear(); UI.go('hoy'); });
+  /* La copia incluye las fotos de IndexedDB para poder restaurarlo todo. */
+  const backup = async () => Object.assign({}, Store.state, { media: await N.Media.exportAll().catch(() => ({})) });
+  N.actions.export = async () => {
+    const json = JSON.stringify(await backup());
     UI.sheet({
       title: 'Exportar copia', footer: false,
       body: `<p class="muted small">Guarda este texto en un lugar seguro o compártelo con tu pareja para importarlo en otro dispositivo.</p>
@@ -3086,9 +3539,9 @@ form[data-kind="wet"] .only-poo { display: none; }
     });
   };
   N.actions['copy-export'] = () => { const ta = document.getElementById('f-export'); try { navigator.clipboard.writeText(ta.value).then(() => UI.toast('Copia copiada'), () => { ta.select(); UI.toast('Texto seleccionado: cópialo con Ctrl+C'); }); } catch (e) { ta.select(); } };
-  N.actions['download-export'] = () => {
+  N.actions['download-export'] = async () => {
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(Store.state, null, 1)], { type: 'application/json' }));
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(await backup())], { type: 'application/json' }));
     a.download = `nido-${U.today()}.json`; document.body.appendChild(a); a.click(); a.remove();
   };
   N.actions.import = () => {
@@ -3097,8 +3550,15 @@ form[data-kind="wet"] .only-poo { display: none; }
       body: `<p class="muted small">Pega el texto de una copia o elige el archivo .json. Sustituirá los datos actuales.</p><textarea id="f-import" name="json" class="code" rows="7" placeholder='{"version":1,…}'></textarea><input type="file" id="f-importfile" accept="application/json,.json">`,
       onMount: (form) => form.querySelector('#f-importfile').addEventListener('change', (e) => { const r = new FileReader(); r.onload = () => { form.querySelector('#f-import').value = r.result; }; r.readAsText(e.target.files[0]); }),
       onSubmit: (x) => {
-        try { const d = JSON.parse(x.json); if (!d.babies) throw new Error(); Store.replace(d); UI.go('hoy'); UI.toast('Copia importada'); }
+        let d;
+        try { d = JSON.parse(x.json); if (!d.babies) throw new Error(); }
         catch (e) { UI.toast('El texto no es una copia válida de Nido'); return false; }
+        const media = d.media || {}; delete d.media;
+        N.Media.clear().then(() => N.Media.importAll(media)).then((ok) => {
+          // Sin IndexedDB, las fotos vuelven a guardarse dentro de cada recuerdo.
+          if (!ok) (d.diary || []).forEach((r) => { if (r.photoId && media[r.photoId]) { r.photo = media[r.photoId]; delete r.photoId; } });
+          Store.replace(d); UI.go('hoy'); UI.toast('Copia importada');
+        });
       }
     });
   };
@@ -3150,7 +3610,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     const st = {
       version: 1, activeBabyId: babyId,
       settings: { theme: 'auto', caregiver: 'Mamá' },
-      babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
+      babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', gestWeeks: 39, gestDays: 4, birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
       milestones: {}, teeth: {}, timers: {},
       sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: []
     };
@@ -3174,6 +3634,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       let cur = wake;
       naps.forEach(([ww, dur, dj], i) => {
         const s = cur + ww * MIN + jit(15), e = s + dur * MIN + jit(dj);
+        if (s <= now && e > now) st.timers.sleep = { babyId, start: s }; // siesta en curso
         if (e < now) add('sleeps', { start: s, end: e, type: 'nap', place: i === 2 && r() < 0.5 ? 'Carrito' : pick(['Cuna', 'Cuna', 'Brazos', 'Cuna']), quality: pick([2, 3, 3]) });
         breast(s - 10 * MIN);
         cur = e;
@@ -3190,6 +3651,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       for (let i = 0; i < pts.length - 1; i++) {
         const s = i === 0 ? pts[0] : pts[i] + (12 + r() * 18) * MIN;
         const e = pts[i + 1];
+        if (s <= now && e > now) st.timers.sleep = { babyId, start: s }; // noche en curso
         if (e < now) add('sleeps', { start: s, end: e, type: 'night', place: pick(['Cuna', 'Cuna', 'Colecho']), quality: 3 });
         if (i > 0) breast(pts[i] + 2 * MIN, true);
       }
@@ -3321,6 +3783,39 @@ form[data-kind="wet"] .only-poo { display: none; }
   'use strict';
   const { Store, UI } = N;
 
+  /* Instalación como app (PWA) y uso sin conexión. */
+  const framed = () => { try { return window.self !== window.top; } catch (e) { return true; } };
+  N.install = {
+    prompt: null,
+    framed,
+    standalone: () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true,
+    offline: () => !!(navigator.serviceWorker && navigator.serviceWorker.controller)
+  };
+  N.actions.install = async () => {
+    const p = N.install.prompt; if (!p) return;
+    p.prompt();
+    const { outcome } = await p.userChoice.catch(() => ({}));
+    N.install.prompt = null;
+    if (outcome === 'accepted') UI.toast('Nido se está instalando');
+    UI.render();
+  };
+
+  function registerOffline() {
+    if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol) || framed()) return;
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      // Aviso cuando hay una versión nueva lista.
+      reg.addEventListener('updatefound', () => {
+        const w = reg.installing;
+        w && w.addEventListener('statechange', () => {
+          if (w.state === 'installed' && navigator.serviceWorker.controller) UI.toast('Nueva versión de Nido lista', () => { N.install.updating = true; w.postMessage('skip-waiting'); }, 'Actualizar');
+        });
+      });
+    }).catch(() => { /* sin modo sin conexión */ });
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloading && N.install.updating) { reloading = true; location.reload(); } });
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); N.install.prompt = e; if (UI.current() === 'ajustes') UI.render(); });
+  }
+
   function start() {
     Store.load();
     // Primera visita: se abre con la demo para enseñar la app funcionando.
@@ -3338,6 +3833,9 @@ form[data-kind="wet"] .only-poo { display: none; }
       if (el.tagName === 'A' && el.getAttribute('href')) location.hash = el.getAttribute('href');
       fn(el, e);
     });
+    document.addEventListener('input', (e) => {
+      if (e.target.id === 'snd-vol') N.Sounds.setVolume(e.target.value / 100);
+    });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !document.getElementById('sheet').hidden) UI.closeSheet();
       if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-act][tabindex]:not(button):not(input)')) { e.preventDefault(); e.target.click(); }
@@ -3345,9 +3843,14 @@ form[data-kind="wet"] .only-poo { display: none; }
     window.addEventListener('hashchange', () => { UI.closeSheet(); UI.render(); });
     Store.subscribe(() => UI.render());
     setInterval(UI.tick, 1000);
-    // Refresca predicciones y "hace X min" cada minuto sin tocar formularios abiertos.
-    setInterval(() => { if (document.getElementById('sheet').hidden) UI.render(); }, 60000);
+    // Refresca predicciones y "hace X min" cada minuto sin tocar formularios abiertos ni controles en uso.
+    setInterval(() => { if (document.getElementById('sheet').hidden && document.activeElement?.id !== 'snd-vol') UI.render(); }, 60000);
     UI.render();
+
+    // Fotos: mover las antiguas a IndexedDB y limpiar las huérfanas.
+    N.Media.migrate().then(() => N.Media.gc()).catch(() => {});
+    try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { /* opcional */ }
+    registerOffline();
   }
 
   function localStorageFlag(k, v) {

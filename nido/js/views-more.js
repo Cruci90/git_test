@@ -74,7 +74,7 @@
       const groups = Object.entries(N.MILESTONE_AREAS).map(([area, A]) => {
         const ms = N.MILESTONES.filter((m) => m.area === area);
         return W.card(A.name, `<ul class="ms">${ms.map((m) => {
-          const d = map[m.id]; const at = d ? U.age(b.birth, U.parseDay(d)).decimal : null;
+          const d = map[m.id]; const at = d ? S.ageMonths(U.parseDay(d)) : null;
           const state = d ? 'done' : age > m.to ? 'late' : age >= m.from ? 'now' : 'next';
           return `<li><button type="button" class="ms-row ms-${state}" data-act="form-milestone" data-id="${m.id}">
             <span class="ms-check">${d ? icon('check') : ''}</span>
@@ -83,7 +83,7 @@
           </button></li>`;
         }).join('')}</ul>`);
       });
-      return `<p class="muted small pad-b">${done} hitos conseguidos. La barra muestra el rango habitual (0–24 meses); la línea vertical es la edad actual. Si ves que pasa el rango sin avances, coméntalo en la próxima revisión.</p><div class="grid-3">${groups.join('')}</div>`;
+      return `<p class="muted small pad-b">${S.prematureDays() ? `Se comparan con su edad corregida (${S.correctedText()}). ` : ''}${done} hitos conseguidos. La barra muestra el rango habitual (0–24 meses); la línea vertical es la edad actual. Si ves que pasa el rango sin avances, coméntalo en la próxima revisión.</p><div class="grid-3">${groups.join('')}</div>`;
     },
     teeth() {
       const map = Store.babyMap('teeth'); const n = Object.keys(map).length;
@@ -120,8 +120,9 @@
       return UI.head('Diario', 'Primeras veces y recuerdos', `<button type="button" class="btn primary" data-act="form-diary">${icon('plus')}Nuevo recuerdo</button>`) +
         (items.length ? `<div class="diary">${items.map((d) => {
           const mood = N.MOODS.find((x) => x.id === d.mood) || N.MOODS[0];
-          return `<article class="entry ${d.photo ? 'has-photo' : ''}" data-act="form-diary" data-id="${d.id}" tabindex="0">
-            ${d.photo ? `<img src="${d.photo}" alt="Foto del ${U.date(d.date, true)}">` : ''}
+          const src = d.photo || (d.photoId && N.Media.src(d.photoId));
+          return `<article class="entry ${d.photo || d.photoId ? 'has-photo' : ''}" data-act="form-diary" data-id="${d.id}" tabindex="0">
+            ${src ? `<img src="${src}" alt="Foto del ${U.date(d.date, true)}">` : d.photoId ? `<img data-photo="${d.photoId}" alt="Foto del ${U.date(d.date, true)}">` : ''}
             <div class="entry-b"><header><span class="mood" title="${mood.name}">${mood.emoji}</span><span><b>${U.dateLong(d.date)}</b><small>${U.ageText(b.birth, U.parseDay(d.date))}</small></span></header>
             <p>${U.esc(d.text)}</p></div></article>`;
         }).join('')}</div>` : UI.empty('book', 'El diario está vacío', 'Guarda aquí las primeras veces, frases y fotos.', `<button type="button" class="btn primary" data-act="form-diary">Escribir el primero</button>`));
@@ -156,7 +157,7 @@
     text(d) {
       const b = S.baby(); const L = [];
       L.push(`INFORME DE ${b.name.toUpperCase()} · ${U.dateLong(Date.now())}`);
-      L.push(`Edad: ${U.ageText(b.birth)} (nacimiento ${U.date(b.birth, true)})`);
+      L.push(`Edad: ${U.ageText(b.birth)} (nacimiento ${U.date(b.birth, true)})${S.prematureDays(b) ? ` · prematuro de ${b.gestWeeks}+${b.gestDays || 0} semanas · edad corregida ${S.correctedText()}` : ''}`);
       L.push('', 'CRECIMIENTO'); d.meas.forEach((m) => L.push(`- ${N.METRICS[m.k].label}: ${U.num(m.v, N.METRICS[m.k].digits)} ${N.METRICS[m.k].unit} (P${Math.round(m.p)}, ${U.date(m.date)})`));
       L.push('', 'SUEÑO (media 7 días)', `- Total ${U.dur(d.sleep.total)} · ${U.num(d.sleep.naps, 1)} siestas (${U.dur(d.sleep.day)}) · ${U.num(d.sleep.wakes, 1)} despertares/noche · tramo más largo ${U.dur(d.sleep.longest)}`);
       L.push('', 'ALIMENTACIÓN (media 7 días)', `- ${U.num(d.feeds.perDay, 1)} tomas/día (${U.num(d.feeds.breast, 1)} al pecho)${d.feeds.ml ? ` · ${Math.round(d.feeds.ml)} ml/día en biberón` : ''}`, `- BLW: ${d.foods} alimentos probados`);
@@ -174,7 +175,7 @@
       const alDone = d.allergens.filter((a) => a.state === 'done' || a.state === 'maintain');
       return UI.head('Informe para el pediatra', 'Resumen listo para llevar a consulta', `<button type="button" class="btn primary" data-act="copy-report">${icon('copy')}Copiar resumen</button>`) + `
       <article class="report">
-        <header class="rep-h"><div>${UI.logo()}</div><div><h2>${U.esc(b.name)}</h2><p>${U.ageText(b.birth)} · nacida/o el ${U.date(b.birth, true)}${b.blood ? ' · ' + U.esc(b.blood) : ''}</p></div>
+        <header class="rep-h"><div>${UI.logo()}</div><div><h2>${U.esc(b.name)}</h2><p>${U.ageText(b.birth)}${S.correctedText() ? ` (corregida: ${S.correctedText()})` : ''} · nacida/o el ${U.date(b.birth, true)}${b.blood ? ' · ' + U.esc(b.blood) : ''}</p></div>
           <div class="rep-date"><small>Generado</small><b>${U.date(Date.now(), true)}</b>${d.next ? `<small>Próxima cita: ${U.date(d.next.date)}</small>` : ''}</div></header>
         <div class="rep-grid">
           <section><h3>${icon('ruler')} Crecimiento</h3><dl class="facts">${d.meas.map((m) => `<div><dt>${N.METRICS[m.k].label}</dt><dd><b>${U.num(m.v, N.METRICS[m.k].digits)} ${N.METRICS[m.k].unit}</b> · P${Math.round(m.p)} <small>(${U.date(m.date)})</small></dd></div>`).join('')}</dl></section>
@@ -210,11 +211,26 @@
         ${W.card('Quién registra', `<p>Ahora mismo: <b>${U.esc(s.caregiver)}</b></p><button type="button" class="btn soft" data-act="caregiver">${icon('users')}Cambiar cuidador</button>`)}
         ${W.card('Bebés', `<div class="baby-list">${Store.state.babies.map((b) => `<button type="button" class="baby-row" data-act="pick-edit-baby" data-id="${b.id}"><span class="avatar" style="--av:${b.sex === 'm' ? 'var(--c-sleep)' : 'var(--c-feed)'}">${U.esc(b.name[0])}</span><span><b>${U.esc(b.name)}</b><small>${U.ageText(b.birth)}</small></span>${icon('edit')}</button>`).join('')}
           <button type="button" class="baby-row add" data-act="new-baby"><span class="avatar">+</span><span><b>Añadir bebé</b></span></button></div>`)}
-        ${W.card('Tus datos', `<p class="muted small">Todo se guarda solo en este dispositivo (${(bytes / 1024).toFixed(0)} KB). Nada sale de tu navegador.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
+        ${W.card('Tus datos', `<p class="muted small">Todo se guarda solo en este dispositivo: registros ${(bytes / 1024).toFixed(0)} KB<span id="storage-est"></span>. Nada sale de tu navegador. La copia incluye las fotos.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
           <div class="btn-row"><button type="button" class="btn soft" data-act="export">${icon('download')}Exportar copia</button><button type="button" class="btn soft" data-act="import">${icon('upload')}Importar copia</button></div>
           <div class="btn-row"><button type="button" class="btn soft" data-act="load-demo">${icon('spark')}Cargar datos de ejemplo</button><button type="button" class="btn ghost danger" data-act="wipe">${icon('trash')}Borrar todo</button></div>`)}
-        ${W.card('Fuentes', `<ul class="sources"><li>Curvas de crecimiento: OMS, Child Growth Standards (2006).</li><li>Calendario vacunal: Consejo Interterritorial del SNS, calendario común 2025.</li><li>Sueño: recomendaciones de la AASM y la AAP.</li><li>BLW y alérgenos: AEP y ESPGHAN.</li></ul><p class="muted small">Nido es una herramienta de registro. No sustituye el consejo de tu pediatra.</p>`, { cls: 'span-2' })}
+        ${W.card('Fuentes', `<ul class="sources"><li>Curvas de crecimiento: OMS, Child Growth Standards (2006).</li><li>Calendario vacunal: Consejo Interterritorial del SNS, calendario común 2025.</li><li>Sueño: recomendaciones de la AASM y la AAP.</li><li>BLW y alérgenos: AEP y ESPGHAN.</li></ul><p class="muted small">Nido es una herramienta de registro. No sustituye el consejo de tu pediatra.</p>`)}
+        ${W.card('Nido en tu móvil', this.install())}
       </div>`;
+    },
+    install() {
+      const I = N.install;
+      if (I.standalone()) return `<p>${UI.pill('Instalada', 'good')} Nido está en tu pantalla de inicio y funciona sin conexión.</p>`;
+      if (I.framed()) return '<p class="muted small">Abre Nido en su propia pestaña (no dentro de otra página) para instalarla y usarla sin conexión.</p>';
+      return `<p class="muted small">Instálala para abrirla como una app, a pantalla completa y sin conexión.${I.offline() ? ' Ya está preparada para funcionar sin internet.' : ''}</p>
+        ${I.prompt ? `<div class="btn-row"><button type="button" class="btn primary" data-act="install">${icon('download')}Instalar Nido</button></div>` : ''}
+        <dl class="guide pad-t"><div><dt>iPhone y iPad</dt><dd>En Safari, toca Compartir y después «Añadir a pantalla de inicio».</dd></div><div><dt>Android</dt><dd>En Chrome, menú ⋮ y «Instalar aplicación».</dd></div></dl>`;
+    },
+    mount(root) {
+      N.Media.usage().then((e) => {
+        const el = root.querySelector('#storage-est');
+        if (e && e.usage != null && el) el.textContent = ` · total con fotos ${(e.usage / 1048576).toFixed(1)} MB de ${Math.round(e.quota / 1048576)} MB disponibles`;
+      });
     }
   };
   N.actions.seg = ((orig) => (el) => {
@@ -222,10 +238,12 @@
     orig(el);
   })(N.actions.seg);
   N.actions['pick-edit-baby'] = (el) => { Store.state.activeBabyId = el.dataset.id; Store.commit(); N.Forms.baby(S.baby()); };
-  N.actions['load-demo'] = () => UI.confirm('¿Cargar datos de ejemplo?', 'Se sustituirán los datos actuales por tres semanas de ejemplo de Lucía, 6 meses.', 'Cargar ejemplo', () => { N.seedDemo(); UI.go('hoy'); UI.toast('Datos de ejemplo cargados'); });
-  N.actions.wipe = () => UI.confirm('¿Borrar todos los datos?', 'Se eliminarán todos los bebés y registros de este dispositivo. Exporta antes una copia si quieres conservarlos.', 'Borrar todo', () => { Store.reset(); UI.go('hoy'); });
-  N.actions.export = () => {
-    const json = JSON.stringify(Store.state);
+  N.actions['load-demo'] = () => UI.confirm('¿Cargar datos de ejemplo?', 'Se sustituirán los datos actuales por tres semanas de ejemplo de Lucía, 6 meses.', 'Cargar ejemplo', () => { N.seedDemo(); N.Media.gc(); UI.go('hoy'); UI.toast('Datos de ejemplo cargados'); });
+  N.actions.wipe = () => UI.confirm('¿Borrar todos los datos?', 'Se eliminarán todos los bebés y registros de este dispositivo. Exporta antes una copia si quieres conservarlos.', 'Borrar todo', () => { Store.reset(); N.Media.clear(); UI.go('hoy'); });
+  /* La copia incluye las fotos de IndexedDB para poder restaurarlo todo. */
+  const backup = async () => Object.assign({}, Store.state, { media: await N.Media.exportAll().catch(() => ({})) });
+  N.actions.export = async () => {
+    const json = JSON.stringify(await backup());
     UI.sheet({
       title: 'Exportar copia', footer: false,
       body: `<p class="muted small">Guarda este texto en un lugar seguro o compártelo con tu pareja para importarlo en otro dispositivo.</p>
@@ -234,9 +252,9 @@
     });
   };
   N.actions['copy-export'] = () => { const ta = document.getElementById('f-export'); try { navigator.clipboard.writeText(ta.value).then(() => UI.toast('Copia copiada'), () => { ta.select(); UI.toast('Texto seleccionado: cópialo con Ctrl+C'); }); } catch (e) { ta.select(); } };
-  N.actions['download-export'] = () => {
+  N.actions['download-export'] = async () => {
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(Store.state, null, 1)], { type: 'application/json' }));
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(await backup())], { type: 'application/json' }));
     a.download = `nido-${U.today()}.json`; document.body.appendChild(a); a.click(); a.remove();
   };
   N.actions.import = () => {
@@ -245,8 +263,15 @@
       body: `<p class="muted small">Pega el texto de una copia o elige el archivo .json. Sustituirá los datos actuales.</p><textarea id="f-import" name="json" class="code" rows="7" placeholder='{"version":1,…}'></textarea><input type="file" id="f-importfile" accept="application/json,.json">`,
       onMount: (form) => form.querySelector('#f-importfile').addEventListener('change', (e) => { const r = new FileReader(); r.onload = () => { form.querySelector('#f-import').value = r.result; }; r.readAsText(e.target.files[0]); }),
       onSubmit: (x) => {
-        try { const d = JSON.parse(x.json); if (!d.babies) throw new Error(); Store.replace(d); UI.go('hoy'); UI.toast('Copia importada'); }
+        let d;
+        try { d = JSON.parse(x.json); if (!d.babies) throw new Error(); }
         catch (e) { UI.toast('El texto no es una copia válida de Nido'); return false; }
+        const media = d.media || {}; delete d.media;
+        N.Media.clear().then(() => N.Media.importAll(media)).then((ok) => {
+          // Sin IndexedDB, las fotos vuelven a guardarse dentro de cada recuerdo.
+          if (!ok) (d.diary || []).forEach((r) => { if (r.photoId && media[r.photoId]) { r.photo = media[r.photoId]; delete r.photoId; } });
+          Store.replace(d); UI.go('hoy'); UI.toast('Copia importada');
+        });
       }
     });
   };

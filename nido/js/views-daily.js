@@ -89,6 +89,41 @@
   };
   W.card = (title, body, opts = {}) => `<section class="card ${opts.cls || ''}">${title ? `<header class="card-h"><h2>${title}</h2>${opts.act || ''}</header>` : ''}${body}</section>`;
 
+  /* Plan del día: lo que ya ha pasado y lo previsto, con las ventanas aprendidas. */
+  W.plan = () => {
+    const p = S.dayPlan(), r = p.rhythm, now = Date.now();
+    const napName = (x) => `Siesta ${x.idx + 1}`;
+    const row = (x) => {
+      let t, title, sub;
+      if (x.kind === 'wake') { t = U.time(x.t); title = 'Despertar'; sub = x.state === 'done' ? 'registrado' : 'hora habitual'; }
+      else if (x.kind === 'nap') {
+        const dur = U.dur((x.end - x.start) / U.MIN);
+        t = `${x.state === 'done' || x.state === 'now' ? '' : '~'}${U.time(x.start)}`;
+        title = `${napName(x)} · ${x.state === 'done' ? dur : '~' + dur}`;
+        sub = x.state === 'done' ? `${U.time(x.start)} – ${U.time(x.end)}`
+          : x.state === 'now' ? 'durmiendo ahora'
+          : x.state === 'overdue' ? 'ya toca: busca señales de sueño'
+          : `en ${U.dur((x.start - now) / U.MIN)} · tras ${U.dur(x.window)} despierta${x.short ? ' · corta para no retrasar la noche' : ''}`;
+      } else {
+        t = `${x.state === 'done' ? '' : '~'}${U.time(x.t)}`; title = 'A la cama';
+        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'adjusted' ? 'ajustado a un horario razonable (18:30–21:00)' : `tras ${U.dur(x.window)} despierta`;
+      }
+      return `<li class="plan-it is-${x.state} k-${x.kind}"><time>${t}</time><i class="plan-dot" aria-hidden="true"></i><span><b>${title}</b><small>${sub}</small></span></li>`;
+    };
+    const ws = r.windows.map((w, i) => (i === r.expected ? `cama ${U.dur(w, true)}` : U.dur(w, true))).join(' · ');
+    return W.card('Plan de hoy', `<ol class="plan">${p.items.map(row).join('')}</ol>
+      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}</span></p>`, { cls: 'c-sleep' });
+  };
+
+  /* Sonidos para dormir con temporizador de apagado. */
+  W.sounds = () => {
+    const st = N.Sounds.state;
+    return W.card('Sonidos para dormir', `<div class="snd-grid">${N.Sounds.list.map((s) => `<button type="button" class="snd ${st.key === s.id ? 'on' : ''}" data-act="sound" data-key="${s.id}" aria-pressed="${st.key === s.id}"><span class="snd-e" aria-hidden="true">${s.emoji}</span><b>${s.name}</b><small>${st.key === s.id ? 'sonando' : s.hint}</small></button>`).join('')}</div>
+      <div class="snd-ctrl"><label class="snd-vol">${icon('sun', 'sm')}<span class="sr-only">Volumen</span><input type="range" id="snd-vol" min="0" max="100" value="${Math.round(st.volume * 100)}" aria-label="Volumen"></label>
+        ${UI.seg('sndTimer', [[15, '15 min'], [30, '30 min'], [60, '1 h'], [0, 'Sin fin']], st.minutes)}</div>
+      <p class="muted small">Se apaga suavemente al terminar. Pon el móvil lejos de la cuna y el volumen bajo (menos de 50 dB).</p>`, { cls: 'c-sleep' });
+  };
+
   /* ======================= HOY ======================= */
   V.hoy = {
     render() {
@@ -106,7 +141,7 @@
       <header class="hello">
         <div><p class="eyebrow">${hello} · ${U.dateLong(Date.now())}</p>
         <h1>${U.esc(b.name)} tiene <span class="hl">${U.ageText(b.birth)}</span></h1>
-        <p class="vsub">Semana ${a.weeks + 1} de vida · día ${a.totalDays + 1}</p></div>
+        <p class="vsub">Semana ${a.weeks + 1} de vida · día ${a.totalDays + 1}${S.correctedText() ? ` · <b>edad corregida: ${S.correctedText()}</b>` : ''}</p></div>
         <button type="button" class="btn primary hide-sm" data-act="quick-add">${icon('plus')}Registrar</button>
       </header>
       <div class="grid-hoy">
@@ -127,6 +162,7 @@
           ${W.card('Hoy, hora a hora', W.timeline(S.timeline(key), { who: true }), { act: `<a class="link" href="#sueno">Ver patrón</a>` })}
         </div>
         <aside class="col-side">
+          ${W.plan()}
           ${W.card('Su día en 24 horas', `<div class="clock-wrap">${Charts.dayClock(sd.blocks, feeds.filter((f) => f.kind !== 'solids').map((f) => f.time), Date.now())}
             <ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul></div>`)}
           ${V.hoy.reminders()}
@@ -188,9 +224,9 @@
       const list = S.sleeps().slice(-40).reverse();
       const groups = {}; list.forEach((s) => { (groups[U.dayKey(s.end)] = groups[U.dayKey(s.end)] || []).push(s); });
 
-      return UI.head('Sueño', `Ventanas de vigilia y siestas para ${U.ageText(S.baby().birth)}`, `<button type="button" class="btn soft" data-act="form-sleep">${icon('plus')}Añadir sueño</button>`) + `
+      return UI.head('Sueño', `Ventanas de vigilia y siestas para ${S.correctedText() ? S.correctedText() + ' de edad corregida' : U.ageText(S.baby().birth)}`, `<button type="button" class="btn soft" data-act="form-sleep">${icon('plus')}Añadir sueño</button>`) + `
       <div class="grid-2">
-        <div class="stack">${W.live()}
+        <div class="stack">${W.live()}${W.plan()}
           <div class="kpis three">
             ${W.kpi('Media diaria', U.dur(avgTotal), `${inRange ? UI.pill('En rango', 'good') : UI.pill('Fuera de rango', 'warn')} ${norm.total[0]}–${norm.total[1]} h`, 'c-sleep')}
             ${W.kpi('Noche', U.dur(U.avg(nights, (n) => n.total)), `${U.num(U.avg(nights, (n) => n.wakes), 1)} despertares · tramo más largo ${U.dur(U.avg(nights, (n) => n.longest))}`, 'c-sleep')}
@@ -200,9 +236,12 @@
             ${W.kpi('Ventana ideal', `${U.dur(norm.ww[0], true)}–${U.dur(norm.ww[1], true)}`, `${norm.naps[0] === norm.naps[1] ? norm.naps[0] : norm.naps.join('–')} siestas a esta edad`, 'c-sleep')}
           </div>
         </div>
+        <div class="stack">
         ${W.card('Horas de sueño por día', `<div class="chart-top">${UI.seg('sleepRange', [[7, '7 días'], [14, '14 días'], [30, '30 días']], range)}
           <ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siestas</li><li><i class="lg-band"></i>Recomendado</li></ul></div>
           ${Charts.sleepBars(days, norm.total)}`)}
+        <div id="sonidos">${W.sounds()}</div>
+        </div>
       </div>
       ${W.card('Patrón de las últimas dos semanas', `<div class="scroll-x">${Charts.pattern(rows, { feeds: true })}</div><ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul>`)}
       <div class="grid-2">
@@ -222,6 +261,7 @@
     if (el.dataset.seg === 'sleepRange') { UI.st.sleepRange = +el.dataset.val; UI.render(); return; }
     if (el.dataset.seg === 'growthMetric') { UI.st.growthMetric = el.dataset.val; UI.render(); return; }
     if (el.dataset.seg === 'foodFilter') { UI.st.foodFilter = el.dataset.val; UI.render(); return; }
+    if (el.dataset.seg === 'sndTimer') { N.Sounds.setTimer(+el.dataset.val); return; }
     orig(el);
   })(N.actions.seg);
 

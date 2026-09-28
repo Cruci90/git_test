@@ -700,3 +700,54 @@ form[data-kind="wet"] .only-poo { display: none; }
 .rb span { font-size: 10.5px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-item time small { display: block; font-size: 11px; font-weight: 500; }
 .lg-star { color: var(--c-mile); font-size: 12px; }
+
+/* ---------- Plan del día ---------- */
+.plan { list-style: none; margin: 0; padding: 0; position: relative; }
+.plan::before { content: ""; position: absolute; left: 61px; top: 12px; bottom: 12px; width: 2px; background: var(--line); }
+.plan-it { display: grid; grid-template-columns: 50px 24px minmax(0, 1fr); align-items: center; gap: 0 4px; padding: 7px 0; position: relative; }
+.plan-it time { font-weight: 700; font-size: 14px; text-align: right; padding-right: 6px; }
+.plan-it span { display: flex; flex-direction: column; min-width: 0; }
+.plan-it b { font-size: 14px; font-weight: 600; }
+.plan-it small { font-size: 12.5px; color: var(--ink-3); }
+.plan-dot { width: 12px; height: 12px; margin-left: 6px; border-radius: 50%; border: 2px solid var(--c-sleep); background: var(--surface); position: relative; z-index: 1; }
+.plan-it.is-done .plan-dot { background: var(--c-sleep); }
+.plan-it.is-done b, .plan-it.is-done time { color: var(--ink-2); }
+.plan-it.k-wake .plan-dot { border-color: var(--c-mile); }
+.plan-it.k-wake.is-done .plan-dot { background: var(--c-mile); }
+.plan-it.is-planned time, .plan-it.is-adjusted time { color: var(--c-sleep); }
+.plan-it.is-planned .plan-dot, .plan-it.is-adjusted .plan-dot { border-style: dashed; }
+.plan-it.is-now .plan-dot { background: var(--c-sleep); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c-sleep) 25%, transparent); }
+.plan-it.is-overdue .plan-dot { border-color: var(--warn); background: var(--warn-soft); }
+.plan-it.is-overdue small { color: var(--warn); font-weight: 600; }
+.plan-it.k-bed .plan-dot { border-color: var(--night-2); }
+.plan-it.k-bed.is-done .plan-dot { background: var(--night-2); }
+.plan-foot { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--ink-3); }
+.plan-foot .ic { width: 16px; height: 16px; color: var(--c-sleep); flex: none; margin-top: 1px; }
+
+/* ---------- Sonidos ---------- */
+.snd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.snd { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); text-align: left; min-width: 0; }
+.snd-e { font-size: 20px; margin-bottom: 4px; }
+.snd b { font-size: 13.5px; font-weight: 600; }
+.snd small { font-size: 11.5px; color: var(--ink-3); }
+.snd:hover { border-color: var(--c-sleep); }
+.snd.on { background: color-mix(in srgb, var(--c-sleep) 14%, var(--surface)); border-color: var(--c-sleep); }
+.snd.on small { color: var(--c-sleep); font-weight: 700; }
+@media (prefers-reduced-motion: no-preference) { .snd.on .snd-e { animation: breathe 3s ease-in-out infinite; } }
+@keyframes breathe { 50% { transform: scale(1.18); } }
+.snd-ctrl { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 8px; }
+.snd-vol { display: flex; align-items: center; gap: 8px; flex: 1 1 160px; color: var(--ink-3); }
+.snd-vol input { flex: 1; accent-color: var(--c-sleep); }
+.ic.sm { width: 16px; height: 16px; }
+.player {
+  position: fixed; z-index: 32; left: 16px; right: 88px; bottom: calc(var(--tab-h) + 22px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 16px;
+  background: var(--night-1); color: #EEF0FF; box-shadow: var(--shadow-lg);
+}
+.player .pl-e { font-size: 20px; }
+.player .pl-t { display: flex; flex-direction: column; flex: 1; min-width: 0; text-decoration: none; }
+.player b { font-size: 14px; }
+.player small { font-size: 12px; color: #C9CCFF; }
+.player .icon-btn { color: #EEF0FF; }
+.player .icon-btn:hover { background: rgba(255, 255, 255, .12); }
+@media (min-width: 960px) { .player { left: 14px; right: auto; width: calc(var(--side-w) - 28px); bottom: 56px; } }

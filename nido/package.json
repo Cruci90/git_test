@@ -1,0 +1,10 @@
+{
+  "name": "nido",
+  "private": true,
+  "type": "module",
+  "description": "Cuaderno del bebé: app web sin dependencias.",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "build": "node build.mjs"
+  }
+}

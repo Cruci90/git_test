@@ -67,6 +67,7 @@
     main.dataset.view = id;
     main.innerHTML = view.render();
     if (view.mount) view.mount(main);
+    N.Media.hydrate(main);
     UI.tick();
     if (same) window.scrollTo(0, y); else window.scrollTo(0, 0);
     document.title = `${N.S.baby() ? N.S.baby().name + ' · ' : ''}Nido`;
@@ -141,9 +142,9 @@
 
   /* ---------- Avisos ---------- */
   let toastT;
-  UI.toast = (msg, undo) => {
+  UI.toast = (msg, undo, label = 'Deshacer') => {
     const el = document.getElementById('toast');
-    el.innerHTML = `<span>${msg}</span>${undo ? '<button type="button" class="link" data-act="undo">Deshacer</button>' : ''}`;
+    el.innerHTML = `<span>${msg}</span>${undo ? `<button type="button" class="link" data-act="undo">${label}</button>` : ''}`;
     el.hidden = false; el.classList.remove('out');
     UI._undo = undo;
     clearTimeout(toastT);
@@ -182,6 +183,7 @@
   /* ---------- Temporizadores en vivo ---------- */
   UI.tick = () => {
     document.querySelectorAll('[data-since]').forEach((el) => { el.textContent = U.clock(Date.now() - Number(el.dataset.since)); });
+    document.querySelectorAll('[data-until]').forEach((el) => { el.textContent = U.clock(Number(el.dataset.until) - Date.now()); });
     document.querySelectorAll('[data-ago]').forEach((el) => { el.textContent = U.ago(Number(el.dataset.ago)); });
     const b = N.S.activeBreast();
     if (b) document.querySelectorAll('[data-breast]').forEach((el) => {
