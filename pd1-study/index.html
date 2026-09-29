@@ -1,10 +1,318 @@
 <!doctype html>
 <html lang="es">
 <head>
+  <!-- Archivo generado por build.py a partir de src/. No editar a mano. -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PD1 Study</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+:root {
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --inner: #f7f9fc;
+  --text: #16202e;
+  --muted: #5d6b7e;
+  --line: #dfe5ee;
+  --primary: #0b5cab;
+  --primary-2: #0176d3;
+  --ok: #2e844a;
+  --ok-bg: #e6f4ea;
+  --bad: #ba0517;
+  --bad-bg: #fdecec;
+  --warn: #a96404;
+  --c-fund: #0176d3;
+  --c-auto: #9050e9;
+  --c-ui: #06a59a;
+  --c-test: #dd7a01;
+  --code-bg: #0f1b2d;
+  --code-fg: #e3ecf7;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(16, 32, 46, .06), 0 4px 16px rgba(16, 32, 46, .05);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1420;
+    --card: #152032;
+    --inner: #1a273b;
+    --text: #e6edf6;
+    --muted: #9aa9bd;
+    --line: #26354c;
+    --primary: #3b9cf0;
+    --primary-2: #5aaef5;
+    --ok: #4cc471;
+    --ok-bg: #173424;
+    --bad: #ff6b6b;
+    --bad-bg: #3a1a1f;
+    --warn: #f0a33a;
+    --code-bg: #0a111c;
+    --shadow: none;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+h1, h2, h3 { line-height: 1.25; margin: 0 0 .6em; }
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.2rem; }
+h3 { font-size: 1.02rem; }
+p { margin: 0 0 .8em; }
+a { color: var(--primary-2); }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+
+/* Barra superior */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 20px;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.logo {
+  background: linear-gradient(135deg, var(--c-fund), var(--c-auto));
+  color: #fff; border-radius: 9px; padding: 4px 9px; font-weight: 800; letter-spacing: .5px;
+}
+.tabs { display: flex; gap: 4px; overflow-x: auto; }
+.tabs button {
+  border: 0; background: transparent; color: var(--muted);
+  padding: 8px 12px; border-radius: 9px; font: inherit; font-weight: 600; cursor: pointer; white-space: nowrap;
+}
+.tabs button:hover { background: var(--inner); color: var(--text); }
+.tabs button.active { background: var(--primary); color: #fff; }
+
+main { max-width: 1040px; margin: 0 auto; padding: 20px 16px 40px; display: grid; gap: 16px; }
+.foot { text-align: center; color: var(--muted); font-size: .8rem; padding: 0 16px 30px; }
+
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow); min-width: 0;
+}
+.card.inner { background: var(--inner); box-shadow: none; }
+.row { display: flex; gap: 8px; align-items: center; }
+.row.wrap { flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.right { margin-left: auto; }
+.grid4 { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.grid3 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 18px; }
+
+/* Botones */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--card); color: var(--text);
+  padding: 9px 15px; border-radius: 10px; font: inherit; font-weight: 600; cursor: pointer;
+}
+.btn:hover:not(:disabled) { border-color: var(--primary-2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--primary-2); }
+.btn.ghost { background: transparent; }
+.btn.warn { color: var(--warn); border-color: currentColor; }
+.btn.danger { color: var(--bad); }
+.btn.small { padding: 5px 10px; font-size: .85rem; }
+.btn.flagged { color: var(--warn); border-color: var(--warn); }
+
+/* Inicio */
+.banner { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-left: 4px solid var(--warn); }
+.hero { display: flex; gap: 24px; justify-content: space-between; flex-wrap: wrap; }
+.hero > div:first-child { flex: 1 1 420px; }
+.eyebrow { text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; font-weight: 700; color: var(--primary-2); margin-bottom: .3em; }
+.hero-stats { display: flex; gap: 12px; align-self: center; }
+.hero-stats div {
+  background: var(--inner); border-radius: 12px; padding: 12px 16px; text-align: center; min-width: 84px;
+}
+.hero-stats b { display: block; font-size: 1.5rem; }
+.hero-stats span { color: var(--muted); font-size: .8rem; }
+
+.weightbar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; margin: 6px 0 12px; }
+.weightbar div { display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: .9rem; }
+.legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.legend i, .check i, .dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: middle; }
+
+.sec { border-top: 4px solid var(--sc); }
+.sec-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sec-head h2, .sec-head h3 { margin: 0; }
+.pill { background: var(--sc, var(--primary)); color: #fff; font-weight: 700; font-size: .8rem; border-radius: 999px; padding: 2px 9px; }
+.meter { position: relative; height: 8px; background: var(--inner); border-radius: 99px; overflow: visible; margin: 6px 0; }
+.meter div { height: 100%; background: var(--sc, var(--primary)); border-radius: 99px; transition: width .3s; }
+.meter em { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--text); opacity: .5; }
+
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; margin: 0 0 12px; }
+.facts dt { font-weight: 600; }
+.facts dd { margin: 0; color: var(--muted); }
+.notes { color: var(--muted); font-size: .9rem; margin: 0; padding-left: 18px; }
+
+/* Tablas */
+.tbl { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.tbl th, .tbl td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl th { color: var(--muted); font-weight: 600; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+.num { font-variant-numeric: tabular-nums; font-weight: 700; }
+.ok { color: var(--ok); }
+.bad { color: var(--bad); }
+
+/* Guía */
+.sec-guide { border-left: 4px solid var(--sc); }
+details { margin-top: 10px; }
+summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.keynotes { padding-left: 18px; margin: 6px 0 0; }
+.keynotes li { margin-bottom: 6px; }
+.keynotes b { color: var(--sc); }
+ol { padding-left: 20px; margin: 6px 0 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip {
+  border: 1px solid var(--line); background: var(--inner); color: var(--text);
+  border-radius: 999px; padding: 4px 11px; font: inherit; font-size: .85rem; cursor: pointer;
+}
+.chip:hover { border-color: var(--sc); }
+.chip small { color: var(--muted); margin-left: 4px; }
+.links { padding-left: 18px; margin: 0; }
+.links li { margin-bottom: 4px; }
+
+/* Formularios */
+.form { display: grid; gap: 16px; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+legend { font-weight: 700; margin-bottom: 6px; }
+.check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.check input { width: 17px; height: 17px; accent-color: var(--primary); }
+.seg { display: inline-flex; flex-wrap: wrap; background: var(--inner); border-radius: 10px; padding: 3px; gap: 2px; width: fit-content; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span { display: block; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.seg input:checked + span { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
+.seg input:focus-visible + span { outline: 2px solid var(--primary-2); }
+
+.exam-opt { text-align: center; }
+.big { font-size: 2rem; font-weight: 800; margin: 0; }
+.big small { font-size: .9rem; color: var(--muted); font-weight: 500; }
+
+/* Sesión */
+.session { display: grid; gap: 16px; }
+.sbar { display: flex; align-items: center; gap: 16px; position: sticky; top: 62px; z-index: 5; padding: 12px 18px; }
+.sbar > div:first-child { min-width: 0; }
+.progress { flex: 1; height: 8px; background: var(--inner); border-radius: 99px; overflow: hidden; }
+.progress div { height: 100%; background: var(--primary); transition: width .3s; }
+.timer { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1.15rem; }
+.timer.low { color: var(--bad); }
+
+.qcard { border-top: 4px solid var(--sc); }
+.qmeta { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: .85rem; margin-bottom: 10px; }
+.tag { background: var(--inner); border-radius: 999px; padding: 2px 10px; font-size: .78rem; color: var(--muted); font-weight: 600; }
+.qtext { font-size: 1.12rem; font-weight: 600; }
+.choose { font-weight: 700; color: var(--primary-2); font-size: .9rem; }
+.code {
+  background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 14px 16px;
+  overflow-x: auto; font-size: .88rem; margin: 0 0 14px;
+}
+.opts { display: grid; gap: 8px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 12px; text-align: left; width: 100%;
+  background: var(--card); border: 2px solid var(--line); border-radius: 12px;
+  padding: 11px 14px; font: inherit; color: var(--text); cursor: pointer;
+}
+.opt:hover:not(:disabled) { border-color: var(--primary-2); }
+.opt:disabled { cursor: default; }
+.key {
+  flex: none; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 7px;
+  background: var(--inner); font-weight: 700; font-size: .85rem;
+}
+.otext { padding-top: 2px; word-break: break-word; }
+.opt.sel { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--card)); }
+.opt.sel .key { background: var(--primary); color: #fff; }
+.opt.right { border-color: var(--ok); background: var(--ok-bg); }
+.opt.right .key { background: var(--ok); color: #fff; }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt.wrong .key { background: var(--bad); color: #fff; }
+
+.feedback, .review { color: var(--text); }
+.feedback b { color: var(--ok); }
+.feedback.bad b { color: var(--bad); }
+.feedback { margin-top: 14px; border-radius: 12px; padding: 12px 16px; }
+.feedback.ok { background: var(--ok-bg); border-left: 4px solid var(--ok); }
+.feedback.bad { background: var(--bad-bg); border-left: 4px solid var(--bad); }
+.feedback p { margin: 6px 0 0; }
+.qactions { margin-top: 16px; flex-wrap: wrap; }
+
+.navgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; margin: 8px 0; }
+.navq {
+  position: relative; border: 1px solid var(--line); background: var(--inner); color: var(--text);
+  border-radius: 8px; padding: 6px 0; font: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
+}
+.navq.done { background: color-mix(in srgb, var(--primary) 18%, var(--card)); border-color: var(--primary); }
+.navq.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.navq.bad { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.navq.flag::after { content: "★"; position: absolute; top: -7px; right: -3px; color: var(--warn); font-size: .75rem; }
+.navq.cur { outline: 2px solid var(--text); outline-offset: 1px; }
+
+/* Resultados */
+.result-head.pass { border-top: 5px solid var(--ok); }
+.result-head.fail { border-top: 5px solid var(--bad); }
+.score { display: flex; gap: 20px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.ring {
+  --p: 0; width: 104px; height: 104px; border-radius: 50%; flex: none;
+  background: conic-gradient(var(--primary) calc(var(--p) * 1%), var(--inner) 0);
+  display: grid; place-items: center;
+}
+.pass .ring { background: conic-gradient(var(--ok) calc(var(--p) * 1%), var(--inner) 0); }
+.fail .ring { background: conic-gradient(var(--bad) calc(var(--p) * 1%), var(--inner) 0); }
+.ring span {
+  width: 80px; height: 80px; border-radius: 50%; background: var(--card);
+  display: grid; place-items: center; font-weight: 800; font-size: 1.35rem;
+}
+.secres { margin-bottom: 12px; }
+.reviews { display: grid; gap: 8px; }
+.review { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin: 0; }
+.review.bad { border-left: 4px solid var(--bad); }
+.review.ok { border-left: 4px solid var(--ok); }
+.review summary { font-weight: 500; }
+.review .tag { margin-left: 6px; }
+.badge { font-weight: 800; }
+.review.ok .badge { color: var(--ok); }
+.review.bad .badge { color: var(--bad); }
+.ropts { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 6px; }
+.ropts li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 10px; border-radius: 8px; }
+.ropts li.right { background: var(--ok-bg); }
+.ropts li.wrong { background: var(--bad-bg); }
+.expl { background: var(--inner); border-radius: 10px; padding: 10px 14px; margin: 0; }
+
+/* Progreso */
+.chart { width: 100%; height: auto; }
+.chart .line { fill: none; stroke: var(--primary-2); stroke-width: 2.5; }
+.chart .passline { stroke: var(--muted); stroke-dasharray: 5 5; }
+.chart .axis { fill: var(--muted); font-size: 12px; }
+.chart circle.ok { fill: var(--ok); }
+.chart circle.bad { fill: var(--bad); }
+
+@media (max-width: 640px) {
+  .topbar { padding: 8px 12px; }
+  .brand-text { display: none; }
+  .card { padding: 16px; }
+  .sbar { top: 54px; flex-wrap: wrap; }
+  .progress { order: 3; flex-basis: 100%; }
+  .facts { grid-template-columns: 1fr; }
+  .facts dd { margin-bottom: 6px; }
+  .hero-stats { width: 100%; }
+  .hero-stats div { flex: 1; }
+  .tbl { font-size: .85rem; }
+}
+
+/* Diálogos */
+.modal {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px;
+  background: rgba(8, 14, 24, .55);
+}
+.modal-box {
+  background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; width: min(420px, 100%); box-shadow: 0 10px 40px rgba(0, 0, 0, .3);
+}
+.modal-box p { margin: 0 0 16px; }
+.right-row { justify-content: flex-end; }
+
+</style>
 </head>
 <body>
   <header class="topbar">
@@ -27,11 +335,2254 @@
     Material de estudio no oficial. Verifica siempre la guía oficial en Trailhead Academy.
   </footer>
 
-  <script src="data/guide.js"></script>
-  <script src="data/questions-fund.js"></script>
-  <script src="data/questions-auto.js"></script>
-  <script src="data/questions-ui.js"></script>
-  <script src="data/questions-test.js"></script>
-  <script src="app.js"></script>
+  <script>
+// Información del examen y guía de estudio por sección
+window.PD1_EXAM = {
+  name: 'Salesforce Certified Platform Developer (antes "Platform Developer I")',
+  code: 'Plat-Dev-201',
+  facts: [
+    ['Preguntas', '60 puntuables (opción múltiple / selección múltiple) + hasta 5 no puntuables'],
+    ['Duración', '105 minutos'],
+    ['Nota de corte', '68 % (≈ 41 de 60 correctas)'],
+    ['Precio', '200 USD + impuestos'],
+    ['Repetición', '100 USD + impuestos'],
+    ['Requisitos previos', 'Ninguno obligatorio (se recomienda experiencia con Apex, LWC y Flow)'],
+    ['Formato', 'Supervisado: online (Kryterion/Webassessor) o en centro de examen'],
+    ['Material permitido', 'Ninguno'],
+    ['Mantenimiento', 'Módulo anual de mantenimiento en Trailhead para conservar la certificación']
+  ],
+  notes: [
+    'En 2025 Salesforce renombró la credencial a "Salesforce Certified Platform Developer" y la gestión de certificaciones pasó a Trailhead Academy. El contenido y los pesos publicados desde agosto de 2022 se mantienen: 23 / 30 / 25 / 22.',
+    'Las preguntas de selección múltiple indican cuántas respuestas elegir ("Choose 2"). No hay puntuación parcial.',
+    'Consulta siempre la guía oficial en Trailhead Academy antes de presentarte por si hay una actualización de release.'
+  ],
+  resources: [
+    ['Guía oficial del examen (Trailhead Academy)', 'https://trailheadacademy.salesforce.com/certificate/exam-platform-dev1---Plat-Dev-201'],
+    ['Credencial en Trailhead', 'https://trailhead.salesforce.com/credentials/platformdeveloperi'],
+    ['Trailmix oficial: Prepare for your Platform Developer Credential', 'https://trailhead.salesforce.com/content/learn/trails/platform-developer-i-certification-study-guide'],
+    ['Apex Developer Guide', 'https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/'],
+    ['Execution Governors and Limits', 'https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_gov_limits.htm'],
+    ['Triggers and Order of Execution', 'https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_triggers_order_of_execution.htm'],
+    ['Lightning Web Components Developer Guide', 'https://developer.salesforce.com/docs/platform/lwc/guide'],
+    ['Visualforce Developer Guide', 'https://developer.salesforce.com/docs/atlas.en-us.pages.meta/pages/'],
+    ['Superbadge: Apex Specialist', 'https://trailhead.salesforce.com/content/learn/superbadges/superbadge_apex']
+  ]
+};
+
+window.PD1_SECTIONS = [
+  {
+    id: 'fund',
+    name: 'Developer Fundamentals',
+    weight: 23,
+    color: 'var(--c-fund)',
+    objectives: [
+      'Conceptos multi-tenant y frameworks de diseño: MVC y Lightning Component Framework.',
+      'Casos de uso y buenas prácticas de personalización declarativa vs programática: governor limits, campos fórmula y roll-up summary.',
+      'Determinar, crear y acceder al modelo de datos adecuado: objetos, campos, relaciones y External IDs.',
+      'Importar y exportar datos en entornos de desarrollo.'
+    ],
+    notes: [
+      '<b>Multitenancy</b>: recursos compartidos ⇒ governor limits ⇒ código bulkificado.',
+      '<b>MVC</b>: Model = objetos/campos · View = Visualforce, LWC, Aura, layouts · Controller = controladores estándar, Apex, JS.',
+      '<b>Master-detail</b>: borrado en cascada, detalle sin Owner (hereda sharing), campo obligatorio, permite roll-up summary, máximo 2 por objeto.',
+      '<b>Lookup</b>: relación débil, opcional, sin roll-up nativo (usar Flow/Apex). <b>Hierarchical</b>: solo User.',
+      '<b>Junction object</b>: dos master-detail ⇒ relación muchos-a-muchos.',
+      '<b>Fórmulas cross-object</b>: hasta 10 relaciones únicas por objeto; no almacenan datos.',
+      '<b>External ID</b> + <b>upsert</b> para integraciones sin duplicados.',
+      '<b>Data Import Wizard</b> ≤ 50.000 registros y objetos comunes · <b>Data Loader</b> ≤ 5 millones, todos los objetos, también export/delete.',
+      '<b>Custom Metadata Types</b>: configuración desplegable (los registros viajan en change sets). <b>Hierarchy Custom Settings</b>: valores por org/perfil/usuario.',
+      '<b>Sharing</b>: with sharing / without sharing / inherited sharing. Sin palabra clave ⇒ hereda (o without si es punto de entrada).',
+      '<b>FLS/CRUD</b>: WITH USER_MODE, WITH SECURITY_ENFORCED, Security.stripInaccessible(), Describe (isAccessible/isUpdateable).',
+      '<b>Apex</b>: variables sin inicializar = null; constantes static final; herencia requiere virtual/abstract + override; global para otros namespaces.'
+    ]
+  },
+  {
+    id: 'auto',
+    name: 'Process Automation and Logic',
+    weight: 30,
+    color: 'var(--c-auto)',
+    objectives: [
+      'Capacidades de la automatización declarativa (Flow, approval processes, validation rules…).',
+      'Declarar variables, constantes, métodos; usar modificadores e interfaces de Apex.',
+      'Sentencias de control de flujo en Apex.',
+      'Escribir clases y triggers de Apex siguiendo buenas prácticas.',
+      'Escribir SOSL, SOQL y DML en Apex.',
+      'Implicaciones de los governor limits en las transacciones.',
+      'Relación entre transacciones, orden de ejecución, recursión y cascada.',
+      'Manejo de excepciones, incluidas excepciones personalizadas.',
+      'Técnicas programáticas para prevenir vulnerabilidades de seguridad.',
+      'Combinar funcionalidad declarativa y Apex (p. ej. Invocable methods desde Flow).'
+    ],
+    notes: [
+      '<b>Before trigger</b>: modificar el mismo registro sin DML y validar (addError). <b>After trigger</b>: necesita Id, crear/actualizar registros relacionados.',
+      '<b>Contexto</b>: Trigger.old/oldMap no existen en insert; Trigger.newMap no existe en before insert; no hay before undelete.',
+      '<b>Bulkificación</b>: sin SOQL/DML en bucles, usar Set&lt;Id&gt; y Map&lt;Id, sObject&gt;. Un trigger por objeto + handler. Evitar recursión con static Set&lt;Id&gt;.',
+      '<b>Orden de ejecución</b>: system validation → before-save flows → before triggers → validation rules → duplicate rules → save → after triggers → assignment/auto-response → workflow (field update ⇒ triggers de update otra vez) → after-save flows → escalation → roll-ups → sharing → commit → post-commit (emails, async).',
+      '<b>DML</b>: insert/update/upsert/delete/undelete/merge (todo o nada) vs Database.xxx(lista, false) con SaveResult (éxito parcial). Savepoint + rollback.',
+      '<b>MIXED_DML_OPERATION</b>: setup (User, Group…) + no-setup ⇒ separar con @future/Queueable (runAs en tests).',
+      '<b>Excepciones</b>: QueryException (0 filas asignadas a un sObject), NullPointerException, DmlException, ListException. LimitException no se captura. Custom: extends Exception y nombre terminado en "Exception".',
+      '<b>Asíncrono</b>: @future (static void, solo primitivos, callout=true) · Queueable (sObjects, Job Id, encadenable) · Batch (start/execute/finish, 200 por defecto, máx. 2.000, Database.Stateful) · Schedulable (System.schedule + cron).',
+      '<b>Platform Events</b> (__e): EventBus.publish; triggers after insert; Publish Immediately vs After Commit.',
+      '<b>Flow</b>: Screen, Record-triggered (before-save = fast field updates, after-save), Schedule-triggered, Autolaunched, Platform event-triggered. Apex desde Flow: @InvocableMethod (uno por clase, static, List in/out) + @InvocableVariable.',
+      '<b>Gotchas Apex</b>: String == no distingue mayúsculas; Integer/Integer trunca; claves de Map/Set de String sí distinguen mayúsculas; variables static duran la transacción.',
+      '<b>SOQL</b>: agregados ⇒ List&lt;AggregateResult&gt;; SELECT COUNT() ⇒ Integer; SOQL for loop para ahorrar heap.'
+    ]
+  },
+  {
+    id: 'ui',
+    name: 'User Interface',
+    weight: 25,
+    color: 'var(--c-ui)',
+    objectives: [
+      'Mostrar y usar componentes de UI personalizados: Lightning Components, Flow y Visualforce.',
+      'Tipos de contenido web que se pueden incorporar en páginas Visualforce.',
+      'Prevenir vulnerabilidades de seguridad en la UI y en el acceso a datos (XSS, SOQL injection).',
+      'Lightning Component Framework: beneficios y tipos de contenido de un LWC.',
+      'Implementar Apex para trabajar con distintos tipos de componentes de página (Visualforce, Lightning Components, Flow, Next Best Action…).'
+    ],
+    notes: [
+      '<b>Apex desde LWC</b>: static + @AuraEnabled. @wire exige cacheable=true (sin DML). DML ⇒ llamada imperativa (Promise). Errores ⇒ AuraHandledException.',
+      '<b>Decoradores</b>: @api (público, recordId/objectApiName en record pages), @track (observar mutaciones internas de objetos/arrays), @wire (datos reactivos, parámetros con $).',
+      '<b>Comunicación</b>: padre→hijo @api · hijo→padre CustomEvent + dispatchEvent · no relacionados ⇒ Lightning Message Service.',
+      '<b>Ciclo de vida</b>: constructor → connectedCallback → render → renderedCallback → disconnectedCallback; errorCallback captura errores de hijos.',
+      '<b>LDS</b>: lightning-record-form / edit-form / view-form, getRecord, getFieldValue, createRecord, updateRecord; aplica FLS y sharing sin Apex. refreshApex / notifyRecordUpdateAvailable para refrescar.',
+      '<b>Módulos</b>: lightning/platformShowToastEvent, lightning/navigation (NavigationMixin), lightning/uiRecordApi, @salesforce/label, @salesforce/resourceUrl, @salesforce/apex, @salesforce/schema.',
+      '<b>Meta XML</b>: isExposed + targets (lightning__RecordPage, AppPage, HomePage, RecordAction, FlowScreen, UtilityBar, Community).',
+      '<b>Plantillas</b>: lwc:if/elseif/else, for:each con key, iterator; this.template.querySelector (Shadow DOM).',
+      '<b>Aura</b>: .cmp, Controller.js, Helper.js; component events (jerarquía) vs application events. Aura puede contener LWC, no al revés.',
+      '<b>Visualforce</b>: standardController, extensions (constructor con ApexPages.StandardController), StandardSetController (recordSetVar, paginación), métodos de acción ⇒ PageReference, transient reduce view state (170 KB), lightningStylesheets="true".',
+      '<b>Seguridad</b>: evita escape="false"; usa HTMLENCODE/JSENCODE/URLENCODE; binds o escapeSingleQuotes en SOQL dinámico; CSRF protegido en acciones estándar.'
+    ]
+  },
+  {
+    id: 'test',
+    name: 'Testing, Debugging, and Deployment',
+    weight: 22,
+    color: 'var(--c-test)',
+    objectives: [
+      'Escribir y ejecutar tests para triggers, controladores, flows y procesos usando distintas fuentes de datos de test.',
+      'Saber cuándo usar las herramientas de desarrollo: Salesforce DX, Salesforce CLI, Developer Console.',
+      'Entornos, requisitos y proceso para desplegar código y su configuración.'
+    ],
+    notes: [
+      '<b>Cobertura</b>: 75 % global para desplegar a producción, todos los triggers > 0 %, todos los tests en verde. Las clases @isTest no cuentan.',
+      '<b>Datos</b>: aislados por defecto (se ven User, Profile, RecordType…). @testSetup (una vez por clase), Test.loadData (CSV en static resource), TestDataFactory. Evitar SeeAllData=true.',
+      '<b>Test.startTest/stopTest</b>: límites nuevos y ejecución síncrona de async al hacer stopTest. Batch en test: solo un execute().',
+      '<b>Mocks</b>: HttpCalloutMock + Test.setMock, StaticResourceCalloutMock, WebServiceMock, Stub API.',
+      '<b>System.runAs</b>: sharing de un usuario concreto y evita MIXED_DML en tests. @TestVisible expone miembros privados.',
+      '<b>Asserts</b>: Assert.areEqual / isTrue / fail (o System.assertEquals). Probar positivo, negativo, bulk (200) y usuario restringido.',
+      '<b>Debug</b>: trace flags + debug levels (categorías: Database, Workflow, Validation, Callouts, Apex Code, Apex Profiling, Visualforce, System). Developer Console: Log Inspector, checkpoints, Query Editor, Execute Anonymous (confirma cambios). Apex Replay Debugger en VS Code. Clase Limits.',
+      '<b>Sandboxes</b>: Developer (200 MB, metadatos, 1 día) · Developer Pro (1 GB, 1 día) · Partial Copy (5 GB + muestra de datos, 5 días) · Full (copia completa, 29 días). <b>Scratch orgs</b>: Dev Hub + CLI, efímeros (≤ 30 días).',
+      '<b>Despliegue</b>: change sets (orgs conectadas, deployment connection, sin borrados ni datos), Salesforce CLI / Metadata API (destructiveChanges), paquetes (unmanaged, unlocked, managed), DevOps Center. Validación + Quick Deploy. Niveles de test: NoTestRun, RunSpecifiedTests, RunLocalTests, RunAllTestsInOrg.'
+    ]
+  }
+];
+
+window.PD1_LIMITS = [
+  ['Consultas SOQL', '100', '200'],
+  ['Filas recuperadas por SOQL', '50.000', '50.000'],
+  ['Consultas SOSL', '20', '20'],
+  ['Sentencias DML', '150', '150'],
+  ['Filas procesadas por DML', '10.000', '10.000'],
+  ['Tiempo de CPU', '10 s', '60 s'],
+  ['Heap', '6 MB', '12 MB'],
+  ['Callouts HTTP', '100', '100'],
+  ['Llamadas @future por transacción', '50', '50 (no se permite desde batch ni desde otro @future)'],
+  ['Jobs Queueable encolados', '50', '1'],
+  ['Emails enviados (sendEmail)', '10', '10']
+];
+
+</script>
+  <script>
+// Sección 1: Developer Fundamentals (23 %)
+window.PD1_QUESTIONS = window.PD1_QUESTIONS || [];
+window.PD1_QUESTIONS.push(
+  {
+    s: 'fund', t: 'Multitenancy',
+    q: '¿Cuál es la principal consecuencia de la arquitectura multi-tenant de Salesforce para un desarrollador de Apex?',
+    o: [
+      'Cada org dispone de un servidor dedicado, así que el rendimiento depende solo del código propio',
+      'Se aplican governor limits para que ningún tenant monopolice los recursos compartidos',
+      'El código Apex se compila a Java y puede usar cualquier librería Java',
+      'Las consultas SOQL no tienen límite de filas porque la base de datos se escala automáticamente'
+    ],
+    a: [1],
+    e: 'En multitenancy todas las orgs comparten infraestructura. Los governor limits (SOQL, DML, CPU, heap…) garantizan que ningún código acapare recursos. Por eso hay que escribir código bulkificado y eficiente.'
+  },
+  {
+    s: 'fund', t: 'MVC',
+    q: 'En el patrón MVC aplicado a Salesforce, ¿qué elemento corresponde al "Controller"?',
+    o: ['Un objeto personalizado y sus campos', 'Una página Visualforce', 'Una clase Apex de controlador o extensión', 'Un layout de página'],
+    a: [2],
+    e: 'Model = sObjects/objetos y campos; View = páginas Visualforce, componentes Lightning, layouts; Controller = controladores estándar, clases Apex (controladores/extensiones) y la lógica JS de los componentes.'
+  },
+  {
+    s: 'fund', t: 'MVC',
+    q: '¿Qué dos elementos forman parte de la capa "View" en el modelo MVC de la plataforma? (Elige 2)',
+    o: ['Lightning Web Components (HTML)', 'Objetos personalizados', 'Páginas Visualforce', 'Triggers de Apex'],
+    a: [0, 2],
+    e: 'La vista es la capa de presentación: Visualforce, plantillas de LWC/Aura, page layouts, Lightning pages. Los objetos son el Modelo y los triggers forman parte de la lógica (Controller).'
+  },
+  {
+    s: 'fund', t: 'Modelado de datos',
+    q: 'Un desarrollador necesita un campo en Account que sume el importe de todas sus Opportunities cerradas-ganadas sin escribir código. ¿Qué se necesita?',
+    o: [
+      'Un campo fórmula en Account',
+      'Un campo roll-up summary en Account (la relación Account–Opportunity admite roll-ups)',
+      'Un trigger after insert en Opportunity',
+      'No es posible sin código porque Opportunity no es un objeto personalizado'
+    ],
+    a: [1],
+    e: 'Aunque Account–Opportunity no es un master-detail personalizado, Salesforce permite roll-up summaries de Opportunity en Account (no así de Contact). Los roll-up summary son declarativos y admiten filtros (StageName = Closed Won).'
+  },
+  {
+    s: 'fund', t: 'Modelado de datos',
+    q: 'Se necesita un roll-up summary en un objeto padre, pero la relación con el hijo es de tipo lookup. ¿Cuáles son dos soluciones válidas? (Elige 2)',
+    o: [
+      'Convertir la relación a master-detail si todos los hijos tienen valor en el campo lookup',
+      'Crear el roll-up summary directamente sobre el lookup',
+      'Usar un record-triggered Flow o un trigger de Apex que calcule el total',
+      'Crear un campo fórmula cross-object en el padre que sume los hijos'
+    ],
+    a: [0, 2],
+    e: 'Los roll-up summary solo existen en master-detail. Si todos los registros hijos tienen padre se puede convertir; si no, hay que calcularlo con Flow o Apex. Las fórmulas no agregan registros hijos.'
+  },
+  {
+    s: 'fund', t: 'Modelado de datos',
+    q: '¿Qué ocurre con los registros detalle cuando se elimina el registro maestro en una relación master-detail?',
+    o: ['Se quedan huérfanos con el campo vacío', 'Se eliminan en cascada', 'La eliminación del maestro falla', 'Se reasignan al propietario del maestro'],
+    a: [1],
+    e: 'En master-detail el borrado es en cascada. En un lookup, por defecto se limpia el valor (o se puede configurar para impedir el borrado o, en lookups personalizados, borrar en cascada con soporte).'
+  },
+  {
+    s: 'fund', t: 'Modelado de datos',
+    q: 'Se requiere una relación muchos-a-muchos entre Curso__c y Alumno__c, con roll-up summaries en ambos lados. ¿Qué diseño es el correcto?',
+    o: [
+      'Un lookup de Curso__c a Alumno__c',
+      'Un objeto junction con dos relaciones master-detail (una a cada objeto)',
+      'Un campo multi-select picklist en Alumno__c',
+      'Un objeto junction con dos lookups'
+    ],
+    a: [1],
+    e: 'El patrón estándar es un objeto junction con dos master-detail. Así ambos padres pueden tener roll-up summaries y el acceso del junction depende de los dos padres.'
+  },
+  {
+    s: 'fund', t: 'Modelado de datos',
+    q: '¿Cuántas relaciones master-detail puede tener como máximo un objeto personalizado?',
+    o: ['1', '2', '5', '40'],
+    a: [1],
+    e: 'Un objeto puede tener hasta 2 relaciones master-detail (y hasta 40 relaciones en total). Por eso un junction object tiene exactamente dos.'
+  },
+  {
+    s: 'fund', t: 'Modelado de datos',
+    q: '¿Qué afirmación sobre el objeto detalle en una relación master-detail es cierta?',
+    o: [
+      'Tiene su propio campo Owner y su propio modelo de sharing',
+      'Hereda la seguridad y el propietario del registro maestro; no tiene campo Owner',
+      'Puede existir sin registro maestro',
+      'Solo puede relacionarse con objetos estándar'
+    ],
+    a: [1],
+    e: 'El detalle no tiene Owner: su acceso lo controla el maestro (Controlled by Parent). El campo master-detail es siempre obligatorio.'
+  },
+  {
+    s: 'fund', t: 'Modelado de datos',
+    q: '¿Qué tipo de relación solo está disponible en el objeto User?',
+    o: ['Lookup', 'Master-detail', 'Hierarchical', 'External lookup'],
+    a: [2],
+    e: 'La relación jerárquica (hierarchical) es un lookup especial solo para User, por ejemplo para relacionar un usuario con su manager.'
+  },
+  {
+    s: 'fund', t: 'Importación de datos',
+    q: 'Hay que importar 250.000 registros de un objeto personalizado. ¿Qué herramienta es la adecuada?',
+    o: ['Data Import Wizard', 'Data Loader', 'Schema Builder', 'Una Screen Flow'],
+    a: [1],
+    e: 'Data Import Wizard admite hasta 50.000 registros y solo algunos objetos. Data Loader (o Bulk API) admite hasta 5 millones de registros y todos los objetos.'
+  },
+  {
+    s: 'fund', t: 'Importación de datos',
+    q: 'Un sistema externo envía periódicamente clientes; unos ya existen en Salesforce y otros no. ¿Qué dos elementos permiten evitar duplicados al cargarlos? (Elige 2)',
+    o: [
+      'Un campo marcado como External ID (y Unique) con el identificador del sistema externo',
+      'La operación upsert usando ese External ID',
+      'La operación insert con allOrNone = false',
+      'Un campo fórmula con el Id del sistema externo'
+    ],
+    a: [0, 1],
+    e: 'Upsert con un External ID crea los registros que no existen y actualiza los que coinciden. En Apex: upsert lista Cuenta__c.Fields.Ext_Id__c;'
+  },
+  {
+    s: 'fund', t: 'Declarativo vs programático',
+    q: 'Se debe impedir guardar una Opportunity si Amount está vacío cuando Stage = "Negotiation". ¿Cuál es la solución recomendada?',
+    o: ['Un trigger before update con addError()', 'Una validation rule', 'Una clase batch nocturna', 'Un componente LWC con validación en el cliente'],
+    a: [1],
+    e: 'Salesforce recomienda "clicks before code": una validation rule resuelve el requisito sin código, aplica a todos los canales (UI, API, importaciones) y no requiere tests.'
+  },
+  {
+    s: 'fund', t: 'Declarativo vs programático',
+    q: 'Se necesita mostrar en Contact el campo Industry de su Account, sin necesidad de reportar sobre él de forma independiente ni de almacenarlo. ¿Qué opción es la mejor?',
+    o: ['Un trigger que copie el valor', 'Un campo fórmula cross-object: Account.Industry', 'Un roll-up summary', 'Un Flow programado'],
+    a: [1],
+    e: 'Las fórmulas cross-object leen campos de registros relacionados (hasta 10 relaciones distintas por objeto) sin almacenar el dato ni requerir sincronización.'
+  },
+  {
+    s: 'fund', t: 'Configuración',
+    q: 'Una empresa quiere guardar reglas de negocio configurables (por ejemplo tasas por país) que se puedan desplegar entre orgs con change sets junto con sus registros. ¿Qué usar?',
+    o: ['Custom settings de tipo lista', 'Custom metadata types', 'Un objeto personalizado', 'Custom labels'],
+    a: [1],
+    e: 'Los registros de Custom Metadata Types son metadatos: se despliegan con change sets/paquetes/CLI y se consultan sin consumir límites de SOQL (métodos getAll/getInstance).'
+  },
+  {
+    s: 'fund', t: 'Configuración',
+    q: 'Se necesita un valor de configuración que pueda variar por organización, perfil o usuario (por ejemplo desactivar un trigger para un usuario de integración). ¿Qué es lo más apropiado?',
+    o: ['Custom setting de tipo Hierarchy', 'Custom setting de tipo List', 'Custom metadata type', 'Un campo en el objeto User'],
+    a: [0],
+    e: 'Los Hierarchy custom settings devuelven el valor más específico: usuario > perfil > org. Se leen con MiSetting__c.getInstance().'
+  },
+  {
+    s: 'fund', t: 'Tipos de datos Apex',
+    q: '¿Qué valor tiene una variable Integer declarada pero no inicializada en Apex?',
+    c: 'Integer contador;\nSystem.debug(contador);',
+    o: ['0', 'null', 'undefined', 'Error de compilación'],
+    a: [1],
+    e: 'En Apex todas las variables no inicializadas (incluidas las primitivas) valen null. Operar con ellas (contador++) lanza NullPointerException.'
+  },
+  {
+    s: 'fund', t: 'Tipos de datos Apex',
+    q: '¿Cómo se declara una constante en Apex?',
+    o: ['const Integer MAX = 10;', 'static final Integer MAX = 10;', 'final static const MAX = 10;', 'readonly Integer MAX = 10;'],
+    a: [1],
+    e: 'Las constantes se declaran con static final. Una variable final solo puede asignarse una vez (en la declaración, en un bloque estático o en el constructor).'
+  },
+  {
+    s: 'fund', t: 'Colecciones',
+    q: '¿Cuál es la forma más eficiente de obtener un Map<Id, Account> a partir de una consulta?',
+    o: [
+      'Recorrer la lista y hacer put de cada registro',
+      'Map<Id, Account> m = new Map<Id, Account>([SELECT Id, Name FROM Account]);',
+      'Map<Id, Account> m = [SELECT Id, Name FROM Account].toMap();',
+      'No se puede crear un mapa desde una consulta'
+    ],
+    a: [1],
+    e: 'El constructor de Map acepta una List<sObject> y usa el Id como clave automáticamente.'
+  },
+  {
+    s: 'fund', t: 'Colecciones',
+    q: '¿Qué imprime este código?',
+    c: "Set<String> s = new Set<String>{'a', 'b', 'a', 'A'};\nSystem.debug(s.size());",
+    o: ['2', '3', '4', 'Error: elementos duplicados'],
+    a: [1],
+    e: "Un Set no admite duplicados y los Strings en un Set son sensibles a mayúsculas: {'a','b','A'} → 3."
+  },
+  {
+    s: 'fund', t: 'Clases e interfaces',
+    q: 'Una clase hija necesita sobrescribir un método de la clase padre. ¿Qué debe cumplirse? (Elige 2)',
+    o: [
+      'El método del padre debe ser virtual o abstract',
+      'El método de la hija debe declararse con override',
+      'La clase hija debe ser global',
+      'El método del padre debe ser static'
+    ],
+    a: [0, 1],
+    e: 'En Apex las clases y métodos son "final" por defecto. Para heredar la clase debe ser virtual/abstract, el método virtual/abstract, y la hija usa la palabra clave override.'
+  },
+  {
+    s: 'fund', t: 'Clases e interfaces',
+    q: '¿Qué modificador de acceso se requiere para que un método sea visible fuera del namespace de un paquete gestionado?',
+    o: ['public', 'protected', 'global', 'private'],
+    a: [2],
+    e: 'public = visible dentro del mismo namespace/aplicación. global = visible en cualquier código Apex, incluidos otros namespaces (paquetes gestionados, web services).'
+  },
+  {
+    s: 'fund', t: 'Sharing',
+    q: 'Una clase Apex se declara sin palabra clave de sharing y la llama otra clase "with sharing". ¿Qué comportamiento es cierto?',
+    o: [
+      'Siempre se ejecuta without sharing',
+      'Se ejecuta con el modo de sharing de la clase que la llama (inherited), salvo que sea el punto de entrada',
+      'Genera un error de compilación',
+      'Siempre se ejecuta with sharing'
+    ],
+    a: [1],
+    e: 'Una clase sin declaración hereda el contexto de quien la llama. Si es el punto de entrada de la transacción, se comporta como without sharing. Usar "inherited sharing" explícitamente es la buena práctica.'
+  },
+  {
+    s: 'fund', t: 'Sharing',
+    q: '¿Qué palabra clave garantiza que una clase Apex respeta las reglas de sharing del usuario actual?',
+    o: ['with sharing', 'inherited sharing', 'without sharing', 'global sharing'],
+    a: [0],
+    e: 'with sharing aplica las reglas de visibilidad de registros del usuario. Ojo: NO aplica FLS ni permisos de objeto; para eso se usa WITH USER_MODE, WITH SECURITY_ENFORCED o Security.stripInaccessible.'
+  },
+  {
+    s: 'fund', t: 'Seguridad',
+    q: '¿Cuáles dos opciones hacen que una consulta SOQL respete la seguridad a nivel de campo y objeto (FLS/CRUD)? (Elige 2)',
+    o: [
+      '[SELECT Name FROM Account WITH USER_MODE]',
+      '[SELECT Name FROM Account WITH SECURITY_ENFORCED]',
+      'Declarar la clase "with sharing"',
+      '[SELECT Name FROM Account FOR VIEW]'
+    ],
+    a: [0, 1],
+    e: 'WITH USER_MODE (recomendado actualmente) y WITH SECURITY_ENFORCED aplican FLS/CRUD. with sharing solo afecta a la visibilidad de registros. Security.stripInaccessible() elimina campos inaccesibles de los resultados.'
+  },
+  {
+    s: 'fund', t: 'SOQL/SOSL',
+    q: 'Se necesita buscar el texto "Acme" en Account, Contact y Lead en una sola consulta. ¿Qué usar?',
+    o: ['SOQL con OR', 'SOSL: FIND \'Acme\' IN ALL FIELDS RETURNING Account, Contact, Lead', 'Tres consultas SOQL con LIKE', 'Database.query con UNION'],
+    a: [1],
+    e: 'SOSL busca texto en múltiples objetos a la vez y devuelve List<List<sObject>>. SOQL consulta un objeto (y sus relaciones).'
+  },
+  {
+    s: 'fund', t: 'SOQL/SOSL',
+    q: '¿Cuál es la sintaxis correcta para obtener cuentas con sus contactos en una consulta?',
+    o: [
+      'SELECT Name, (SELECT LastName FROM Contacts) FROM Account',
+      'SELECT Name, (SELECT LastName FROM Contact) FROM Account',
+      'SELECT Name, Contact.LastName FROM Account',
+      'SELECT Name, (SELECT LastName FROM Contacts__r) FROM Account'
+    ],
+    a: [0],
+    e: 'Las subconsultas padre→hijo usan el nombre de relación en plural (Contacts). Para relaciones personalizadas se usa el sufijo __r (p. ej. Facturas__r).'
+  },
+  {
+    s: 'fund', t: 'SOQL/SOSL',
+    q: 'Una consulta hijo→padre sobre un lookup personalizado Proyecto__c en Tarea__c. ¿Cómo se accede al nombre del proyecto?',
+    o: ['SELECT Proyecto__c.Name FROM Tarea__c', 'SELECT Proyecto__r.Name FROM Tarea__c', 'SELECT Proyectos__r.Name FROM Tarea__c', 'SELECT Name FROM Proyecto__c WHERE Tarea__c != null'],
+    a: [1],
+    e: 'En relaciones personalizadas, __c es el campo con el Id y __r es la relación que permite navegar a los campos del padre.'
+  },
+  {
+    s: 'fund', t: 'SOQL/SOSL',
+    q: 'Un desarrollador construye una consulta dinámica con un valor introducido por el usuario. ¿Cuáles dos técnicas previenen SOQL injection? (Elige 2)',
+    o: [
+      'Usar variables bind (:variable) en la consulta',
+      'Usar String.escapeSingleQuotes() sobre la entrada',
+      'Declarar la clase with sharing',
+      'Convertir la entrada a mayúsculas'
+    ],
+    a: [0, 1],
+    e: 'Las variables bind son la mejor defensa (Database.query también las admite, y Database.queryWithBinds). escapeSingleQuotes evita que el usuario cierre la cadena. Mejor aún: whitelisting de valores permitidos.'
+  },
+  {
+    s: 'fund', t: 'Governor limits',
+    q: '¿Cuántas consultas SOQL se pueden ejecutar en una transacción síncrona?',
+    o: ['50', '100', '150', '200'],
+    a: [1],
+    e: 'Síncrono: 100 SOQL, 150 sentencias DML, 50.000 filas recuperadas, 10.000 filas DML, 10 s de CPU, 6 MB de heap. Asíncrono: 200 SOQL, 60 s de CPU y 12 MB de heap.'
+  },
+  {
+    s: 'fund', t: 'Governor limits',
+    q: '¿Cuántas sentencias DML se pueden ejecutar en una transacción?',
+    o: ['100', '150', '200', '10.000'],
+    a: [1],
+    e: '150 sentencias DML por transacción (y 10.000 registros procesados por DML en total).'
+  },
+  {
+    s: 'fund', t: 'Governor limits',
+    q: 'Una consulta puede devolver más de 50.000 filas y además se quiere reducir el uso de heap. ¿Qué técnica ayuda con el heap pero NO evita el límite de filas?',
+    o: ['SOQL for loop', 'Batch Apex', 'Añadir LIMIT 50000', 'Usar un Set en vez de un List'],
+    a: [0],
+    e: 'El SOQL for loop procesa en bloques de 200 y reduce el heap, pero las filas siguen contando para el límite de 50.000. Para procesar millones de registros se usa Batch Apex (QueryLocator admite hasta 50 millones).'
+  },
+  {
+    s: 'fund', t: 'Tipos de datos Apex',
+    q: 'Un método recibe un sObject genérico que sabemos que es un Account. ¿Cómo se accede a su campo Name de forma tipada?',
+    o: ['Account a = sobj;', 'Account a = (Account) sobj;', 'Account a = sobj.toAccount();', 'Account a = new Account(sobj);'],
+    a: [1],
+    e: 'Se hace un cast explícito. Alternativamente, con el sObject genérico se puede usar sobj.get(\'Name\') y sobj.put().'
+  },
+  {
+    s: 'fund', t: 'Tipos de datos Apex',
+    q: '¿Qué afirmación sobre los enums de Apex es correcta?',
+    o: [
+      'Sus valores son Strings y se comparan con equalsIgnoreCase',
+      'Tienen métodos como values(), name() y ordinal()',
+      'No pueden usarse en sentencias switch',
+      'Deben declararse siempre como global'
+    ],
+    a: [1],
+    e: 'Los enums tienen values() (lista de valores), name() y ordinal(). Pueden usarse en switch on. Ejemplo: public enum Estado { ABIERTO, CERRADO }.'
+  },
+  {
+    s: 'fund', t: 'Schema/Describe',
+    q: 'Un desarrollador necesita saber en tiempo de ejecución si el usuario puede actualizar el campo Account.Rating. ¿Qué usar?',
+    o: [
+      'Schema.sObjectType.Account.fields.Rating.isUpdateable()',
+      'Account.Rating.canEdit()',
+      'UserInfo.canUpdate(\'Account.Rating\')',
+      'No es posible desde Apex'
+    ],
+    a: [0],
+    e: 'Los métodos Describe (DescribeFieldResult) exponen isAccessible(), isCreateable(), isUpdateable(). Útil para comprobaciones manuales de FLS.'
+  }
+);
+
+</script>
+  <script>
+// Sección 2: Process Automation and Logic (30 %)
+window.PD1_QUESTIONS = window.PD1_QUESTIONS || [];
+window.PD1_QUESTIONS.push(
+  {
+    s: 'auto', t: 'Triggers',
+    q: 'Un trigger debe rellenar el campo Region__c de un Account a partir de BillingState antes de guardar. ¿Qué evento es el más eficiente?',
+    o: ['before insert, before update', 'after insert, after update', 'after update únicamente', 'before delete'],
+    a: [0],
+    e: 'En before triggers se pueden modificar los registros de Trigger.new directamente, sin DML adicional. En after triggers Trigger.new es de solo lectura.'
+  },
+  {
+    s: 'auto', t: 'Triggers',
+    q: 'Al insertar un Account se debe crear automáticamente un Contact relacionado. ¿En qué evento del trigger debe hacerse?',
+    o: ['before insert, porque aún no se ha guardado', 'after insert, porque el Account ya tiene Id', 'before update', 'Da igual'],
+    a: [1],
+    e: 'Para crear registros relacionados se necesita el Id del padre, que solo existe en el contexto after insert.'
+  },
+  {
+    s: 'auto', t: 'Triggers',
+    q: '¿Qué variables de contexto NO están disponibles en un trigger before insert? (Elige 2)',
+    o: ['Trigger.new', 'Trigger.old', 'Trigger.newMap', 'Trigger.isBefore'],
+    a: [1, 2],
+    e: 'En insert no hay versión anterior (Trigger.old/oldMap = null) y en before insert los registros aún no tienen Id, así que Trigger.newMap es null.'
+  },
+  {
+    s: 'auto', t: 'Triggers',
+    q: '¿Qué evento de trigger NO existe?',
+    o: ['after undelete', 'before undelete', 'before delete', 'after delete'],
+    a: [1],
+    e: 'Eventos válidos: before/after insert, before/after update, before/after delete y after undelete. No hay before undelete.'
+  },
+  {
+    s: 'auto', t: 'Triggers',
+    q: '¿Cuál es el problema de este trigger?',
+    c: 'trigger OppTrigger on Opportunity (before insert) {\n  for (Opportunity o : Trigger.new) {\n    Account a = [SELECT Industry FROM Account WHERE Id = :o.AccountId];\n    o.Description = a.Industry;\n  }\n}',
+    o: [
+      'No hay problema',
+      'Una SOQL dentro del bucle: con más de 100 registros supera el límite de consultas',
+      'No se puede consultar Account desde un trigger de Opportunity',
+      'Debería ser after insert'
+    ],
+    a: [1],
+    e: 'Los triggers reciben hasta 200 registros por lote. Hay que bulkificar: recoger los AccountId en un Set, hacer una sola consulta a un Map<Id, Account> y luego recorrer Trigger.new.'
+  },
+  {
+    s: 'auto', t: 'Triggers',
+    q: '¿Cómo se impide que un registro se guarde desde un trigger, mostrando un mensaje al usuario?',
+    o: ['throw new Exception()', 'record.addError(\'mensaje\')', 'Trigger.new.clear()', 'return false;'],
+    a: [1],
+    e: 'addError() marca el registro con un error, la operación DML sobre ese registro falla y el mensaje se muestra en la UI. Se puede usar también sobre un campo: rec.Campo__c.addError().'
+  },
+  {
+    s: 'auto', t: 'Triggers',
+    q: '¿Cuáles son dos buenas prácticas en el diseño de triggers? (Elige 2)',
+    o: [
+      'Un solo trigger por objeto que delega la lógica en una clase handler',
+      'Hacer consultas y DML sobre colecciones, fuera de los bucles',
+      'Un trigger distinto para cada evento para controlar el orden',
+      'Usar @future en todos los triggers para evitar límites'
+    ],
+    a: [0, 1],
+    e: 'El orden de ejecución entre varios triggers del mismo objeto no está garantizado, por eso se usa un trigger por objeto + handler. Además, siempre bulkificar.'
+  },
+  {
+    s: 'auto', t: 'Triggers',
+    q: 'Un trigger after update en Account actualiza los Accounts, lo que provoca recursión. ¿Cuál es la forma habitual de evitarlo?',
+    o: [
+      'Una variable static (Boolean o Set<Id>) en una clase helper que registre lo ya procesado',
+      'Una variable de instancia en el trigger',
+      'Un custom setting que se actualiza en cada ejecución',
+      'Usar Trigger.isExecuting'
+    ],
+    a: [0],
+    e: 'Las variables static persisten durante toda la transacción. Un Set<Id> de registros ya procesados es más robusto que un simple Boolean (que falla con más de 200 registros).'
+  },
+  {
+    s: 'auto', t: 'Order of execution',
+    q: 'Al guardar un registro, ¿qué se ejecuta primero?',
+    o: ['Before triggers de Apex', 'Record-triggered flows "fast field updates" (before-save)', 'Validation rules personalizadas', 'After triggers'],
+    a: [1],
+    e: 'Orden resumido: validaciones del sistema → before-save flows → before triggers → validaciones del sistema y validation rules personalizadas → duplicate rules → guardado (sin commit) → after triggers → assignment/auto-response rules → workflow → after-save flows → roll-ups → commit → post-commit (emails, async).'
+  },
+  {
+    s: 'auto', t: 'Order of execution',
+    q: 'Un before trigger rellena un campo que una validation rule personalizada comprueba. ¿La validation rule ve el valor puesto por el trigger?',
+    o: [
+      'Sí, las validation rules personalizadas se ejecutan después de los before triggers',
+      'No, las validation rules se ejecutan antes que los before triggers',
+      'Solo si el trigger hace un update explícito',
+      'Solo en inserciones, no en actualizaciones'
+    ],
+    a: [0],
+    e: 'Las validation rules personalizadas se evalúan después de los before triggers, así que ven los valores modificados en before.'
+  },
+  {
+    s: 'auto', t: 'Order of execution',
+    q: 'Una workflow rule con field update modifica un registro. ¿Qué ocurre con los triggers de update?',
+    o: [
+      'No se vuelven a ejecutar',
+      'Los before y after update se ejecutan una vez más',
+      'Se ejecutan en bucle infinito',
+      'Solo se ejecuta el after update'
+    ],
+    a: [1],
+    e: 'Un field update de workflow provoca que se vuelvan a disparar los triggers before y after update (una única vez adicional). Las validation rules personalizadas no se re-evalúan.'
+  },
+  {
+    s: 'auto', t: 'Order of execution',
+    q: '¿Cuándo se envían los emails generados durante una transacción?',
+    o: ['Inmediatamente al llamar a Messaging.sendEmail', 'Después del commit a la base de datos', 'Antes de los after triggers', 'Nunca si hay triggers'],
+    a: [1],
+    e: 'La lógica post-commit (envío de emails, ejecución de trabajos asíncronos encolados, publicación de platform events "after commit") ocurre después de confirmar la transacción.'
+  },
+  {
+    s: 'auto', t: 'DML',
+    q: 'Se insertan 200 registros y algunos pueden fallar por validaciones. Se quiere guardar los válidos y registrar los errores. ¿Qué usar?',
+    o: ['insert registros;', 'Database.insert(registros, false);', 'Database.insert(registros, true);', 'upsert registros;'],
+    a: [1],
+    e: 'Database.insert(lista, false) (allOrNone = false) permite éxito parcial y devuelve List<Database.SaveResult> para revisar isSuccess() y getErrors(). La sentencia insert es "todo o nada" y lanza DmlException.'
+  },
+  {
+    s: 'auto', t: 'DML',
+    q: '¿Qué ocurre con una excepción no controlada en mitad de una transacción que ya hizo varias operaciones DML?',
+    o: ['Se confirman las DML previas', 'Se hace rollback de toda la transacción', 'Solo se deshace la última DML', 'Se confirman los registros de objetos estándar'],
+    a: [1],
+    e: 'Una excepción no controlada revierte todos los cambios de la transacción. Para control fino se usan Database.setSavepoint() y Database.rollback(sp).'
+  },
+  {
+    s: 'auto', t: 'DML',
+    q: '¿Cuál es la sintaxis correcta para hacer upsert por un External ID?',
+    o: [
+      'upsert cuentas Account.Fields.Ext_Id__c;',
+      'upsert cuentas WHERE Ext_Id__c;',
+      'upsert(cuentas, \'Ext_Id__c\');',
+      'Database.upsert(cuentas).by(Ext_Id__c);'
+    ],
+    a: [0],
+    e: 'upsert lista CampoExterno; o Database.upsert(lista, Account.Fields.Ext_Id__c, allOrNone). Sin campo, usa el Id.'
+  },
+  {
+    s: 'auto', t: 'DML',
+    q: 'En una misma transacción se actualiza un User (setup object) y se inserta un Account. Se produce MIXED_DML_OPERATION. ¿Cómo se resuelve?',
+    o: [
+      'Mover una de las operaciones a un método asíncrono (@future o Queueable)',
+      'Usar Database.insert con allOrNone = false',
+      'Hacer las dos DML en la misma sentencia',
+      'Declarar la clase without sharing'
+    ],
+    a: [0],
+    e: 'No se pueden mezclar DML de objetos de configuración (User, Group, PermissionSetAssignment…) con objetos normales en la misma transacción. Se separa con @future/Queueable. En tests se puede usar System.runAs().'
+  },
+  {
+    s: 'auto', t: 'Excepciones',
+    q: '¿Qué excepción lanza este código si no existe ningún Account con ese nombre?',
+    c: "Account a = [SELECT Id FROM Account WHERE Name = 'NoExiste'];",
+    o: ['NullPointerException', 'QueryException: List has no rows for assignment to SObject', 'DmlException', 'No lanza excepción; a vale null'],
+    a: [1],
+    e: 'Asignar una consulta a un único sObject exige exactamente una fila. Con 0 filas (o más de 1) lanza QueryException. Asignarla a una List evita el problema.'
+  },
+  {
+    s: 'auto', t: 'Excepciones',
+    q: '¿Qué tipo de excepción NO se puede capturar con try/catch?',
+    o: ['DmlException', 'LimitException (System.LimitException)', 'NullPointerException', 'Una excepción personalizada'],
+    a: [1],
+    e: 'Superar un governor limit lanza LimitException, que no se puede capturar: la transacción termina. Hay que prevenirla (Limits.getQueries(), etc.).'
+  },
+  {
+    s: 'auto', t: 'Excepciones',
+    q: '¿Cuál es una declaración válida de excepción personalizada?',
+    o: [
+      'public class MiError extends Exception {}',
+      'public class MiErrorException extends Exception {}',
+      'public class MiErrorException implements Exception {}',
+      'public exception MiErrorException {}'
+    ],
+    a: [1],
+    e: 'Las excepciones personalizadas deben extender Exception y su nombre debe terminar en "Exception".'
+  },
+  {
+    s: 'auto', t: 'Excepciones',
+    q: '¿Qué afirmación sobre el bloque finally es correcta?',
+    o: [
+      'Solo se ejecuta si no hay excepción',
+      'Se ejecuta siempre, haya o no excepción capturada',
+      'Solo se ejecuta si hay excepción',
+      'No existe en Apex'
+    ],
+    a: [1],
+    e: 'finally se ejecuta siempre tras try/catch y se usa para limpieza. (Excepción: si se supera un governor limit la transacción se aborta.)'
+  },
+  {
+    s: 'auto', t: 'Asíncrono',
+    q: 'Un trigger debe llamar a un servicio web externo cuando se crea un registro. ¿Qué opción es válida?',
+    o: [
+      'Hacer la callout directamente en el trigger',
+      'Llamar a un método @future(callout=true) o a un Queueable con Database.AllowsCallouts desde el trigger',
+      'Usar un Visualforce page',
+      'No es posible hacer callouts relacionadas con triggers'
+    ],
+    a: [1],
+    e: 'No se permiten callouts síncronas desde triggers (la transacción tiene trabajo pendiente). Se delega a un proceso asíncrono con permiso de callout.'
+  },
+  {
+    s: 'auto', t: 'Asíncrono',
+    q: '¿Qué afirmaciones sobre los métodos @future son correctas? (Elige 2)',
+    o: [
+      'Deben ser static y devolver void',
+      'Solo aceptan tipos primitivos, arrays o colecciones de primitivos como parámetros',
+      'Aceptan sObjects como parámetros',
+      'Devuelven un Id de trabajo para monitorizarlos'
+    ],
+    a: [0, 1],
+    e: 'Los @future son static void y solo reciben primitivos (p. ej. Set<Id>): el sObject podría cambiar antes de que se ejecute. Queueable sí acepta sObjects y devuelve un Job Id.'
+  },
+  {
+    s: 'auto', t: 'Asíncrono',
+    q: 'Se necesita un proceso asíncrono que reciba una lista de sObjects, devuelva un Id para monitorizarlo y encadene un segundo trabajo al terminar. ¿Qué usar?',
+    o: ['@future', 'Queueable Apex', 'Schedulable Apex', 'Un trigger after insert'],
+    a: [1],
+    e: 'Queueable (implements Queueable, System.enqueueJob) admite tipos complejos, devuelve un AsyncApexJob Id y permite encadenar otro Queueable desde execute().'
+  },
+  {
+    s: 'auto', t: 'Asíncrono',
+    q: 'Hay que recalcular un campo en 3 millones de registros cada noche. ¿Qué combinación es la adecuada?',
+    o: [
+      'Batch Apex programado con Schedulable',
+      'Un trigger con @future',
+      'Queueable encadenado 3 millones de veces',
+      'Un Flow de pantalla'
+    ],
+    a: [0],
+    e: 'Batch Apex procesa grandes volúmenes en lotes (start → execute → finish), cada lote con sus propios límites. Una clase Schedulable lanza el batch con System.schedule y una expresión cron.'
+  },
+  {
+    s: 'auto', t: 'Asíncrono',
+    q: 'Un Batch Apex debe acumular el total de registros procesados en todos los execute() para enviarlo por email en finish(). ¿Qué se necesita?',
+    o: ['Implementar Database.Stateful', 'Declarar la variable static', 'Usar Database.AllowsCallouts', 'Nada, las variables de instancia se conservan siempre'],
+    a: [0],
+    e: 'Por defecto cada execute() se ejecuta con un estado nuevo. Database.Stateful conserva las variables de instancia entre lotes. Las variables static se reinician.'
+  },
+  {
+    s: 'auto', t: 'Asíncrono',
+    q: '¿Cuál es el tamaño de lote por defecto y el máximo de Database.executeBatch?',
+    o: ['100 y 1.000', '200 y 2.000', '200 y 10.000', '2.000 y 50.000'],
+    a: [1],
+    e: 'Por defecto 200 registros por execute(); se puede indicar un tamaño de 1 a 2.000: Database.executeBatch(new MiBatch(), 500);'
+  },
+  {
+    s: 'auto', t: 'Platform Events',
+    q: '¿Cómo se publica un platform event desde Apex y cómo se suscribe un trigger a él?',
+    o: [
+      'insert evento; y un trigger before insert',
+      'EventBus.publish(evento); y un trigger after insert sobre el evento (__e)',
+      'Database.publish(evento); y un trigger after update',
+      'System.enqueueJob(evento); y un Flow de pantalla'
+    ],
+    a: [1],
+    e: 'Los platform events (__e) se publican con EventBus.publish() y los triggers sobre eventos solo soportan after insert. También pueden suscribirse Flows, LWC (empApi) y sistemas externos (CometD/Pub/Sub API).'
+  },
+  {
+    s: 'auto', t: 'Platform Events',
+    q: 'Se quiere registrar en un log un error mediante un platform event aunque la transacción haga rollback. ¿Qué configuración del evento se necesita?',
+    o: ['Publish After Commit', 'Publish Immediately', 'High Volume desactivado', 'Un trigger before insert'],
+    a: [1],
+    e: 'Con "Publish Immediately" el evento se publica aunque la transacción falle; con "Publish After Commit" solo si la transacción se confirma.'
+  },
+  {
+    s: 'auto', t: 'Flow',
+    q: 'Un Flow necesita ejecutar lógica compleja en Apex. ¿Cómo se expone un método para Flow?',
+    o: ['@AuraEnabled', '@InvocableMethod en un método static', '@RemoteAction', '@future'],
+    a: [1],
+    e: '@InvocableMethod permite llamar al método desde Flow (acción Apex). Solo puede haber uno por clase, debe ser static y recibe/devuelve una List (bulkificado). Las variables de clases de entrada/salida usan @InvocableVariable.'
+  },
+  {
+    s: 'auto', t: 'Flow',
+    q: '¿Qué tipo de Flow es el adecuado para actualizar campos del MISMO registro al guardarlo, con el mejor rendimiento?',
+    o: ['Screen Flow', 'Record-triggered Flow optimizado para "Fast Field Updates" (before-save)', 'Scheduled-triggered Flow', 'Autolaunched Flow llamado desde un botón'],
+    a: [1],
+    e: 'Los before-save flows (Fast Field Updates) modifican el registro sin DML extra y son mucho más rápidos que los after-save.'
+  },
+  {
+    s: 'auto', t: 'Flow',
+    q: '¿Qué tipo de Flow requiere interacción del usuario?',
+    o: ['Record-triggered Flow', 'Screen Flow', 'Platform event-triggered Flow', 'Schedule-triggered Flow'],
+    a: [1],
+    e: 'Solo las Screen Flows muestran pantallas. Pueden lanzarse desde Lightning pages, quick actions, botones, sitios de Experience Cloud, etc.'
+  },
+  {
+    s: 'auto', t: 'Declarativo vs programático',
+    q: '¿En qué dos escenarios es preferible Apex frente a Flow? (Elige 2)',
+    o: [
+      'Procesar millones de registros con lógica compleja',
+      'Actualizar un campo del registro cuando cambia otro',
+      'Operaciones que requieren control transaccional fino (savepoints, reintentos) o callouts complejas',
+      'Enviar un email de alerta cuando se crea un caso'
+    ],
+    a: [0, 2],
+    e: 'Flow cubre la mayoría de automatizaciones sencillas. Apex se prefiere para gran volumen, lógica compleja, control de transacciones o integraciones avanzadas.'
+  },
+  {
+    s: 'auto', t: 'Lógica Apex',
+    q: '¿Qué imprime este código?',
+    c: "String a = 'Hola';\nString b = 'HOLA';\nSystem.debug(a == b);",
+    o: ['true', 'false', 'Error de compilación', 'null'],
+    a: [0],
+    e: 'En Apex el operador == entre Strings NO distingue mayúsculas. Para comparación exacta se usa a.equals(b) (sensible a mayúsculas).'
+  },
+  {
+    s: 'auto', t: 'Lógica Apex',
+    q: '¿Qué valor tiene x?',
+    c: 'Integer x = 7 / 2;',
+    o: ['3.5', '3', '4', 'Error de compilación'],
+    a: [1],
+    e: 'La división entre Integers trunca el resultado. Para decimales: Decimal x = 7.0 / 2;'
+  },
+  {
+    s: 'auto', t: 'Lógica Apex',
+    q: '¿Qué imprime este código?',
+    c: "Map<String, Integer> m = new Map<String, Integer>();\nm.put('a', 1);\nm.put('A', 2);\nm.put('a', 3);\nSystem.debug(m.size() + ' ' + m.get('a'));",
+    o: ['2 3', '3 3', '1 3', '2 1'],
+    a: [0],
+    e: 'Las claves String de un Map distinguen mayúsculas: "a" y "A" son distintas (tamaño 2). put con una clave existente sobrescribe el valor → 3.'
+  },
+  {
+    s: 'auto', t: 'Lógica Apex',
+    q: '¿Cuál es la sintaxis de un SOQL for loop que procesa los registros en lotes de 200?',
+    o: [
+      'for (List<Account> lote : [SELECT Id FROM Account]) { }',
+      'for (Account a : Database.batch([SELECT Id FROM Account], 200)) { }',
+      'while ([SELECT Id FROM Account].hasNext()) { }',
+      'for (Integer i = 0; i < [SELECT COUNT() FROM Account]; i += 200) { }'
+    ],
+    a: [0],
+    e: 'Con una variable de tipo List el SOQL for loop entrega lotes de 200 registros. Con una variable sObject individual (for (Account a : [...])) también usa chunks internamente.'
+  },
+  {
+    s: 'auto', t: 'Lógica Apex',
+    q: '¿Qué sentencia permite ramificar la lógica según el tipo concreto de un sObject?',
+    c: "switch on registro {\n  when Account a { /* ... */ }\n  when Contact c { /* ... */ }\n  when else { /* ... */ }\n}",
+    o: ['if/else con instanceof únicamente', 'switch on con when <Tipo> variable', 'Un enum', 'No es posible'],
+    a: [1],
+    e: 'switch on admite enteros, Long, String, enums y tipos sObject (when Account a). También se puede usar instanceof.'
+  },
+  {
+    s: 'auto', t: 'Lógica Apex',
+    q: '¿Cuánto dura el valor de una variable static en Apex?',
+    o: ['Toda la vida de la org', 'La sesión del usuario', 'La transacción actual', 'Solo la ejecución del método'],
+    a: [2],
+    e: 'Las variables static se inicializan una vez por transacción y se comparten entre todos los triggers y clases de esa transacción. No persisten entre transacciones.'
+  },
+  {
+    s: 'auto', t: 'Lógica Apex',
+    q: 'Una consulta agregada con GROUP BY devuelve resultados. ¿De qué tipo son?',
+    c: 'SELECT StageName, SUM(Amount) total FROM Opportunity GROUP BY StageName',
+    o: ['List<Opportunity>', 'List<AggregateResult>', 'Map<String, Decimal>', 'Integer'],
+    a: [1],
+    e: 'Las funciones agregadas con GROUP BY devuelven List<AggregateResult>; los valores se leen con ar.get(\'total\'). SELECT COUNT() sin campos devuelve un Integer.'
+  },
+  {
+    s: 'auto', t: 'Governor limits',
+    q: '¿Cómo se aplican los governor limits en un Batch Apex?',
+    o: [
+      'Comparte un único conjunto de límites para todo el batch',
+      'Cada ejecución de execute() es una transacción con sus propios límites (asíncronos)',
+      'No tiene governor limits',
+      'Tiene los límites síncronos multiplicados por 10'
+    ],
+    a: [1],
+    e: 'Cada lote de execute() es una transacción independiente con límites asíncronos (200 SOQL, 60 s CPU, 12 MB heap). Si un lote falla, los demás no se revierten.'
+  }
+);
+
+</script>
+  <script>
+// Sección 3: User Interface (25 %)
+window.PD1_QUESTIONS = window.PD1_QUESTIONS || [];
+window.PD1_QUESTIONS.push(
+  {
+    s: 'ui', t: 'LWC + Apex',
+    q: 'Un LWC usa @wire para llamar a un método Apex. ¿Qué anotación necesita el método?',
+    o: ['@AuraEnabled', '@AuraEnabled(cacheable=true)', '@RemoteAction', '@InvocableMethod'],
+    a: [1],
+    e: 'Para @wire el método debe ser static y @AuraEnabled(cacheable=true). Los métodos cacheables no pueden hacer DML.'
+  },
+  {
+    s: 'ui', t: 'LWC + Apex',
+    q: 'Un LWC debe guardar un registro llamando a un método Apex que hace un insert al pulsar un botón. ¿Cómo debe invocarse?',
+    o: [
+      'Con @wire y cacheable=true',
+      'De forma imperativa (import del método y llamada que devuelve una Promise), con @AuraEnabled sin cacheable',
+      'Con un Visualforce remoting',
+      'Con un evento de aplicación Aura'
+    ],
+    a: [1],
+    e: 'Las operaciones que modifican datos se llaman imperativamente: guardar({ datos }).then(...).catch(...). Un método cacheable=true no puede hacer DML.'
+  },
+  {
+    s: 'ui', t: 'LWC + Apex',
+    q: '¿Qué dos requisitos debe cumplir un método Apex para ser llamado desde un LWC? (Elige 2)',
+    o: ['Ser static', 'Estar anotado con @AuraEnabled', 'Ser global', 'Devolver siempre un String'],
+    a: [0, 1],
+    e: 'Los métodos deben ser static y @AuraEnabled, y public o global. Pueden devolver primitivos, sObjects, colecciones o clases con propiedades @AuraEnabled.'
+  },
+  {
+    s: 'ui', t: 'LWC + Apex',
+    q: '¿Cómo debe lanzar Apex un error para que el LWC reciba un mensaje personalizado legible?',
+    o: ['throw new AuraHandledException(\'mensaje\');', 'System.debug(\'mensaje\');', 'return null;', 'ApexPages.addMessage()'],
+    a: [0],
+    e: 'AuraHandledException envía el mensaje al cliente (error.body.message). Otras excepciones llegan con un mensaje genérico.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: 'Un componente hijo debe exponer una propiedad que el padre pueda establecer. ¿Qué decorador se usa?',
+    o: ['@track', '@api', '@wire', '@public'],
+    a: [1],
+    e: '@api hace pública una propiedad o método. El hijo no debe modificar una propiedad @api que recibe del padre (flujo de datos unidireccional).'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Cómo obtiene un LWC colocado en una Record Page el Id del registro actual?',
+    o: ['Con getRecordId() de lightning/navigation', 'Declarando @api recordId;', 'Leyendo window.location', 'Con @wire(CurrentPageReference) exclusivamente'],
+    a: [1],
+    e: 'En una record page, el framework rellena automáticamente las propiedades públicas recordId y objectApiName.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: 'Un componente hijo debe notificar al padre que el usuario ha seleccionado un elemento. ¿Qué mecanismo es el adecuado?',
+    o: [
+      'this.dispatchEvent(new CustomEvent(\'seleccion\', { detail: id }))',
+      'Lightning Message Service',
+      'Un evento de aplicación Aura',
+      'Modificar una propiedad @api del padre'
+    ],
+    a: [0],
+    e: 'Hijo → padre: CustomEvent. El padre lo escucha con onseleccion={handler} (nombre del evento en minúsculas, sin guiones). Padre → hijo: propiedades o métodos @api.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: 'Dos LWC sin relación jerárquica en la misma página (uno de ellos en la utility bar) deben comunicarse. ¿Qué usar?',
+    o: ['CustomEvent con bubbles', 'Lightning Message Service (LMS)', 'Propiedades @api', 'Variables static de Apex'],
+    a: [1],
+    e: 'LMS (lightning/messageService + un Message Channel) comunica componentes no relacionados, incluso entre LWC, Aura y Visualforce.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Qué hay que configurar en el archivo .js-meta.xml para que un LWC aparezca en el Lightning App Builder en páginas de registro? (Elige 2)',
+    o: [
+      '<isExposed>true</isExposed>',
+      '<target>lightning__RecordPage</target> dentro de <targets>',
+      '<apiVersion>0</apiVersion>',
+      'Anotar la clase JS con @api'
+    ],
+    a: [0, 1],
+    e: 'isExposed=true y los targets deseados (lightning__AppPage, lightning__RecordPage, lightning__HomePage, lightning__RecordAction, lightning__FlowScreen, etc.).'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Qué hook del ciclo de vida de LWC se ejecuta cuando el componente se inserta en el DOM y es adecuado para inicializar datos?',
+    o: ['constructor()', 'connectedCallback()', 'renderedCallback()', 'disconnectedCallback()'],
+    a: [1],
+    e: 'connectedCallback se ejecuta al insertarse en el DOM (padre → hijo). En el constructor no se deben leer atributos ni acceder a elementos. renderedCallback se ejecuta tras cada render.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: 'Un componente tiene la propiedad items = [] (sin decorador) y hace this.items.push(nuevo). La plantilla no se actualiza. ¿Qué dos soluciones funcionan? (Elige 2)',
+    o: [
+      'Reasignar el array: this.items = [...this.items, nuevo];',
+      'Decorar la propiedad con @track',
+      'Decorar la propiedad con @api',
+      'Llamar a this.render()'
+    ],
+    a: [0, 1],
+    e: 'Todas las propiedades son reactivas ante reasignación, pero las mutaciones internas de objetos/arrays solo se observan si la propiedad tiene @track.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Qué es obligatorio al iterar una lista con for:each en una plantilla LWC?',
+    o: ['Un atributo key único en el primer elemento dentro de la iteración', 'Un atributo index', 'Usar @track en la lista', 'Envolver en un <template lwc:if>'],
+    a: [0],
+    e: 'Cada elemento iterado necesita key={item.Id} (u otro valor único) para que el motor de render identifique los cambios.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Cómo se accede a un elemento de la propia plantilla de un LWC desde JavaScript?',
+    o: ['document.querySelector(\'.miClase\')', 'this.template.querySelector(\'.miClase\')', 'this.querySelector(\'.miClase\')', 'window.find(\'.miClase\')'],
+    a: [1],
+    e: 'Por el Shadow DOM, los elementos de la plantilla se consultan con this.template.querySelector(). document no alcanza el DOM encapsulado.'
+  },
+  {
+    s: 'ui', t: 'Lightning Data Service',
+    q: 'Se necesita un formulario para crear y editar un Contact con pocos campos, respetando FLS, sin escribir Apex. ¿Qué es lo más sencillo?',
+    o: ['lightning-record-form', 'Un método Apex @AuraEnabled', 'Un Visualforce con controlador personalizado', 'Una Screen Flow con Apex'],
+    a: [0],
+    e: 'lightning-record-form, lightning-record-edit-form y lightning-record-view-form usan Lightning Data Service: caché compartida, FLS y sharing aplicados, sin Apex.'
+  },
+  {
+    s: 'ui', t: 'Lightning Data Service',
+    q: 'Un LWC quiere leer los campos Name e Industry de un Account sin Apex. ¿Qué wire adapter usar?',
+    o: ['getRecord de lightning/uiRecordApi', 'getListUi de lightning/navigation', 'refreshApex', 'getObjectInfo de lightning/platformShowToastEvent'],
+    a: [0],
+    e: '@wire(getRecord, { recordId: \'$recordId\', fields: [NAME_FIELD, INDUSTRY_FIELD] }). Para leer valores: getFieldValue(). El prefijo $ hace reactivo el parámetro.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: 'Tras actualizar un registro con Apex imperativo, los datos obtenidos por @wire de un método Apex cacheable siguen mostrando valores antiguos. ¿Qué hacer?',
+    o: ['Llamar a refreshApex(this.wiredResult)', 'Recargar la página con location.reload()', 'Quitar cacheable=true', 'Usar @track en el resultado'],
+    a: [0],
+    e: 'refreshApex() refresca el valor cacheado de un wire de Apex (se debe guardar el objeto completo que entrega el wire). Para registros de LDS también existe notifyRecordUpdateAvailable().'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Cómo se muestra un mensaje toast desde un LWC?',
+    o: [
+      "this.dispatchEvent(new ShowToastEvent({ title, message, variant: 'success' }))",
+      'alert(mensaje)',
+      "ApexPages.addMessage(mensaje)",
+      "$A.get('e.force:showToast')"
+    ],
+    a: [0],
+    e: 'Se importa ShowToastEvent de lightning/platformShowToastEvent. $A.get(\'e.force:showToast\') es la forma en Aura.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Qué módulo se usa para navegar a una página de registro desde un LWC?',
+    o: ['NavigationMixin de lightning/navigation', 'window.open siempre', 'lightning/uiRecordApi', 'lightning/messageService'],
+    a: [0],
+    e: 'La clase extiende NavigationMixin(LightningElement) y llama a this[NavigationMixin.Navigate]({ type: \'standard__recordPage\', attributes: {...} }).'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Cómo se importa en un LWC una custom label y un static resource?',
+    o: [
+      "import etiqueta from '@salesforce/label/c.MiEtiqueta'; import recurso from '@salesforce/resourceUrl/MiRecurso';",
+      "import etiqueta from 'c/labels'; import recurso from 'c/resources';",
+      "$Label.c.MiEtiqueta y $Resource.MiRecurso",
+      'No se pueden importar; hay que usar Apex'
+    ],
+    a: [0],
+    e: 'Los módulos @salesforce/* dan acceso a labels, resourceUrl, schema (campos/objetos), user, apex, etc. $Label/$Resource son sintaxis de Visualforce/Aura.'
+  },
+  {
+    s: 'ui', t: 'Aura vs LWC',
+    q: '¿Qué afirmación sobre la composición entre Aura y LWC es correcta?',
+    o: [
+      'Un LWC puede contener componentes Aura',
+      'Un componente Aura puede contener LWC, pero no al revés',
+      'No pueden coexistir en la misma página',
+      'Ambos pueden contenerse mutuamente'
+    ],
+    a: [1],
+    e: 'Aura puede envolver LWC; un LWC no puede contener componentes Aura. Sí pueden coexistir en la misma página y comunicarse con eventos o LMS.'
+  },
+  {
+    s: 'ui', t: 'Aura',
+    q: 'En Aura, ¿qué tipo de evento se usa para comunicar un componente con su contenedor/padre en la jerarquía?',
+    o: ['Application event', 'Component event', 'Platform event', 'Change event'],
+    a: [1],
+    e: 'Component events se propagan por la jerarquía de contención. Application events usan un modelo publish-subscribe global (hoy se recomienda LMS).'
+  },
+  {
+    s: 'ui', t: 'Aura',
+    q: '¿Qué ficheros forman parte de un bundle de componente Aura? (Elige 2)',
+    o: ['miComponente.cmp', 'miComponenteController.js y miComponenteHelper.js', 'miComponente.js-meta.xml con targets obligatorios', 'miComponente.page'],
+    a: [0, 1],
+    e: 'Un bundle Aura contiene .cmp (marcado), Controller.js, Helper.js, Renderer.js, .css, .design, .svg, .auradoc. .page es Visualforce.'
+  },
+  {
+    s: 'ui', t: 'Visualforce',
+    q: '¿Cuál es el constructor correcto de una extensión de controlador para una página con standardController="Account"?',
+    o: [
+      'public MiExt(ApexPages.StandardController stdController) { }',
+      'public MiExt(Account acc) { }',
+      'public MiExt() { }',
+      'public MiExt(ApexPages.StandardSetController ctrl) { } siempre'
+    ],
+    a: [0],
+    e: 'Una extensión recibe el controlador estándar en su constructor; con stdController.getRecord() obtiene el registro. Para páginas de listas se usa StandardSetController.'
+  },
+  {
+    s: 'ui', t: 'Visualforce',
+    q: 'Una página Visualforce debe mostrar una lista paginada de Accounts y permitir acciones masivas, reutilizando funcionalidad estándar. ¿Qué usar?',
+    o: ['StandardSetController (recordSetVar)', 'Un controlador personalizado sin paginación', 'Un trigger', 'Un LWC dentro de <apex:page> sin controlador'],
+    a: [0],
+    e: 'StandardSetController (standardController + recordSetVar) incluye paginación (next, previous, setPageSize) y acciones sobre listas.'
+  },
+  {
+    s: 'ui', t: 'Visualforce',
+    q: '¿Qué debe devolver un método de acción de Visualforce para redirigir al usuario a otra página?',
+    o: ['Un String con la URL', 'Un objeto PageReference', 'void', 'Un Boolean'],
+    a: [1],
+    e: 'Los métodos de acción devuelven PageReference (null para quedarse en la página). Ej.: return new PageReference(\'/\' + acc.Id); o Page.MiPagina.'
+  },
+  {
+    s: 'ui', t: 'Visualforce',
+    q: 'Una página Visualforce tiene un view state demasiado grande. ¿Qué técnica reduce su tamaño?',
+    o: ['Declarar variables que no necesitan persistir como transient', 'Declarar todas las variables static', 'Usar with sharing', 'Aumentar el límite desde Setup'],
+    a: [0],
+    e: 'Las variables transient no se serializan en el view state (límite de 170 KB). También ayuda reducir los datos consultados.'
+  },
+  {
+    s: 'ui', t: 'Visualforce',
+    q: '¿Qué atributo hace que una página Visualforce adopte el estilo de Lightning Experience?',
+    o: ['lightningStylesheets="true"', 'showHeader="false"', 'standardStylesheets="lightning"', 'applyLightning="true"'],
+    a: [0],
+    e: '<apex:page lightningStylesheets="true"> aplica estilos SLDS a los componentes estándar de Visualforce.'
+  },
+  {
+    s: 'ui', t: 'Seguridad UI',
+    q: '¿Qué práctica en Visualforce crea riesgo de Cross-Site Scripting (XSS)?',
+    o: [
+      '<apex:outputText value="{!entradaUsuario}" escape="false"/>',
+      '<apex:outputText value="{!entradaUsuario}"/>',
+      'Usar {!HTMLENCODE(entradaUsuario)}',
+      'Usar {!JSENCODE(entradaUsuario)} dentro de un script'
+    ],
+    a: [0],
+    e: 'escape="false" desactiva el escapado automático y permite inyectar HTML/JS. Las funciones HTMLENCODE, JSENCODE, JSINHTMLENCODE y URLENCODE ayudan a prevenir XSS.'
+  },
+  {
+    s: 'ui', t: 'Seguridad UI',
+    q: 'Un controlador Visualforce construye una consulta concatenando un parámetro de la URL. ¿Qué riesgo existe y cómo se mitiga?',
+    c: "String nombre = ApexPages.currentPage().getParameters().get('n');\nList<Account> r = Database.query('SELECT Id FROM Account WHERE Name = \\'' + nombre + '\\'');",
+    o: [
+      'SOQL injection; usar variables bind o String.escapeSingleQuotes()',
+      'XSS; usar HTMLENCODE',
+      'CSRF; añadir un token',
+      'No hay riesgo porque la consulta es de solo lectura'
+    ],
+    a: [0],
+    e: 'Concatenar entradas del usuario en SOQL dinámico permite modificar la consulta. Se mitiga con binds (:nombre), escapeSingleQuotes o whitelisting.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: 'Un LWC debe ejecutarse como acción rápida (quick action) en la página de un registro. ¿Qué target se configura?',
+    o: ['lightning__RecordAction', 'lightning__AppPage', 'lightning__Tab', 'lightningCommunity__Page'],
+    a: [0],
+    e: 'lightning__RecordAction (con actionType ScreenAction o Action) permite usar el LWC como quick action. Para componentes en Flow: lightning__FlowScreen.'
+  },
+  {
+    s: 'ui', t: 'LWC',
+    q: '¿Qué directivas condicionales se recomiendan actualmente en plantillas LWC?',
+    o: ['lwc:if, lwc:elseif, lwc:else', 'aura:if', 'v-if', 'ng-if'],
+    a: [0],
+    e: 'lwc:if / lwc:elseif / lwc:else sustituyen a los antiguos if:true / if:false (que siguen funcionando pero no se recomiendan).'
+  },
+  {
+    s: 'ui', t: 'Declarativo UI',
+    q: 'Un administrador quiere mostrar u ocultar un componente en una Lightning record page según el valor de un campo, sin código. ¿Qué usar?',
+    o: ['Component Visibility (filtros) en Lightning App Builder', 'Un trigger', 'Un Visualforce con rendered', 'Un LWC con lwc:if'],
+    a: [0],
+    e: 'Lightning App Builder permite reglas de visibilidad por campo, dispositivo o permiso. Dynamic Forms también permite visibilidad a nivel de campo.'
+  }
+);
+
+</script>
+  <script>
+// Sección 4: Testing, Debugging, and Deployment (22 %)
+window.PD1_QUESTIONS = window.PD1_QUESTIONS || [];
+window.PD1_QUESTIONS.push(
+  {
+    s: 'test', t: 'Cobertura',
+    q: '¿Qué requisitos de cobertura de código hay para desplegar Apex en producción? (Elige 2)',
+    o: [
+      'Al menos un 75 % de cobertura global del código Apex',
+      'Cada trigger debe tener algo de cobertura (> 0 %)',
+      'Cada clase debe tener al menos un 75 %',
+      'Un 100 % de cobertura en triggers'
+    ],
+    a: [0, 1],
+    e: 'Se exige un 75 % global y que todos los triggers tengan cobertura mayor que 0. Además todos los tests deben pasar. El objetivo real debería ser probar comportamientos con asserts, no solo cubrir líneas.'
+  },
+  {
+    s: 'test', t: 'Datos de test',
+    q: 'Por defecto, ¿qué datos de la org puede ver un método de test?',
+    o: [
+      'Todos los registros de la org',
+      'Solo los datos creados en el test, más algunos objetos de configuración como User, Profile u Organization',
+      'Ningún dato, ni siquiera usuarios',
+      'Solo los registros creados en las últimas 24 horas'
+    ],
+    a: [1],
+    e: 'Desde API 24 los tests están aislados de los datos de la org. Se pueden ver objetos de setup (User, Profile, RecordType, etc.). @isTest(SeeAllData=true) da acceso a todo, pero es mala práctica.'
+  },
+  {
+    s: 'test', t: 'Datos de test',
+    q: 'Varios métodos de una clase de test necesitan los mismos registros. ¿Cuál es la forma más eficiente de crearlos?',
+    o: ['Un método anotado con @testSetup', 'Un constructor en la clase de test', 'Un bloque static', 'SeeAllData=true'],
+    a: [0],
+    e: '@testSetup se ejecuta una vez por clase; cada método de test recibe una copia limpia de esos datos (los cambios se revierten entre métodos). No está disponible con SeeAllData=true.'
+  },
+  {
+    s: 'test', t: 'Datos de test',
+    q: 'Se quiere cargar datos de test desde un CSV. ¿Qué método se usa?',
+    o: ['Test.loadData(Account.sObjectType, \'NombreStaticResource\')', 'Database.load(\'archivo.csv\')', 'Test.importCsv()', 'No es posible'],
+    a: [0],
+    e: 'Test.loadData lee un CSV almacenado como static resource e inserta los registros, devolviendo una List<sObject>.'
+  },
+  {
+    s: 'test', t: 'Test.startTest',
+    q: '¿Cuáles son dos efectos de Test.startTest() y Test.stopTest()? (Elige 2)',
+    o: [
+      'El código entre ambos obtiene un nuevo conjunto de governor limits',
+      'Los procesos asíncronos (future, queueable, batch) se ejecutan de forma síncrona al llamar a stopTest()',
+      'Los datos se confirman en la base de datos',
+      'Desactivan los triggers'
+    ],
+    a: [0, 1],
+    e: 'startTest/stopTest separan la preparación de datos de la ejecución bajo prueba con límites nuevos, y stopTest fuerza la finalización del trabajo asíncrono para poder hacer asserts.'
+  },
+  {
+    s: 'test', t: 'Test async',
+    q: 'Se prueba un Batch Apex llamando a Database.executeBatch entre startTest y stopTest. ¿Qué hay que tener en cuenta?',
+    o: [
+      'Solo se ejecuta un execute(), así que los datos de test no deben superar el tamaño de un lote',
+      'Se ejecutan todos los lotes en paralelo',
+      'El batch no se ejecuta en tests',
+      'Hay que usar SeeAllData=true'
+    ],
+    a: [0],
+    e: 'En tests solo se puede ejecutar un lote (execute) del batch; se deben crear como máximo tantos registros como el tamaño de lote (p. ej. ≤ 200).'
+  },
+  {
+    s: 'test', t: 'Callouts',
+    q: '¿Cómo se prueba una clase que hace callouts HTTP?',
+    o: [
+      'Implementando HttpCalloutMock y registrándolo con Test.setMock(HttpCalloutMock.class, new MiMock())',
+      'Los tests hacen callouts reales al servicio',
+      'Con SeeAllData=true',
+      'Con Test.isRunningTest() devolviendo un valor fijo en la clase de producción'
+    ],
+    a: [0],
+    e: 'Los tests no pueden hacer callouts reales. Se usa HttpCalloutMock (o StaticResourceCalloutMock / MultiStaticResourceCalloutMock). Para SOAP: WebServiceMock.'
+  },
+  {
+    s: 'test', t: 'runAs',
+    q: '¿Para qué se usa System.runAs() en un test? (Elige 2)',
+    o: [
+      'Probar el código con el contexto de sharing de un usuario concreto',
+      'Evitar el error MIXED_DML_OPERATION al crear usuarios y otros registros en el test',
+      'Aplicar automáticamente los permisos de FLS en cualquier consulta',
+      'Obtener nuevos governor limits'
+    ],
+    a: [0, 1],
+    e: 'runAs aplica el sharing de registros del usuario (no FLS ni permisos de perfil) y permite mezclar DML de setup y no-setup en tests. Solo puede usarse en tests.'
+  },
+  {
+    s: 'test', t: 'Visibilidad',
+    q: 'Un método private de una clase debe ser accesible desde su clase de test sin hacerlo public. ¿Qué anotación usar?',
+    o: ['@TestVisible', '@isTest', '@TestSetup', '@AuraEnabled'],
+    a: [0],
+    e: '@TestVisible permite que los tests accedan a métodos y variables private o protected.'
+  },
+  {
+    s: 'test', t: 'Asserts',
+    q: '¿Cuál es la forma recomendada de verificar resultados en un test moderno de Apex?',
+    o: ['Assert.areEqual(esperado, real, mensaje)', 'System.debug(real)', 'if (real != esperado) return;', 'Test.verify(real)'],
+    a: [0],
+    e: 'La clase Assert (areEqual, isTrue, isNotNull, fail...) es la opción moderna; System.assertEquals sigue siendo válida. Un test sin asserts no verifica nada.'
+  },
+  {
+    s: 'test', t: 'Asserts',
+    q: 'Se quiere probar que un método lanza una excepción con datos inválidos. ¿Qué patrón es correcto?',
+    c: "try {\n  Servicio.procesar(null);\n  Assert.fail('Se esperaba una excepción');\n} catch (Servicio.DatosException e) {\n  Assert.isTrue(e.getMessage().contains('inválido'));\n}",
+    o: [
+      'Es correcto: falla si no se lanza la excepción y comprueba el mensaje',
+      'Es incorrecto: no se pueden capturar excepciones en tests',
+      'Es incorrecto: hay que usar @isTest(expected=Exception.class)',
+      'Es incorrecto: Assert.fail no existe'
+    ],
+    a: [0],
+    e: 'Probar escenarios negativos es una buena práctica: positivo, negativo, bulk (200 registros) y de usuario restringido.'
+  },
+  {
+    s: 'test', t: 'Clases de test',
+    q: '¿Qué afirmaciones sobre las clases anotadas con @isTest son correctas? (Elige 2)',
+    o: [
+      'No cuentan para el límite de tamaño de código Apex de la org',
+      'Pueden ser private o public',
+      'Cuentan como código a cubrir para el 75 %',
+      'Deben declararse global'
+    ],
+    a: [0, 1],
+    e: 'Las clases @isTest no cuentan para el límite de 6 MB de código ni para la cobertura. Una clase "TestDataFactory" pública con @isTest puede reutilizarse desde otros tests.'
+  },
+  {
+    s: 'test', t: 'Test',
+    q: '¿Qué ocurre con los registros creados durante la ejecución de un test?',
+    o: ['Se confirman en la org', 'Se revierten automáticamente al terminar el test', 'Se envían a la papelera', 'Se quedan hasta que se ejecuta otro test'],
+    a: [1],
+    e: 'Los tests no confirman cambios: todo se revierte al finalizar, por eso no hace falta limpiar los datos.'
+  },
+  {
+    s: 'test', t: 'Debug',
+    q: 'Un desarrollador necesita capturar logs de un usuario de integración durante las próximas horas. ¿Qué debe configurar?',
+    o: ['Un trace flag para ese usuario con un debug level', 'Un checkpoint en el Developer Console', 'Un email de excepción', 'Nada, los logs se guardan siempre'],
+    a: [0],
+    e: 'En Setup > Debug Logs se crea un trace flag (usuario, clase o trigger) con un debug level y una fecha de caducidad. Los logs solo se generan mientras el trace flag está activo.'
+  },
+  {
+    s: 'test', t: 'Debug',
+    q: '¿Qué herramienta del Developer Console permite ver qué parte de la transacción consumió más tiempo?',
+    o: ['Log Inspector: Execution Overview / Timeline', 'Query Editor', 'Checkpoints Inspector solo', 'Anonymous Apex'],
+    a: [0],
+    e: 'El Log Inspector muestra el Execution Tree, Stack, Execution Overview (tiempos por unidad, límites) y Timeline.'
+  },
+  {
+    s: 'test', t: 'Debug',
+    q: '¿Qué categorías de log se pueden ajustar en un debug level? (Elige 2)',
+    o: ['Apex Code y Database', 'Workflow y Validation', 'CSS y HTML', 'Network y Browser'],
+    a: [0, 1],
+    e: 'Categorías: Database, Workflow, NBA, Validation, Callouts, Apex Code, Apex Profiling, Visualforce, System y Wave. Niveles: NONE, ERROR, WARN, INFO, DEBUG, FINE, FINER, FINEST.'
+  },
+  {
+    s: 'test', t: 'Debug',
+    q: 'Se quiere inspeccionar el estado de variables en un punto concreto de la ejecución sin añadir System.debug. ¿Qué herramienta ofrece esto desde VS Code usando un log?',
+    o: ['Apex Replay Debugger', 'Data Loader', 'Workbench REST Explorer', 'Schema Builder'],
+    a: [0],
+    e: 'Apex Replay Debugger (extensión de Salesforce para VS Code) reproduce un debug log con breakpoints e inspección de variables. En Developer Console existen los checkpoints (hasta 5).'
+  },
+  {
+    s: 'test', t: 'Debug',
+    q: '¿Qué afirmación sobre Execute Anonymous Apex es correcta?',
+    o: [
+      'Las DML se confirman si la ejecución termina sin errores',
+      'Siempre hace rollback de los cambios',
+      'Se ejecuta como usuario de sistema ignorando todos los permisos',
+      'Solo puede ejecutarse en sandboxes'
+    ],
+    a: [0],
+    e: 'Anonymous Apex se ejecuta como el usuario actual y sus cambios se confirman. Útil para scripts puntuales y para probar código, con cuidado en producción.'
+  },
+  {
+    s: 'test', t: 'Debug',
+    q: '¿Cómo puede el código comprobar cuántas consultas SOQL lleva consumidas en la transacción?',
+    o: ['Limits.getQueries() y Limits.getLimitQueries()', 'System.getQueryCount()', 'Database.countQueries()', 'No es posible'],
+    a: [0],
+    e: 'La clase Limits expone el consumo actual (getX) y el máximo (getLimitX) de SOQL, DML, CPU, heap, etc.'
+  },
+  {
+    s: 'test', t: 'Entornos',
+    q: 'Un equipo necesita un sandbox con una copia completa de datos y metadatos de producción para pruebas de rendimiento. ¿Cuál elegir?',
+    o: ['Developer', 'Developer Pro', 'Partial Copy', 'Full'],
+    a: [3],
+    e: 'Full: todos los datos y metadatos (refresh cada 29 días). Partial Copy: metadatos + muestra de datos (5 GB, refresh 5 días). Developer (200 MB) y Developer Pro (1 GB): solo metadatos, refresh diario.'
+  },
+  {
+    s: 'test', t: 'Entornos',
+    q: '¿Qué afirmaciones sobre los scratch orgs son correctas? (Elige 2)',
+    o: [
+      'Se crean desde una Dev Hub con Salesforce CLI',
+      'Son temporales (hasta 30 días) y orientados a desarrollo basado en código fuente',
+      'Contienen una copia de los datos de producción',
+      'Se crean con change sets'
+    ],
+    a: [0, 1],
+    e: 'Los scratch orgs son entornos efímeros, configurables por un fichero de definición, ideales para CI y package development. No copian datos de producción.'
+  },
+  {
+    s: 'test', t: 'Despliegue',
+    q: '¿Qué requisito tienen los change sets?',
+    o: [
+      'Solo se usan entre orgs relacionadas (p. ej. producción y sus sandboxes) con una deployment connection autorizada',
+      'Funcionan entre cualquier par de orgs',
+      'Permiten eliminar componentes en el destino',
+      'Despliegan también los datos'
+    ],
+    a: [0],
+    e: 'Los change sets requieren orgs conectadas y una conexión de despliegue que permita inbound changes. No despliegan datos ni permiten borrar componentes (para eso: Metadata API/CLI con destructiveChanges).'
+  },
+  {
+    s: 'test', t: 'Despliegue',
+    q: '¿Qué herramientas permiten desplegar metadatos entre orgs NO relacionadas? (Elige 2)',
+    o: ['Salesforce CLI (Metadata API)', 'Paquetes (unmanaged/unlocked/managed)', 'Change sets', 'Data Loader'],
+    a: [0, 1],
+    e: 'Salesforce CLI (sf project deploy), el Metadata API y los paquetes funcionan entre cualquier org. Data Loader mueve datos, no metadatos.'
+  },
+  {
+    s: 'test', t: 'Despliegue',
+    q: 'Un despliegue a producción se validó con éxito ayer (tests incluidos). ¿Qué opción permite desplegarlo sin volver a ejecutar los tests?',
+    o: ['Quick Deploy', 'Run All Tests', 'Deploy con SeeAllData', 'Un nuevo change set'],
+    a: [0],
+    e: 'Quick Deploy usa una validación reciente (últimos 10 días) con tests exitosos para desplegar sin ejecutarlos de nuevo.'
+  },
+  {
+    s: 'test', t: 'Despliegue',
+    q: 'Al desplegar a producción se quiere ejecutar solo un subconjunto de tests. ¿Qué nivel de test se usa y qué debe cumplirse?',
+    o: [
+      'RunSpecifiedTests; los tests indicados deben cubrir al menos el 75 % de cada clase y trigger desplegado',
+      'NoTestRun; sin requisitos',
+      'RunLocalTests; solo se ejecutan los tests del paquete',
+      'RunAllTestsInOrg; es obligatorio siempre'
+    ],
+    a: [0],
+    e: 'Con RunSpecifiedTests la cobertura se calcula por componente desplegado (≥ 75 % cada uno). Por defecto en producción se usa RunLocalTests cuando hay Apex.'
+  },
+  {
+    s: 'test', t: 'Despliegue',
+    q: '¿Qué herramienta de Salesforce ofrece una interfaz declarativa para gestionar cambios con control de versiones (GitHub) y pipelines?',
+    o: ['DevOps Center', 'Schema Builder', 'Data Import Wizard', 'Setup Audit Trail'],
+    a: [0],
+    e: 'DevOps Center gestiona work items, rastrea cambios en metadatos y los promueve por un pipeline apoyado en un repositorio de control de versiones.'
+  },
+  {
+    s: 'test', t: 'Test',
+    q: 'Un trigger debe probarse correctamente. ¿Qué escenario es imprescindible además del caso positivo?',
+    o: [
+      'Un caso bulk que inserte/actualice 200 registros para validar la bulkificación',
+      'Un test que use SeeAllData=true',
+      'Un test sin asserts para aumentar la cobertura',
+      'Un test que desactive el trigger'
+    ],
+    a: [0],
+    e: 'Probar con 200 registros verifica que el trigger no supera límites (SOQL/DML en bucles). También conviene probar casos negativos y usuarios con permisos restringidos.'
+  },
+  {
+    s: 'test', t: 'Test',
+    q: '¿Qué método permite saber si el código se está ejecutando en un contexto de test?',
+    o: ['Test.isRunningTest()', 'System.isTest()', 'UserInfo.isTest()', 'Limits.isTest()'],
+    a: [0],
+    e: 'Test.isRunningTest() devuelve true dentro de tests. Se debe usar con moderación: los mocks (HttpCalloutMock, Stub API) son preferibles.'
+  }
+);
+
+</script>
+  <script>
+(() => {
+  'use strict';
+
+  const SECTIONS = window.PD1_SECTIONS;
+  const EXAM = window.PD1_EXAM;
+  const LIMITS = window.PD1_LIMITS;
+  const SEC = Object.fromEntries(SECTIONS.map(s => [s.id, s]));
+  const PASS_PCT = 68;
+  const STORE_KEY = 'pd1-study-v1';
+  const app = document.getElementById('app');
+
+  // ---------- Utilidades ----------
+  const esc = str => String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  const hash = str => {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  };
+
+  const shuffle = arr => {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  const pct = (c, t) => (t ? Math.round((c / t) * 100) : 0);
+  const fmtTime = s => {
+    s = Math.max(0, Math.floor(s));
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    const mm = String(m).padStart(2, '0'), ss = String(sec).padStart(2, '0');
+    return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  };
+  const fmtDate = ts => new Date(ts).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
+
+  // Diálogos propios: alert/confirm nativos están bloqueados en vistas previas con sandbox.
+  const dialog = (msg, withCancel) => new Promise(resolve => {
+    const wrap = document.createElement('div');
+    wrap.className = 'modal';
+    wrap.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true">
+      <p>${esc(msg)}</p>
+      <div class="row right-row">
+        ${withCancel ? '<button class="btn ghost" data-r="0">Cancelar</button>' : ''}
+        <button class="btn primary" data-r="1">Aceptar</button>
+      </div></div>`;
+    const close = r => { wrap.remove(); document.removeEventListener('keydown', onKey, true); resolve(r); };
+    const onKey = e => {
+      if (e.key === 'Escape') { e.stopPropagation(); close(false); }
+      else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); close(true); }
+    };
+    wrap.addEventListener('click', e => {
+      const b = e.target.closest('[data-r]');
+      if (b) close(b.dataset.r === '1');
+      else if (e.target === wrap && withCancel) close(false);
+    });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(wrap);
+    wrap.querySelector('[data-r="1"]').focus();
+  });
+  const notify = msg => dialog(msg, false);
+  const ask = msg => dialog(msg, true);
+
+  // ---------- Persistencia ----------
+  const defaultStore = () => ({ stats: {}, history: [], active: null, custom: [] });
+  let store;
+  try {
+    store = Object.assign(defaultStore(), JSON.parse(localStorage.getItem(STORE_KEY) || '{}'));
+  } catch (e) {
+    store = defaultStore();
+  }
+  const save = () => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) { /* sin almacenamiento */ }
+  };
+
+  // ---------- Banco de preguntas ----------
+  let BANK = [];
+  let BY_ID = {};
+  const buildBank = () => {
+    const all = (window.PD1_QUESTIONS || []).concat(store.custom || []);
+    const seen = new Set();
+    BANK = [];
+    for (const q of all) {
+      if (!q || !SEC[q.s] || !Array.isArray(q.o) || !Array.isArray(q.a)) continue;
+      const id = q.s + '-' + hash(q.q + '|' + q.o.join('|'));
+      if (seen.has(id)) continue;
+      seen.add(id);
+      BANK.push(Object.assign({}, q, { id }));
+    }
+    BY_ID = Object.fromEntries(BANK.map(q => [q.id, q]));
+  };
+  buildBank();
+
+  const bankBySection = sid => BANK.filter(q => q.s === sid);
+  const statOf = id => store.stats[id] || { seen: 0, correct: 0, lastWrong: false };
+
+  // Prioriza preguntas no vistas y falladas, con algo de aleatoriedad.
+  const priority = q => {
+    const st = statOf(q.id);
+    let p = Math.random();
+    if (st.seen === 0) p += 1.2;
+    if (st.lastWrong) p += 1.6;
+    if (st.seen) p += (1 - st.correct / st.seen);
+    return p;
+  };
+  const pickSmart = (pool, n) => pool
+    .map(q => ({ q, p: priority(q) }))
+    .sort((a, b) => b.p - a.p)
+    .slice(0, n)
+    .map(x => x.q);
+
+  // Reparte n preguntas por pesos (método del mayor resto).
+  const distribute = n => {
+    const raw = SECTIONS.map(s => ({ id: s.id, v: (n * s.weight) / 100 }));
+    const out = Object.fromEntries(raw.map(r => [r.id, Math.floor(r.v)]));
+    let rest = n - Object.values(out).reduce((a, b) => a + b, 0);
+    raw.sort((a, b) => (b.v % 1) - (a.v % 1));
+    for (let i = 0; rest > 0; i = (i + 1) % raw.length, rest--) out[raw[i].id]++;
+    return out;
+  };
+
+  const makeItems = qs => qs.map(q => ({ id: q.id, order: shuffle(q.o.map((_, i) => i)) }));
+
+  // ---------- Sesiones ----------
+  const newSession = (mode, questions, opts = {}) => {
+    store.active = {
+      mode,
+      title: opts.title || (mode === 'exam' ? 'Examen simulado' : 'Práctica'),
+      items: makeItems(questions),
+      answers: {},
+      checked: {},
+      flags: [],
+      current: 0,
+      immediate: !!opts.immediate,
+      startedAt: Date.now(),
+      duration: opts.duration || 0,
+      submitted: false
+    };
+    save();
+    go('session');
+  };
+
+  const startExam = n => {
+    const dist = distribute(n);
+    let qs = [];
+    for (const s of SECTIONS) qs = qs.concat(pickSmart(bankBySection(s.id), dist[s.id]));
+    const minutes = Math.round((105 * n) / 60);
+    newSession('exam', shuffle(qs), {
+      title: n === 60 ? 'Examen completo (60 preguntas)' : `Mini examen (${n} preguntas)`,
+      duration: minutes * 60
+    });
+  };
+
+  const startPractice = ({ sections, count, source, immediate, topic }) => {
+    let pool = BANK.filter(q => sections.includes(q.s));
+    if (topic) pool = pool.filter(q => q.t === topic);
+    if (source === 'unseen') pool = pool.filter(q => statOf(q.id).seen === 0);
+    if (source === 'wrong') pool = pool.filter(q => statOf(q.id).lastWrong);
+    if (!pool.length) {
+      notify('No hay preguntas que cumplan esos filtros.');
+      return;
+    }
+    const n = count === 'all' ? pool.length : Math.min(Number(count), pool.length);
+    newSession('practice', shuffle(pickSmart(pool, n)), {
+      immediate,
+      title: topic ? `Práctica: ${topic}` : source === 'wrong' ? 'Repaso de falladas' : 'Práctica'
+    });
+  };
+
+  const isCorrect = (q, sel) => {
+    if (!sel || sel.length !== q.a.length) return false;
+    const s = new Set(sel);
+    return q.a.every(i => s.has(i));
+  };
+
+  const recordAnswer = (q, correct) => {
+    const st = statOf(q.id);
+    st.seen++;
+    if (correct) st.correct++;
+    st.lastWrong = !correct;
+    st.last = Date.now();
+    store.stats[q.id] = st;
+  };
+
+  const submitSession = () => {
+    const S = store.active;
+    if (!S || S.submitted) return;
+    const bySection = {};
+    let correct = 0;
+    S.items.forEach((it, idx) => {
+      const q = BY_ID[it.id];
+      if (!q) return;
+      const ok = isCorrect(q, S.answers[idx]);
+      if (!S.checked[idx]) recordAnswer(q, ok);
+      bySection[q.s] = bySection[q.s] || { c: 0, t: 0 };
+      bySection[q.s].t++;
+      if (ok) { bySection[q.s].c++; correct++; }
+    });
+    S.submitted = true;
+    S.finishedAt = Date.now();
+    S.result = { correct, total: S.items.length, bySection };
+    store.history.unshift({
+      date: S.finishedAt,
+      mode: S.mode,
+      title: S.title,
+      correct,
+      total: S.items.length,
+      pct: pct(correct, S.items.length),
+      bySection,
+      seconds: Math.round((S.finishedAt - S.startedAt) / 1000)
+    });
+    store.history = store.history.slice(0, 200);
+    save();
+    go('results');
+  };
+
+  // ---------- Navegación ----------
+  let view = 'home';
+  let timer = null;
+  const go = v => {
+    view = v;
+    clearInterval(timer);
+    document.querySelectorAll('#tabs button').forEach(b => {
+      const tab = b.dataset.view;
+      const active = tab === v || (v === 'session' || v === 'results') && store.active &&
+        tab === (store.active.mode === 'exam' ? 'exam' : 'practice');
+      b.classList.toggle('active', !!active);
+    });
+    render();
+    window.scrollTo(0, 0);
+  };
+  document.getElementById('tabs').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (b) go(b.dataset.view);
+  });
+
+  const render = () => {
+    const views = { home, guide, practice, exam, history, session, results };
+    app.innerHTML = (views[view] || home)();
+    after[view] && after[view]();
+  };
+  const after = {};
+
+  // ---------- Componentes ----------
+  const sectionAccuracy = sid => {
+    let seen = 0, correct = 0, answered = 0;
+    for (const q of bankBySection(sid)) {
+      const st = statOf(q.id);
+      if (st.seen) answered++;
+      seen += st.seen; correct += st.correct;
+    }
+    return { acc: pct(correct, seen), seen, answered, total: bankBySection(sid).length };
+  };
+
+  const weightBar = () => `
+    <div class="weightbar">
+      ${SECTIONS.map(s => `<div style="flex:${s.weight};background:${s.color}" title="${esc(s.name)} ${s.weight}%"><span>${s.weight}%</span></div>`).join('')}
+    </div>
+    <ul class="legend">
+      ${SECTIONS.map(s => `<li><i style="background:${s.color}"></i>${esc(s.name)} <b>${s.weight}%</b> · ~${distribute(60)[s.id]} preguntas</li>`).join('')}
+    </ul>`;
+
+  const continueBanner = () => {
+    const S = store.active;
+    if (!S || S.submitted) return '';
+    const done = Object.keys(S.answers).length;
+    return `<div class="card banner">
+      <div><b>Sesión en curso:</b> ${esc(S.title)} · ${done}/${S.items.length} respondidas</div>
+      <div class="row">
+        <button class="btn primary" data-act="resume">Continuar</button>
+        <button class="btn ghost" data-act="discard">Descartar</button>
+      </div>
+    </div>`;
+  };
+
+  const bindCommon = () => {
+    app.querySelectorAll('[data-act="resume"]').forEach(b => b.onclick = () => go('session'));
+    app.querySelectorAll('[data-act="discard"]').forEach(b => b.onclick = () => {
+      ask('¿Descartar la sesión en curso?').then(ok => { if (ok) { store.active = null; save(); render(); } });
+    });
+    app.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+    app.querySelectorAll('[data-exam]').forEach(b => b.onclick = () => startExam(Number(b.dataset.exam)));
+    app.querySelectorAll('[data-practice-sec]').forEach(b => b.onclick = () =>
+      startPractice({ sections: [b.dataset.practiceSec], count: 15, source: 'all', immediate: true }));
+    app.querySelectorAll('[data-practice-topic]').forEach(b => b.onclick = () =>
+      startPractice({ sections: SECTIONS.map(s => s.id), count: 'all', source: 'all', immediate: true, topic: b.dataset.practiceTopic }));
+    app.querySelectorAll('[data-wrong]').forEach(b => b.onclick = () =>
+      startPractice({ sections: SECTIONS.map(s => s.id), count: 'all', source: 'wrong', immediate: true }));
+  };
+
+  // ---------- Vista: Inicio ----------
+  function home() {
+    const last = store.history.filter(h => h.mode === 'exam').slice(0, 5);
+    const wrong = BANK.filter(q => statOf(q.id).lastWrong).length;
+    const answered = BANK.filter(q => statOf(q.id).seen).length;
+    return `
+      ${continueBanner()}
+      <section class="hero card">
+        <div>
+          <p class="eyebrow">${esc(EXAM.code)}</p>
+          <h1>${esc(EXAM.name)}</h1>
+          <p class="muted">60 preguntas · 105 minutos · aprobado con ${PASS_PCT}%. Estudia por secciones y genera exámenes ponderados como el real.</p>
+          <div class="row wrap">
+            <button class="btn primary" data-exam="60">Examen completo</button>
+            <button class="btn" data-exam="30">Mini examen (30)</button>
+            <button class="btn" data-go="practice">Practicar</button>
+            ${wrong ? `<button class="btn warn" data-wrong>Repasar ${wrong} falladas</button>` : ''}
+          </div>
+        </div>
+        <div class="hero-stats">
+          <div><b>${BANK.length}</b><span>preguntas</span></div>
+          <div><b>${answered}</b><span>vistas</span></div>
+          <div><b>${store.history.filter(h => h.mode === 'exam').length}</b><span>exámenes</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Pesos del examen</h2>
+        ${weightBar()}
+      </section>
+
+      <section class="grid4">
+        ${SECTIONS.map(s => {
+          const a = sectionAccuracy(s.id);
+          return `<div class="card sec" style="--sc:${s.color}">
+            <div class="sec-head"><span class="pill">${s.weight}%</span><h3>${esc(s.name)}</h3></div>
+            <div class="meter"><div style="width:${a.seen ? a.acc : 0}%"></div></div>
+            <p class="muted small">${a.seen ? `Acierto ${a.acc}% · ` : ''}${a.answered}/${a.total} preguntas vistas</p>
+            <button class="btn small" data-practice-sec="${s.id}">Practicar sección</button>
+          </div>`;
+        }).join('')}
+      </section>
+
+      <section class="card">
+        <h2>Datos del examen</h2>
+        <dl class="facts">
+          ${EXAM.facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}
+        </dl>
+        <ul class="notes">${EXAM.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+      </section>
+
+      ${last.length ? `<section class="card">
+        <h2>Últimos exámenes</h2>
+        <table class="tbl"><tbody>
+          ${last.map(h => `<tr><td>${fmtDate(h.date)}</td><td>${esc(h.title)}</td><td class="num ${h.pct >= PASS_PCT ? 'ok' : 'bad'}">${h.pct}%</td></tr>`).join('')}
+        </tbody></table>
+      </section>` : ''}
+    `;
+  }
+  after.home = bindCommon;
+
+  // ---------- Vista: Guía ----------
+  function guide() {
+    const topics = {};
+    BANK.forEach(q => { (topics[q.s] = topics[q.s] || {})[q.t] = (topics[q.s][q.t] || 0) + 1; });
+    return `
+      <section class="card">
+        <h1>Guía de estudio</h1>
+        <p class="muted">Objetivos oficiales resumidos, apuntes clave y temas del banco de preguntas por sección.</p>
+        ${weightBar()}
+      </section>
+      ${SECTIONS.map(s => `
+        <section class="card sec-guide" style="--sc:${s.color}">
+          <div class="sec-head">
+            <span class="pill">${s.weight}%</span>
+            <h2>${esc(s.name)}</h2>
+            <button class="btn small right" data-practice-sec="${s.id}">Practicar</button>
+          </div>
+          <details open>
+            <summary>Objetivos del examen</summary>
+            <ol>${s.objectives.map(o => `<li>${esc(o)}</li>`).join('')}</ol>
+          </details>
+          <details open>
+            <summary>Apuntes clave</summary>
+            <ul class="keynotes">${s.notes.map(n => `<li>${n}</li>`).join('')}</ul>
+          </details>
+          <details>
+            <summary>Temas (${Object.keys(topics[s.id] || {}).length})</summary>
+            <div class="chips">
+              ${Object.entries(topics[s.id] || {}).map(([t, n]) =>
+                `<button class="chip" data-practice-topic="${esc(t)}">${esc(t)} <small>${n}</small></button>`).join('')}
+            </div>
+          </details>
+        </section>`).join('')}
+      <section class="card">
+        <h2>Governor limits principales</h2>
+        <table class="tbl">
+          <thead><tr><th>Límite (por transacción)</th><th>Síncrono</th><th>Asíncrono</th></tr></thead>
+          <tbody>${LIMITS.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table>
+      </section>
+      <section class="card">
+        <h2>Recursos oficiales</h2>
+        <ul class="links">${EXAM.resources.map(([t, u]) => `<li><a href="${esc(u)}" target="_blank" rel="noopener">${esc(t)}</a></li>`).join('')}</ul>
+      </section>
+    `;
+  }
+  after.guide = bindCommon;
+
+  // ---------- Vista: Práctica ----------
+  function practice() {
+    return `
+      ${continueBanner()}
+      <section class="card">
+        <h1>Práctica</h1>
+        <p class="muted">Elige secciones y recibe la corrección al instante con la explicación. Se priorizan las preguntas que no has visto o que fallaste.</p>
+        <form id="pform" class="form">
+          <fieldset>
+            <legend>Secciones</legend>
+            ${SECTIONS.map(s => `<label class="check"><input type="checkbox" name="sec" value="${s.id}" checked>
+              <i style="background:${s.color}"></i>${esc(s.name)} <small class="muted">(${bankBySection(s.id).length})</small></label>`).join('')}
+          </fieldset>
+          <fieldset>
+            <legend>Número de preguntas</legend>
+            <div class="seg">
+              ${[10, 20, 30, 'all'].map((n, i) => `<label><input type="radio" name="count" value="${n}" ${i === 0 ? 'checked' : ''}><span>${n === 'all' ? 'Todas' : n}</span></label>`).join('')}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Origen</legend>
+            <div class="seg">
+              <label><input type="radio" name="source" value="all" checked><span>Todas</span></label>
+              <label><input type="radio" name="source" value="unseen"><span>No vistas</span></label>
+              <label><input type="radio" name="source" value="wrong"><span>Falladas</span></label>
+            </div>
+          </fieldset>
+          <label class="check"><input type="checkbox" name="immediate" checked> Corregir cada pregunta al responder</label>
+          <div class="row"><button class="btn primary" type="button" id="pstart">Empezar práctica</button></div>
+        </form>
+      </section>
+    `;
+  }
+  after.practice = () => {
+    bindCommon();
+    // Botón normal en vez de submit: las vistas previas con sandbox bloquean el envío de formularios.
+    const form = document.getElementById('pform');
+    form.onsubmit = e => e.preventDefault();
+    document.getElementById('pstart').onclick = () => {
+      const f = new FormData(form);
+      const sections = f.getAll('sec');
+      if (!sections.length) { notify('Elige al menos una sección.'); return; }
+      startPractice({ sections, count: f.get('count'), source: f.get('source'), immediate: f.get('immediate') === 'on' });
+    };
+  };
+
+  // ---------- Vista: Examen ----------
+  function exam() {
+    const d = distribute(60);
+    return `
+      ${continueBanner()}
+      <section class="card">
+        <h1>Simulador de examen</h1>
+        <p class="muted">Preguntas repartidas según los pesos oficiales, sin corrección hasta el final, con cronómetro y opción de marcar preguntas para revisar. El tiempo se ajusta proporcionalmente (105 min / 60 preguntas).</p>
+        <div class="grid3">
+          ${[[60, 'Completo', 'Igual que el real'], [30, 'Medio', 'Media sesión'], [15, 'Rápido', 'Calentamiento']].map(([n, t, sub]) => `
+            <div class="card inner exam-opt">
+              <h3>${t}</h3>
+              <p class="big">${n} <small>preguntas</small></p>
+              <p class="muted small">${sub} · ${Math.round((105 * n) / 60)} min</p>
+              <button class="btn primary" data-exam="${n}">Empezar</button>
+            </div>`).join('')}
+        </div>
+        <h3>Reparto en el examen completo</h3>
+        <table class="tbl">
+          <thead><tr><th>Sección</th><th>Peso</th><th>Preguntas</th><th>En el banco</th></tr></thead>
+          <tbody>${SECTIONS.map(s => `<tr><td><i class="dot" style="background:${s.color}"></i>${esc(s.name)}</td><td>${s.weight}%</td><td>${d[s.id]}</td><td>${bankBySection(s.id).length}</td></tr>`).join('')}</tbody>
+        </table>
+      </section>
+    `;
+  }
+  after.exam = bindCommon;
+
+  // ---------- Vista: Sesión ----------
+  function session() {
+    const S = store.active;
+    if (!S) return `<section class="card"><p>No hay ninguna sesión activa.</p><button class="btn" data-go="home">Volver</button></section>`;
+    if (S.submitted) { view = 'results'; return results(); }
+    const idx = S.current;
+    const it = S.items[idx];
+    const q = BY_ID[it.id];
+    const sel = S.answers[idx] || [];
+    const multi = q.a.length > 1;
+    const checked = S.immediate && S.checked[idx];
+    const answeredCount = Object.keys(S.answers).filter(k => (S.answers[k] || []).length).length;
+    const flagged = S.flags.includes(idx);
+
+    const opts = it.order.map((oi, pos) => {
+      const isSel = sel.includes(oi);
+      let cls = isSel ? 'sel' : '';
+      if (checked) {
+        if (q.a.includes(oi)) cls += ' right';
+        else if (isSel) cls += ' wrong';
+      }
+      return `<button class="opt ${cls}" data-oi="${oi}" ${checked ? 'disabled' : ''}>
+        <span class="key">${String.fromCharCode(65 + pos)}</span>
+        <span class="otext">${esc(q.o[oi])}</span>
+      </button>`;
+    }).join('');
+
+    let feedback = '';
+    if (checked) {
+      const ok = isCorrect(q, sel);
+      feedback = `<div class="feedback ${ok ? 'ok' : 'bad'}">
+        <b>${ok ? '¡Correcto!' : 'Incorrecto'}</b>
+        ${ok ? '' : `<div class="small">Respuesta correcta: ${it.order.map((oi, p) => q.a.includes(oi) ? String.fromCharCode(65 + p) : null).filter(Boolean).join(', ')}</div>`}
+        <p>${esc(q.e)}</p>
+      </div>`;
+    }
+
+    const nav = S.items.map((_, i) => {
+      const a = (S.answers[i] || []).length;
+      let c = a ? 'done' : '';
+      if (S.immediate && S.checked[i]) c = isCorrect(BY_ID[S.items[i].id], S.answers[i]) ? 'ok' : 'bad';
+      if (S.flags.includes(i)) c += ' flag';
+      if (i === idx) c += ' cur';
+      return `<button class="navq ${c}" data-jump="${i}">${i + 1}</button>`;
+    }).join('');
+
+    const remaining = S.duration ? S.duration - (Date.now() - S.startedAt) / 1000 : 0;
+
+    return `
+      <section class="session">
+        <div class="sbar card">
+          <div><b>${esc(S.title)}</b><div class="muted small">${answeredCount}/${S.items.length} respondidas</div></div>
+          <div class="progress"><div style="width:${pct(answeredCount, S.items.length)}%"></div></div>
+          ${S.duration ? `<div class="timer ${remaining < 300 ? 'low' : ''}" id="timer">${fmtTime(remaining)}</div>` : `<div class="timer" id="timer">${fmtTime((Date.now() - S.startedAt) / 1000)}</div>`}
+        </div>
+
+        <article class="card qcard" style="--sc:${SEC[q.s].color}">
+          <div class="qmeta">
+            <span>Pregunta ${idx + 1} de ${S.items.length}</span>
+            <span class="tag">${esc(SEC[q.s].name)} · ${esc(q.t)}</span>
+          </div>
+          <h2 class="qtext">${esc(q.q)}</h2>
+          ${q.c ? `<pre class="code"><code>${esc(q.c)}</code></pre>` : ''}
+          ${multi ? `<p class="choose">Elige ${q.a.length} respuestas</p>` : ''}
+          <div class="opts" id="opts">${opts}</div>
+          ${feedback}
+          <div class="row between qactions">
+            <div class="row">
+              <button class="btn ghost" id="prev" ${idx === 0 ? 'disabled' : ''}>← Anterior</button>
+              <button class="btn ghost ${flagged ? 'flagged' : ''}" id="flag">${flagged ? '★ Marcada' : '☆ Marcar'}</button>
+            </div>
+            <div class="row">
+              ${S.immediate && !checked ? `<button class="btn primary" id="check" ${sel.length ? '' : 'disabled'}>Comprobar</button>` : ''}
+              ${idx < S.items.length - 1
+                ? `<button class="btn ${S.immediate && !checked ? '' : 'primary'}" id="next">Siguiente →</button>`
+                : `<button class="btn primary" id="finish">Terminar</button>`}
+            </div>
+          </div>
+        </article>
+
+        <div class="card">
+          <div class="row between"><h3>Navegador</h3><button class="btn small danger" id="finish2">Entregar ${S.mode === 'exam' ? 'examen' : 'práctica'}</button></div>
+          <div class="navgrid">${nav}</div>
+          <p class="muted small">Teclas: A–E seleccionar · Enter comprobar/siguiente · ←/→ navegar · M marcar</p>
+        </div>
+      </section>`;
+  }
+
+  after.session = () => {
+    const S = store.active;
+    if (!S) return bindCommon();
+    if (S.submitted) return;
+    const idx = S.current;
+    const q = BY_ID[S.items[idx].id];
+    const multi = q.a.length > 1;
+
+    const select = oi => {
+      if (S.immediate && S.checked[idx]) return;
+      let sel = (S.answers[idx] || []).slice();
+      if (multi) {
+        sel = sel.includes(oi) ? sel.filter(x => x !== oi) : sel.concat(oi);
+      } else {
+        sel = [oi];
+      }
+      S.answers[idx] = sel;
+      save();
+      render();
+    };
+    const move = d => {
+      const n = S.current + d;
+      if (n >= 0 && n < S.items.length) { S.current = n; save(); render(); }
+    };
+    const check = () => {
+      if (!(S.answers[idx] || []).length) return;
+      S.checked[idx] = true;
+      recordAnswer(q, isCorrect(q, S.answers[idx]));
+      save();
+      render();
+    };
+    const finish = () => {
+      const unanswered = S.items.length - Object.keys(S.answers).filter(k => (S.answers[k] || []).length).length;
+      const msg = unanswered ? `Tienes ${unanswered} preguntas sin responder. ¿Entregar de todas formas?` : '¿Entregar y ver resultados?';
+      ask(msg).then(ok => ok && submitSession());
+    };
+
+    app.querySelectorAll('.opt').forEach(b => b.onclick = () => select(Number(b.dataset.oi)));
+    app.querySelectorAll('[data-jump]').forEach(b => b.onclick = () => { S.current = Number(b.dataset.jump); save(); render(); });
+    const $ = id => document.getElementById(id);
+    $('prev') && ($('prev').onclick = () => move(-1));
+    $('next') && ($('next').onclick = () => move(1));
+    $('check') && ($('check').onclick = check);
+    $('finish') && ($('finish').onclick = finish);
+    $('finish2').onclick = finish;
+    $('flag').onclick = () => {
+      S.flags = S.flags.includes(idx) ? S.flags.filter(x => x !== idx) : S.flags.concat(idx);
+      save(); render();
+    };
+
+    document.onkeydown = e => {
+      if (view !== 'session' || e.target.tagName === 'INPUT' || document.querySelector('.modal')) return;
+      const k = e.key.toLowerCase();
+      const S2 = store.active;
+      if (!S2 || S2.submitted) return;
+      if (k >= 'a' && k <= 'e') {
+        const pos = k.charCodeAt(0) - 97;
+        const oi = S2.items[S2.current].order[pos];
+        if (oi !== undefined) select(oi);
+      } else if (k === 'enter') {
+        e.preventDefault();
+        if (S2.immediate && !S2.checked[S2.current] && (S2.answers[S2.current] || []).length) check();
+        else if (S2.current < S2.items.length - 1) move(1);
+      } else if (k === 'arrowright') move(1);
+      else if (k === 'arrowleft') move(-1);
+      else if (k === 'm') $('flag').click();
+    };
+
+    const t = $('timer');
+    timer = setInterval(() => {
+      if (!store.active || store.active.submitted) return clearInterval(timer);
+      const el = (Date.now() - S.startedAt) / 1000;
+      if (S.duration) {
+        const rem = S.duration - el;
+        t.textContent = fmtTime(rem);
+        t.classList.toggle('low', rem < 300);
+        if (rem <= 0) {
+          clearInterval(timer);
+          submitSession();
+          notify('¡Se acabó el tiempo! Se ha entregado el examen.');
+        }
+      } else {
+        t.textContent = fmtTime(el);
+      }
+    }, 1000);
+  };
+
+  // ---------- Vista: Resultados ----------
+  let resultsFilter = 'all';
+  function results() {
+    const S = store.active;
+    if (!S || !S.submitted) return `<section class="card"><p>No hay resultados.</p><button class="btn" data-go="home">Volver</button></section>`;
+    const r = S.result;
+    const p = pct(r.correct, r.total);
+    const pass = p >= PASS_PCT;
+    const secs = Math.round((S.finishedAt - S.startedAt) / 1000);
+
+    const list = S.items.map((it, i) => {
+      const q = BY_ID[it.id];
+      if (!q) return '';
+      const sel = S.answers[i] || [];
+      const ok = isCorrect(q, sel);
+      if (resultsFilter === 'wrong' && ok) return '';
+      if (resultsFilter === 'flag' && !S.flags.includes(i)) return '';
+      return `<details class="review ${ok ? 'ok' : 'bad'}">
+        <summary><span class="badge">${ok ? '✓' : '✗'}</span> <b>${i + 1}.</b> ${esc(q.q)} <span class="tag">${esc(q.t)}</span></summary>
+        ${q.c ? `<pre class="code"><code>${esc(q.c)}</code></pre>` : ''}
+        <ul class="ropts">
+          ${it.order.map((oi, pos) => {
+            const c = q.a.includes(oi) ? 'right' : sel.includes(oi) ? 'wrong' : '';
+            return `<li class="${c}"><span class="key">${String.fromCharCode(65 + pos)}</span>${esc(q.o[oi])}${sel.includes(oi) ? ' <small>(tu respuesta)</small>' : ''}</li>`;
+          }).join('')}
+        </ul>
+        <p class="expl">${esc(q.e)}</p>
+      </details>`;
+    }).join('');
+
+    return `
+      <section class="card result-head ${pass ? 'pass' : 'fail'}">
+        <div class="score">
+          <div class="ring" style="--p:${p}"><span>${p}%</span></div>
+          <div>
+            <p class="eyebrow">${esc(S.title)}</p>
+            <h1>${S.mode === 'exam' ? (pass ? 'APROBADO' : 'NO APROBADO') : 'Práctica terminada'}</h1>
+            <p class="muted">${r.correct} de ${r.total} correctas · nota de corte ${PASS_PCT}% · tiempo ${fmtTime(secs)}</p>
+          </div>
+        </div>
+        <div class="row wrap">
+          ${S.mode === 'exam' ? `<button class="btn primary" data-exam="${r.total}">Nuevo examen</button>` : `<button class="btn primary" data-go="practice">Nueva práctica</button>`}
+          <button class="btn" data-wrong>Repasar falladas</button>
+          <button class="btn ghost" data-go="home">Inicio</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Resultado por sección</h2>
+        ${SECTIONS.filter(s => r.bySection[s.id]).map(s => {
+          const b = r.bySection[s.id];
+          const sp = pct(b.c, b.t);
+          return `<div class="secres">
+            <div class="row between"><span><i class="dot" style="background:${s.color}"></i>${esc(s.name)} <small class="muted">(${s.weight}%)</small></span><b>${b.c}/${b.t} · ${sp}%</b></div>
+            <div class="meter" style="--sc:${s.color}"><div style="width:${sp}%"></div><em style="left:${PASS_PCT}%"></em></div>
+          </div>`;
+        }).join('')}
+      </section>
+
+      <section class="card">
+        <div class="row between wrap">
+          <h2>Revisión</h2>
+          <div class="seg" id="rfilter">
+            ${[['all', 'Todas'], ['wrong', 'Falladas'], ['flag', 'Marcadas']].map(([v, l]) => `<label><input type="radio" name="rf" value="${v}" ${resultsFilter === v ? 'checked' : ''}><span>${l}</span></label>`).join('')}
+          </div>
+        </div>
+        <div class="reviews">${list || '<p class="muted">Nada que mostrar con este filtro.</p>'}</div>
+      </section>`;
+  }
+  after.results = () => {
+    bindCommon();
+    const f = document.getElementById('rfilter');
+    f && f.addEventListener('change', e => { resultsFilter = e.target.value; render(); });
+  };
+
+  // ---------- Vista: Progreso ----------
+  function history() {
+    const H = store.history;
+    const exams = H.filter(h => h.mode === 'exam').slice(0, 20).reverse();
+    const topics = {};
+    BANK.forEach(q => {
+      const st = statOf(q.id);
+      const k = q.s + '|' + q.t;
+      topics[k] = topics[k] || { s: q.s, t: q.t, seen: 0, correct: 0, n: 0 };
+      topics[k].n++;
+      topics[k].seen += st.seen;
+      topics[k].correct += st.correct;
+    });
+    const trows = Object.values(topics).filter(t => t.seen).sort((a, b) => pct(a.correct, a.seen) - pct(b.correct, b.seen));
+
+    let chart = '';
+    if (exams.length > 1) {
+      const W = 600, Hh = 180, pad = 28;
+      const x = i => pad + (i * (W - 2 * pad)) / (exams.length - 1);
+      const y = v => Hh - pad - (v / 100) * (Hh - 2 * pad);
+      const pts = exams.map((e, i) => `${x(i)},${y(e.pct)}`).join(' ');
+      chart = `<svg viewBox="0 0 ${W} ${Hh}" class="chart" role="img" aria-label="Evolución de notas">
+        <line x1="${pad}" x2="${W - pad}" y1="${y(PASS_PCT)}" y2="${y(PASS_PCT)}" class="passline"/>
+        <text x="${W - pad}" y="${y(PASS_PCT) - 6}" text-anchor="end" class="axis">${PASS_PCT}%</text>
+        <polyline points="${pts}" class="line"/>
+        ${exams.map((e, i) => `<circle cx="${x(i)}" cy="${y(e.pct)}" r="4" class="${e.pct >= PASS_PCT ? 'ok' : 'bad'}"><title>${fmtDate(e.date)}: ${e.pct}%</title></circle>`).join('')}
+      </svg>`;
+    }
+
+    return `
+      <section class="card">
+        <h1>Progreso</h1>
+        ${chart || '<p class="muted">Haz al menos dos exámenes para ver la evolución.</p>'}
+      </section>
+
+      <section class="card">
+        <h2>Temas más débiles</h2>
+        ${trows.length ? `<table class="tbl">
+          <thead><tr><th>Tema</th><th>Sección</th><th>Acierto</th><th></th></tr></thead>
+          <tbody>${trows.map(t => {
+            const p = pct(t.correct, t.seen);
+            return `<tr><td>${esc(t.t)}</td><td><i class="dot" style="background:${SEC[t.s].color}"></i>${esc(SEC[t.s].name)}</td>
+              <td class="num ${p >= PASS_PCT ? 'ok' : 'bad'}">${p}% <small class="muted">(${t.correct}/${t.seen})</small></td>
+              <td><button class="btn small" data-practice-topic="${esc(t.t)}">Practicar</button></td></tr>`;
+          }).join('')}</tbody></table>` : '<p class="muted">Aún no hay respuestas registradas.</p>'}
+      </section>
+
+      <section class="card">
+        <h2>Historial</h2>
+        ${H.length ? `<table class="tbl">
+          <thead><tr><th>Fecha</th><th>Sesión</th><th>Resultado</th><th>Tiempo</th></tr></thead>
+          <tbody>${H.slice(0, 50).map(h => `<tr><td>${fmtDate(h.date)}</td><td>${esc(h.title)}</td>
+            <td class="num ${h.pct >= PASS_PCT ? 'ok' : 'bad'}">${h.correct}/${h.total} · ${h.pct}%</td><td>${fmtTime(h.seconds)}</td></tr>`).join('')}</tbody>
+        </table>` : '<p class="muted">Sin sesiones todavía.</p>'}
+      </section>
+
+      <section class="card">
+        <h2>Datos</h2>
+        <p class="muted small">El progreso se guarda en este navegador. Puedes exportarlo, importarlo o añadir tus propias preguntas en JSON
+        (formato: <code>[{"s":"fund|auto|ui|test","t":"Tema","q":"Pregunta","o":["A","B","C","D"],"a":[1],"e":"Explicación","c":"código opcional"}]</code>).</p>
+        <div class="row wrap">
+          <button class="btn" id="exp">Exportar progreso</button>
+          <label class="btn">Importar progreso<input type="file" id="imp" accept="application/json" hidden></label>
+          <label class="btn">Añadir preguntas (JSON)<input type="file" id="impq" accept="application/json" hidden></label>
+          <button class="btn danger" id="reset">Borrar progreso</button>
+        </div>
+        <p class="muted small">Preguntas propias cargadas: ${(store.custom || []).length}</p>
+      </section>`;
+  }
+  after.history = () => {
+    bindCommon();
+    const readJson = (input, cb) => {
+      input.onchange = () => {
+        const file = input.files[0];
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = () => {
+          try { cb(JSON.parse(r.result)); } catch (e) { notify('JSON no válido: ' + e.message); }
+        };
+        r.readAsText(file);
+      };
+    };
+    document.getElementById('exp').onclick = () => {
+      const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pd1-progreso.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+    readJson(document.getElementById('imp'), data => {
+      store = Object.assign(defaultStore(), data);
+      save(); buildBank(); render();
+    });
+    readJson(document.getElementById('impq'), data => {
+      const list = Array.isArray(data) ? data : [data];
+      const valid = list.filter(q => q && SEC[q.s] && typeof q.q === 'string' && Array.isArray(q.o) && Array.isArray(q.a) && q.a.length);
+      store.custom = (store.custom || []).concat(valid);
+      save(); buildBank(); render();
+      notify(`${valid.length} preguntas añadidas (${list.length - valid.length} descartadas).`);
+    });
+    document.getElementById('reset').onclick = () => {
+      ask('¿Borrar estadísticas, historial y sesión en curso? (Las preguntas propias se conservan)').then(ok => {
+        if (!ok) return;
+        store = Object.assign(defaultStore(), { custom: store.custom });
+        save(); render();
+      });
+    };
+  };
+
+  // Inicio: si hay una sesión a medias, se ofrece continuar desde Inicio.
+  render();
+})();
+
+</script>
 </body>
 </html>

@@ -38,6 +38,33 @@
   };
   const fmtDate = ts => new Date(ts).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
 
+  // Diálogos propios: alert/confirm nativos están bloqueados en vistas previas con sandbox.
+  const dialog = (msg, withCancel) => new Promise(resolve => {
+    const wrap = document.createElement('div');
+    wrap.className = 'modal';
+    wrap.innerHTML = `<div class="modal-box" role="dialog" aria-modal="true">
+      <p>${esc(msg)}</p>
+      <div class="row right-row">
+        ${withCancel ? '<button class="btn ghost" data-r="0">Cancelar</button>' : ''}
+        <button class="btn primary" data-r="1">Aceptar</button>
+      </div></div>`;
+    const close = r => { wrap.remove(); document.removeEventListener('keydown', onKey, true); resolve(r); };
+    const onKey = e => {
+      if (e.key === 'Escape') { e.stopPropagation(); close(false); }
+      else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); close(true); }
+    };
+    wrap.addEventListener('click', e => {
+      const b = e.target.closest('[data-r]');
+      if (b) close(b.dataset.r === '1');
+      else if (e.target === wrap && withCancel) close(false);
+    });
+    document.addEventListener('keydown', onKey, true);
+    document.body.appendChild(wrap);
+    wrap.querySelector('[data-r="1"]').focus();
+  });
+  const notify = msg => dialog(msg, false);
+  const ask = msg => dialog(msg, true);
+
   // ---------- Persistencia ----------
   const defaultStore = () => ({ stats: {}, history: [], active: null, custom: [] });
   let store;
@@ -134,7 +161,7 @@
     if (source === 'unseen') pool = pool.filter(q => statOf(q.id).seen === 0);
     if (source === 'wrong') pool = pool.filter(q => statOf(q.id).lastWrong);
     if (!pool.length) {
-      alert('No hay preguntas que cumplan esos filtros.');
+      notify('No hay preguntas que cumplan esos filtros.');
       return;
     }
     const n = count === 'all' ? pool.length : Math.min(Number(count), pool.length);
@@ -253,7 +280,7 @@
   const bindCommon = () => {
     app.querySelectorAll('[data-act="resume"]').forEach(b => b.onclick = () => go('session'));
     app.querySelectorAll('[data-act="discard"]').forEach(b => b.onclick = () => {
-      if (confirm('¿Descartar la sesión en curso?')) { store.active = null; save(); render(); }
+      ask('¿Descartar la sesión en curso?').then(ok => { if (ok) { store.active = null; save(); render(); } });
     });
     app.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
     app.querySelectorAll('[data-exam]').forEach(b => b.onclick = () => startExam(Number(b.dataset.exam)));
@@ -402,18 +429,20 @@
             </div>
           </fieldset>
           <label class="check"><input type="checkbox" name="immediate" checked> Corregir cada pregunta al responder</label>
-          <div class="row"><button class="btn primary" type="submit">Empezar práctica</button></div>
+          <div class="row"><button class="btn primary" type="button" id="pstart">Empezar práctica</button></div>
         </form>
       </section>
     `;
   }
   after.practice = () => {
     bindCommon();
-    document.getElementById('pform').onsubmit = e => {
-      e.preventDefault();
-      const f = new FormData(e.target);
+    // Botón normal en vez de submit: las vistas previas con sandbox bloquean el envío de formularios.
+    const form = document.getElementById('pform');
+    form.onsubmit = e => e.preventDefault();
+    document.getElementById('pstart').onclick = () => {
+      const f = new FormData(form);
       const sections = f.getAll('sec');
-      if (!sections.length) { alert('Elige al menos una sección.'); return; }
+      if (!sections.length) { notify('Elige al menos una sección.'); return; }
       startPractice({ sections, count: f.get('count'), source: f.get('source'), immediate: f.get('immediate') === 'on' });
     };
   };
@@ -567,7 +596,7 @@
     const finish = () => {
       const unanswered = S.items.length - Object.keys(S.answers).filter(k => (S.answers[k] || []).length).length;
       const msg = unanswered ? `Tienes ${unanswered} preguntas sin responder. ¿Entregar de todas formas?` : '¿Entregar y ver resultados?';
-      if (confirm(msg)) submitSession();
+      ask(msg).then(ok => ok && submitSession());
     };
 
     app.querySelectorAll('.opt').forEach(b => b.onclick = () => select(Number(b.dataset.oi)));
@@ -584,7 +613,7 @@
     };
 
     document.onkeydown = e => {
-      if (view !== 'session' || e.target.tagName === 'INPUT') return;
+      if (view !== 'session' || e.target.tagName === 'INPUT' || document.querySelector('.modal')) return;
       const k = e.key.toLowerCase();
       const S2 = store.active;
       if (!S2 || S2.submitted) return;
@@ -611,8 +640,8 @@
         t.classList.toggle('low', rem < 300);
         if (rem <= 0) {
           clearInterval(timer);
-          alert('¡Se acabó el tiempo! Se entrega el examen.');
           submitSession();
+          notify('¡Se acabó el tiempo! Se ha entregado el examen.');
         }
       } else {
         t.textContent = fmtTime(el);
@@ -772,7 +801,7 @@
         if (!file) return;
         const r = new FileReader();
         r.onload = () => {
-          try { cb(JSON.parse(r.result)); } catch (e) { alert('JSON no válido: ' + e.message); }
+          try { cb(JSON.parse(r.result)); } catch (e) { notify('JSON no válido: ' + e.message); }
         };
         r.readAsText(file);
       };
@@ -794,13 +823,14 @@
       const valid = list.filter(q => q && SEC[q.s] && typeof q.q === 'string' && Array.isArray(q.o) && Array.isArray(q.a) && q.a.length);
       store.custom = (store.custom || []).concat(valid);
       save(); buildBank(); render();
-      alert(`${valid.length} preguntas añadidas (${list.length - valid.length} descartadas).`);
+      notify(`${valid.length} preguntas añadidas (${list.length - valid.length} descartadas).`);
     });
     document.getElementById('reset').onclick = () => {
-      if (confirm('¿Borrar estadísticas, historial y sesión en curso? (Las preguntas propias se conservan)')) {
+      ask('¿Borrar estadísticas, historial y sesión en curso? (Las preguntas propias se conservan)').then(ok => {
+        if (!ok) return;
         store = Object.assign(defaultStore(), { custom: store.custom });
         save(); render();
-      }
+      });
     };
   };
 

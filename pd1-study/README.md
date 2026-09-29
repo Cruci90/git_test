@@ -4,11 +4,12 @@ App web estática para preparar el examen **Salesforce Certified Platform Develo
 
 ## Cómo usarla
 
-Abre `index.html` en el navegador. No necesita instalación ni servidor. El progreso se guarda en `localStorage`.
+Abre `index.html` en el navegador. Es un **único archivo autocontenido** (CSS, JS y preguntas embebidos), así que funciona aunque lo descargues suelto o lo abras desde una vista previa. No necesita instalación ni servidor. El progreso se guarda en `localStorage` si el navegador lo permite.
+
+`index.html` se **genera** a partir de `src/`. Para editar la app o añadir preguntas, modifica los archivos de `src/` y vuelve a generarlo:
 
 ```bash
-# opcional: servirla en local
-cd pd1-study && python3 -m http.server 8000
+cd pd1-study && python3 build.py
 ```
 
 ## Funcionalidades
@@ -79,18 +80,21 @@ Estos pesos están vigentes desde la actualización de agosto de 2022. En 2025 S
 
 ```
 pd1-study/
-├── index.html
-├── styles.css
-├── app.js                  # lógica: sesiones, generación de exámenes, progreso
-└── data/
-    ├── guide.js            # datos del examen, objetivos, apuntes, límites, recursos
-    ├── questions-fund.js   # Developer Fundamentals
-    ├── questions-auto.js   # Process Automation and Logic
-    ├── questions-ui.js     # User Interface
-    └── questions-test.js   # Testing, Debugging, and Deployment
+├── index.html                  # GENERADO: app autocontenida (abrir este)
+├── build.py                    # empaqueta src/ en index.html
+└── src/
+    ├── index.html
+    ├── styles.css
+    ├── app.js                  # lógica: sesiones, generación de exámenes, progreso
+    └── data/
+        ├── guide.js            # datos del examen, objetivos, apuntes, límites, recursos
+        ├── questions-fund.js   # Developer Fundamentals
+        ├── questions-auto.js   # Process Automation and Logic
+        ├── questions-ui.js     # User Interface
+        └── questions-test.js   # Testing, Debugging, and Deployment
 ```
 
-Para añadir preguntas al banco, agrega objetos al archivo de la sección que corresponda con el mismo formato.
+Para añadir preguntas al banco, agrega objetos al archivo de la sección que corresponda en `src/data/` y ejecuta `python3 build.py`.
 
 ## Fuentes
 
