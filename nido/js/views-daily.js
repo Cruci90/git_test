@@ -60,19 +60,20 @@
 
   const kindMeta = {
     sleep: { ic: 'moon', cls: 'c-sleep' }, feed: { ic: 'bottle', cls: 'c-feed' }, diaper: { ic: 'diaper', cls: 'c-diaper' },
-    meal: { ic: 'leaf', cls: 'c-blw' }, med: { ic: 'pill', cls: 'c-health' }, temp: { ic: 'thermo', cls: 'c-health' }
+    meal: { ic: 'leaf', cls: 'c-blw' }, med: { ic: 'pill', cls: 'c-health' }, temp: { ic: 'thermo', cls: 'c-health' }, activity: { ic: 'ball', cls: 'c-mile' }
   };
   W.describe = (it) => {
     const r = it.rec;
     switch (it.kind) {
       case 'sleep': return [`${r.type === 'nap' ? 'Siesta' : 'Noche'} · ${U.dur((r.end - r.start) / U.MIN)}`, `${U.time(r.start)} – ${U.time(r.end)}${r.place ? ' · ' + r.place : ''}`];
       case 'feed': return r.kind === 'breast'
-        ? [`Pecho · ${(r.durL || 0) + (r.durR || 0)} min`, `Izq. ${r.durL || 0}′ · Dcho. ${r.durR || 0}′ · terminó en ${r.lastSide === 'L' ? 'izquierdo' : 'derecho'}`]
+        ? [`Pecho · ${(r.durL || 0) + (r.durR || 0)} min`, r.sideUnknown ? 'Lado sin registrar' : `Izq. ${r.durL || 0}′ · Dcho. ${r.durR || 0}′ · terminó en ${r.lastSide === 'L' ? 'izquierdo' : 'derecho'}`]
         : [`Biberón · ${r.ml} ml`, r.milk === 'formula' ? 'Fórmula' : r.milk === 'mixta' ? 'Mixta' : 'Leche materna'];
       case 'diaper': { const c = N.DIAPER_COLORS.find((x) => x.id === r.color); return [`Pañal · ${{ wet: 'pipí', dirty: 'caca', mixed: 'pipí y caca' }[r.kind]}`, c ? `<i class="swatch" style="background:${c.hex}"></i>${c.name}` : 'Mojado']; }
-      case 'meal': return [`${(N.MEAL_TYPES.find((m) => m.id === r.mealType) || {}).name || 'Comida'} · ${r.foods.length} alimento${r.foods.length > 1 ? 's' : ''}`, r.foods.map((f) => N.FOOD_BY_ID[f.id].emoji + ' ' + N.FOOD_BY_ID[f.id].name).join(', ')];
+      case 'meal': return [`${(N.MEAL_TYPES.find((m) => m.id === r.mealType) || {}).name || 'Comida'} · ${r.foods.length} alimento${r.foods.length > 1 ? 's' : ''}${S.mealIron(r).iron ? ' <i class="iron-tag" title="Con hierro">hierro</i>' : ''}`, r.foods.map((f) => N.FOOD_BY_ID[f.id].emoji + ' ' + N.FOOD_BY_ID[f.id].name).join(', ')];
       case 'med': return [`${U.esc(r.name)}${r.dose ? ` · ${U.num(r.dose, r.dose % 1 ? 1 : 0)} ${r.unit}` : ''}`, U.esc(r.reason || 'Medicación')];
       case 'temp': return [`${U.num(r.value)} ºC`, `${r.method}${r.value >= 38 ? ' · fiebre' : ''}`];
+      case 'activity': { const a = N.ACTIVITIES.find((x) => x.id === r.kind) || {}; return [`${a.emoji || ''} ${a.name || 'Actividad'}${r.dur ? ' · ' + U.dur(r.dur) : ''}`, U.esc(r.note || a.hint || '')]; }
     }
     return ['', ''];
   };
@@ -163,10 +164,11 @@
         </div>
         <aside class="col-side">
           ${W.plan()}
+          ${W.tummy()}
           ${W.card('Su día en 24 horas', `<div class="clock-wrap">${Charts.dayClock(sd.blocks, feeds.filter((f) => f.kind !== 'solids').map((f) => f.time), Date.now())}
             <ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul></div>`)}
           ${V.hoy.reminders()}
-          ${V.hoy.idea(stats)}
+          ${V.hoy.idea()}
         </aside>
       </div>`;
     },
@@ -189,19 +191,23 @@
       if (fever.length) out.push(`<li class="rem crit"><a href="#salud">${icon('thermo')}<span><b>Fiebre en las últimas 24 h</b><small>${U.num(fever[fever.length - 1].value)} ºC ${U.ago(fever[fever.length - 1].time)}</small></span></a></li>`);
       return W.card('Pendiente', out.length ? `<ul class="rems">${out.join('')}</ul>` : '<p class="muted pad">Todo al día.</p>');
     },
-    idea(stats) {
+    idea() {
       const age = S.ageMonths();
       if (age < 5.5) return W.card('Alimentación', `<p class="muted pad">La alimentación complementaria suele empezar hacia los 6 meses, cuando se sienta con apoyo y muestra interés por la comida.</p>`);
-      const pending = N.FOODS.filter((f) => !stats[f.id] && !f.r);
-      const al = S.allergenStatus().find((a) => a.state === 'progress') || S.allergenStatus().find((a) => a.state === 'pending');
-      const seed = new Date().getDate();
-      const pick = pending.length ? pending[seed % pending.length] : null;
-      return W.card('Idea para hoy', `<div class="idea">
-        ${pick ? `<button type="button" class="idea-food" data-act="form-meal" data-food="${pick.id}"><span class="fe big">${pick.emoji}</span><span><b>${pick.name}</b><small>${age < 9 ? pick.s6 : pick.s9}</small></span></button>` : ''}
-        ${al ? `<p class="idea-al">${icon('info')} <span>Alérgeno en curso: <b>${al.name}</b> · ${al.exposures}/3 exposiciones. Ofrécelo por la mañana y observa 2 horas.</span></p>` : ''}
-      </div>`);
+      // Las comidas de hoy según el plan semanal de BLW.
+      const day = N.BlwPlan.current().days.find((d) => d.date === U.today());
+      if (!day) return '';
+      const logged = S.onDay(S.meals(), U.today());
+      return W.card('Hoy en el plan de BLW', `<div class="idea">${day.meals.map((m, mi) => {
+        const done = logged.find((x) => x.mealType === m.type);
+        return `<div class="idea-meal ${done ? 'is-logged' : ''}"><div class="pmeal-h"><span>${N.MEAL_TYPES.find((t) => t.id === m.type).name}</span>${m.iron.iron ? `<i class="iron ${m.iron.heme ? 'heme' : ''}" title="Con hierro">${icon('drop')}</i>` : ''}
+          ${done ? `<span class="pill good">Hecha</span>` : `<button type="button" class="link sm" data-act="plan-log" data-day="${day.date}" data-meal="${mi}">Registrar</button>`}</div>
+          <p>${m.items.map((x) => `${N.FOOD_BY_ID[x.id].emoji} ${N.FOOD_BY_ID[x.id].name}${x.tag === 'new' ? ' <b class="txt-new">nuevo</b>' : x.tag === 'allergen' ? ' <b class="txt-warn">alérgeno</b>' : ''}`).join(', ')}</p></div>`;
+      }).join('')}
+      ${day.allergen ? `<p class="idea-al">${icon('info')} <span>Alérgeno de hoy: <b>${day.allergen.name}</b>. Ofrécelo por la mañana y observa 2 horas.</span></p>` : ''}</div>`, { act: '<button type="button" class="link" data-act="blw-plan">Ver semana</button>' });
     }
   };
+  N.actions['blw-plan'] = () => { UI.st.seg.blw = 'plan'; UI.go('blw'); };
   N.actions['med-vitd'] = () => {
     const last = Store.list('meds').filter((m) => /vitamina d/i.test(m.name)).pop();
     Store.add('meds', { time: Date.now(), name: last.name, dose: last.dose, unit: last.unit, reason: last.reason });
@@ -280,7 +286,7 @@
       const mlToday = U.sum(today.filter((f) => f.kind === 'bottle'), (f) => f.ml || 0);
       const gaps = []; const wk = all.filter((f) => f.time > Date.now() - 7 * U.DAY); for (let i = 1; i < wk.length; i++) gaps.push((wk[i].time - wk[i - 1].time) / U.MIN);
       const last = all[all.length - 1];
-      const sideL = U.sum(wk, (f) => f.durL || 0), sideR = U.sum(wk, (f) => f.durR || 0);
+      const sided = wk.filter((f) => !f.sideUnknown), sideL = U.sum(sided, (f) => f.durL || 0), sideR = U.sum(sided, (f) => f.durR || 0);
       const next = S.lastBreastSide() === 'L' ? 'R' : 'L';
       const groups = {}; all.slice(-50).reverse().forEach((f) => { (groups[U.dayKey(f.time)] = groups[U.dayKey(f.time)] || []).push(f); });
       return `<div class="grid-2">

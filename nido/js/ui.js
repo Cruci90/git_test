@@ -20,6 +20,7 @@
     { id: 'crecimiento', name: 'Crecimiento', icon: 'ruler', cls: 'c-growth' },
     { id: 'salud', name: 'Salud', icon: 'heart', cls: 'c-health' },
     { id: 'calendario', name: 'Calendario', icon: 'calendar' },
+    { id: 'actividades', name: 'Actividades', icon: 'ball', cls: 'c-mile' },
     { id: 'hitos', name: 'Hitos y dientes', icon: 'star', cls: 'c-mile' },
     { id: 'diario', name: 'Diario', icon: 'book' },
     { id: 'informe', name: 'Informe pediatra', icon: 'file' },

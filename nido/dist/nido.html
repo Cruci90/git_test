@@ -768,6 +768,93 @@ form[data-kind="wet"] .only-poo { display: none; }
 .player .icon-btn:hover { background: rgba(255, 255, 255, .12); }
 @media (min-width: 960px) { .player { left: 14px; right: auto; width: calc(var(--side-w) - 28px); bottom: 56px; } }
 
+/* ---------- Hierro ---------- */
+.iron { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: color-mix(in srgb, var(--c-health) 14%, transparent); color: var(--c-health); }
+.iron .ic { width: 12px; height: 12px; fill: currentColor; }
+.iron.heme { background: var(--c-health); color: #fff; }
+.iron-tag { font-style: normal; font-size: 11px; font-weight: 700; color: var(--c-health); background: color-mix(in srgb, var(--c-health) 12%, transparent); padding: 1px 6px; border-radius: 99px; vertical-align: 1px; }
+.iron-box { display: flex; gap: 16px; align-items: center; }
+.iron-box p + p { margin-top: 6px; }
+.r-iron .ring-val { stroke: var(--c-health); }
+.r-mile .ring-val { stroke: var(--c-mile); }
+.m-mile { fill: var(--c-mile); }
+.txt-new { color: var(--accent); font-weight: 700; }
+.link.sm { font-size: 12.5px; display: inline-flex; align-items: center; gap: 3px; }
+
+/* ---------- Volver a ofrecer ---------- */
+.retry { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.retry-it { display: grid; grid-template-columns: 30px minmax(0, 1fr) 80px 40px; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); text-align: left; }
+.retry-it:hover { border-color: var(--c-blw); }
+.retry-it span:nth-child(2) { display: flex; flex-direction: column; min-width: 0; }
+.retry-it b { font-size: 14px; }
+.retry-it small { font-size: 12px; color: var(--ink-3); }
+.retry-it em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--ink-2); text-align: right; }
+.retry-bar { height: 6px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+.retry-bar i { display: block; height: 100%; background: var(--c-blw); border-radius: 99px; }
+
+/* ---------- Plan semanal ---------- */
+.plan-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.plan-top p { max-width: 70ch; }
+.plan-top .btn-row { margin-top: 0; }
+.pweek { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.pday { border: 1px solid var(--line); border-radius: 16px; padding: 12px; background: var(--surface-2); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pday header { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.pday header b { text-transform: capitalize; font-family: var(--f-display); font-size: 16px; }
+.pday header span { color: var(--ink-3); font-size: 12.5px; margin-right: auto; }
+.pday.is-today { border-color: var(--c-blw); box-shadow: inset 0 0 0 1px var(--c-blw); background: var(--surface); }
+.pday.is-past { opacity: .72; }
+.pmeal { background: var(--surface); border-radius: 12px; padding: 8px 10px; border: 1px solid var(--line); }
+.pmeal.is-logged { border-color: color-mix(in srgb, var(--good) 50%, var(--line)); }
+.pmeal-h { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+.pmeal-h > span:first-child { margin-right: auto; }
+.pmeal ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.pmeal li { display: flex; align-items: center; gap: 6px; font-size: 13.5px; }
+.pmeal li .fe { font-size: 16px; }
+.pmeal li .pill { margin-left: auto; font-size: 10.5px; padding: 1px 6px; }
+.idea-meal { padding: 8px 10px; border-radius: 12px; background: var(--surface-2); }
+.idea-meal p { font-size: 13.5px; }
+.idea-meal.is-logged { opacity: .75; }
+.shop { display: grid; gap: 4px 20px; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.shop ul { list-style: none; margin: 0 0 8px; padding: 0; }
+.shop label { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 14px; cursor: pointer; }
+.shop input { width: 18px; height: 18px; accent-color: var(--c-blw); }
+.shop input:checked ~ span { text-decoration: line-through; color: var(--ink-3); }
+.shop small { margin-left: auto; color: var(--ink-3); }
+
+/* ---------- Actividades ---------- */
+.tummy { display: flex; gap: 16px; align-items: center; }
+.tummy-c { flex: 1; min-width: 0; }
+.tummy-c .btn-row { margin-top: 8px; align-items: center; }
+.tummy-live b { font: 700 26px/1 var(--f-display); color: var(--c-mile); margin-right: 6px; }
+.act-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.act { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); text-align: left; }
+.act:hover { border-color: var(--c-mile); }
+.act b { font-size: 13.5px; }
+.act small { font-size: 11.5px; color: var(--ink-3); }
+
+/* ---------- Avisos ---------- */
+.rem-list { list-style: none; margin: 12px 0; padding: 0; display: grid; gap: 4px 24px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.rem-set { display: flex; align-items: center; gap: 10px; padding: 6px 0; min-height: 44px; }
+.rem-l { flex: 1; font-size: 14px; }
+.rem-p { display: inline-flex; align-items: center; gap: 4px; }
+.rem-p input { width: 64px; min-height: 34px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+.rem-p input[type=time] { width: 100px; }
+.rem-p i { font-style: normal; font-size: 12px; color: var(--ink-3); }
+.switch { position: relative; display: inline-block; width: 40px; height: 24px; flex: none; }
+.switch input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; z-index: 1; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--surface-3); border: 1px solid var(--line); transition: background .15s; }
+.switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .15s; }
+.switch input:checked + span { background: var(--accent); border-color: var(--accent); }
+.switch input:checked + span::after { transform: translateX(16px); }
+.switch input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Importar ---------- */
+.small-drop { min-height: 70px; flex-direction: row; }
+.imp { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; background: var(--surface-2); }
+details summary { cursor: pointer; color: var(--ink-2); }
+details .code { margin-top: 8px; }
+code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--surface-3); padding: 1px 5px; border-radius: 5px; }
+
 </style>
 </head>
 <body>
@@ -887,7 +974,9 @@ form[data-kind="wet"] .only-poo { display: none; }
 
   /* ---------- Catálogo BLW -----------------------------------------------
      c: categoría · col: color (arcoíris semanal) · a: alérgeno
-     r: riesgo de atragantamiento (requiere preparación) · s6/s9: cómo ofrecerlo */
+     r: riesgo de atragantamiento (requiere preparación) · s6/s9: cómo ofrecerlo
+     fe: fuente de hierro (2 = hierro hemo, muy absorbible; 1 = vegetal)
+     vc: rico en vitamina C (ayuda a absorber el hierro vegetal) */
   const F = (id, name, emoji, c, col, s6, s9, extra) =>
     Object.assign({ id, name, emoji, c, col, s6, s9 }, extra || {});
 
@@ -917,66 +1006,66 @@ form[data-kind="wet"] .only-poo { display: none; }
     F('aguacate', 'Aguacate', '🥑', 'fruta', 'verde', 'Tiras gruesas, rebozadas en coco o avena si resbala', 'Dados blandos'),
     F('manzana', 'Manzana', '🍎', 'fruta', 'rojo', 'Solo cocida o asada en gajos (cruda es de riesgo)', 'Rallada cruda o cocida en dados', { r: true }),
     F('pera', 'Pera', '🍐', 'fruta', 'verde', 'Madura en gajos gruesos; si está dura, cocida', 'Dados blandos'),
-    F('mango', 'Mango', '🥭', 'fruta', 'naranja', 'Hueso con algo de pulpa o tiras gruesas', 'Dados'),
-    F('fresa', 'Fresa', '🍓', 'fruta', 'rojo', 'Grande entera o aplastada', 'Cortada en cuartos'),
+    F('mango', 'Mango', '🥭', 'fruta', 'naranja', 'Hueso con algo de pulpa o tiras gruesas', 'Dados', { vc: true }),
+    F('fresa', 'Fresa', '🍓', 'fruta', 'rojo', 'Grande entera o aplastada', 'Cortada en cuartos', { vc: true }),
     F('arandanos', 'Arándanos', '🫐', 'fruta', 'morado', 'Aplastados con el dedo', 'Aplastados o cortados por la mitad', { r: true }),
     F('uva', 'Uva', '🍇', 'fruta', 'morado', 'Cortada a lo largo en cuartos, sin pepitas', 'Siempre en cuartos a lo largo', { r: true }),
-    F('sandia', 'Sandía', '🍉', 'fruta', 'rojo', 'Triángulos gruesos sin pepitas', 'Dados sin pepitas'),
-    F('melon', 'Melón', '🍈', 'fruta', 'verde', 'Tiras gruesas con piel como mango', 'Dados'),
-    F('melocoton', 'Melocotón', '🍑', 'fruta', 'naranja', 'Mitad sin hueso, muy madura', 'Gajos finos'),
-    F('kiwi', 'Kiwi', '🥝', 'fruta', 'verde', 'Mitad pelada o gajos gruesos', 'Dados'),
-    F('naranja', 'Naranja', '🍊', 'fruta', 'naranja', 'Gajo sin membrana ni pepitas', 'Trocitos de gajo'),
+    F('sandia', 'Sandía', '🍉', 'fruta', 'rojo', 'Triángulos gruesos sin pepitas', 'Dados sin pepitas', { vc: true }),
+    F('melon', 'Melón', '🍈', 'fruta', 'verde', 'Tiras gruesas con piel como mango', 'Dados', { vc: true }),
+    F('melocoton', 'Melocotón', '🍑', 'fruta', 'naranja', 'Mitad sin hueso, muy madura', 'Gajos finos', { vc: true }),
+    F('kiwi', 'Kiwi', '🥝', 'fruta', 'verde', 'Mitad pelada o gajos gruesos', 'Dados', { vc: true }),
+    F('naranja', 'Naranja', '🍊', 'fruta', 'naranja', 'Gajo sin membrana ni pepitas', 'Trocitos de gajo', { vc: true }),
     F('ciruela', 'Ciruela', '🟣', 'fruta', 'morado', 'Mitad sin hueso, madura', 'Cuartos'),
     F('higo', 'Higo', '🟤', 'fruta', 'morado', 'Abierto por la mitad', 'Trozos'),
-    F('papaya', 'Papaya', '🧡', 'fruta', 'naranja', 'Tiras gruesas', 'Dados'),
-    F('frambuesa', 'Frambuesa', '🔴', 'fruta', 'rojo', 'Aplastada', 'Entera o a mitades'),
+    F('papaya', 'Papaya', '🧡', 'fruta', 'naranja', 'Tiras gruesas', 'Dados', { vc: true }),
+    F('frambuesa', 'Frambuesa', '🔴', 'fruta', 'rojo', 'Aplastada', 'Entera o a mitades', { vc: true }),
     F('cereza', 'Cereza', '🍒', 'fruta', 'rojo', 'Sin hueso y en cuartos', 'Sin hueso y en cuartos', { r: true }),
     // Verduras
-    F('brocoli', 'Brócoli', '🥦', 'verdura', 'verde', 'Arbolito al vapor con tallo como mango', 'Ramilletes pequeños'),
+    F('brocoli', 'Brócoli', '🥦', 'verdura', 'verde', 'Arbolito al vapor con tallo como mango', 'Ramilletes pequeños', { vc: true }),
     F('zanahoria', 'Zanahoria', '🥕', 'verdura', 'naranja', 'Bastones cocidos muy blandos (cruda no)', 'Rodajas cocidas o rallada', { r: true }),
     F('boniato', 'Boniato', '🍠', 'verdura', 'naranja', 'Bastones asados', 'Dados asados o puré'),
-    F('calabacin', 'Calabacín', '🥒', 'verdura', 'verde', 'Bastones al vapor con piel', 'Medias lunas'),
+    F('calabacin', 'Calabacín', '🥒', 'verdura', 'verde', 'Bastones al vapor con piel', 'Medias lunas', { vc: true }),
     F('calabaza', 'Calabaza', '🎃', 'verdura', 'naranja', 'Gajos asados', 'Dados asados'),
     F('patata', 'Patata', '🥔', 'verdura', 'blanco', 'Gajos cocidos o asados', 'Dados'),
-    F('coliflor', 'Coliflor', '🤍', 'verdura', 'blanco', 'Ramillete grande al vapor', 'Ramilletes pequeños'),
+    F('coliflor', 'Coliflor', '🤍', 'verdura', 'blanco', 'Ramillete grande al vapor', 'Ramilletes pequeños', { vc: true }),
     F('judia_verde', 'Judía verde', '🫛', 'verdura', 'verde', 'Enteras, cocidas muy tiernas', 'Trocitos'),
     F('guisantes', 'Guisantes', '🟢', 'verdura', 'verde', 'Aplastados', 'Aplastados o enteros para pinza', { r: true }),
-    F('tomate', 'Tomate', '🍅', 'verdura', 'rojo', 'Gajos grandes sin piel dura', 'Cherry en cuartos', { r: true }),
-    F('pimiento', 'Pimiento rojo', '🫑', 'verdura', 'rojo', 'Tiras asadas sin piel', 'Tiras finas asadas'),
+    F('tomate', 'Tomate', '🍅', 'verdura', 'rojo', 'Gajos grandes sin piel dura', 'Cherry en cuartos', { r: true, vc: true }),
+    F('pimiento', 'Pimiento rojo', '🫑', 'verdura', 'rojo', 'Tiras asadas sin piel', 'Tiras finas asadas', { vc: true }),
     F('berenjena', 'Berenjena', '🍆', 'verdura', 'morado', 'Tiras asadas', 'Dados asados'),
     F('remolacha', 'Remolacha', '🟥', 'verdura', 'morado', 'Gajos cocidos', 'Dados o rallada'),
-    F('espinaca', 'Espinaca', '🌿', 'verdura', 'verde', 'Cocida, mezclada en tortilla o croqueta', 'Salteada picada', { note: 'Nitratos: evitar grandes cantidades antes de 1 año' }),
+    F('espinaca', 'Espinaca', '🌿', 'verdura', 'verde', 'Cocida, mezclada en tortilla o croqueta', 'Salteada picada', { note: 'Nitratos: evitar grandes cantidades antes de 1 año', fe: 1 }),
     F('champinon', 'Champiñón', '🍄', 'verdura', 'marron', 'Laminado grueso y salteado', 'Picado'),
     F('puerro', 'Puerro', '🧅', 'verdura', 'blanco', 'En cremas o guisos', 'Picado'),
     F('maiz', 'Maíz', '🌽', 'verdura', 'amarillo', 'Mazorca cocida para roer', 'Granos aplastados', { r: true }),
-    F('esparrago', 'Espárrago', '🌱', 'verdura', 'verde', 'Enteros al vapor', 'Trozos'),
+    F('esparrago', 'Espárrago', '🌱', 'verdura', 'verde', 'Enteros al vapor', 'Trozos', { vc: true }),
     // Proteínas
-    F('huevo', 'Huevo', '🥚', 'proteina', 'amarillo', 'Tortilla en tiras o huevo duro en cuartos', 'Revuelto', { a: 'huevo' }),
-    F('pollo', 'Pollo', '🍗', 'proteina', 'blanco', 'Muslo en tiras o hueso grande con carne', 'Desmenuzado'),
-    F('pavo', 'Pavo', '🦃', 'proteina', 'blanco', 'Albóndigas o tiras', 'Desmenuzado'),
-    F('ternera', 'Ternera', '🥩', 'proteina', 'marron', 'Tira grande para chupar o albóndigas', 'Picada'),
-    F('cerdo', 'Cerdo (lomo)', '🐖', 'proteina', 'blanco', 'Tiras tiernas', 'Desmenuzado'),
-    F('cordero', 'Cordero', '🐑', 'proteina', 'marron', 'Costilla para roer', 'Desmenuzado'),
-    F('merluza', 'Merluza', '🐟', 'proteina', 'blanco', 'Lomos sin espinas en láminas', 'Desmigada', { a: 'pescado' }),
-    F('salmon', 'Salmón', '🍣', 'proteina', 'naranja', 'Láminas sin espinas', 'Desmigado', { a: 'pescado' }),
-    F('sardina', 'Sardina', '🐠', 'proteina', 'marron', 'Sin espinas en tostada', 'Aplastada', { a: 'pescado' }),
-    F('bacalao', 'Bacalao', '🎣', 'proteina', 'blanco', 'Desalado, en láminas', 'Desmigado', { a: 'pescado' }),
-    F('gamba', 'Gamba', '🦐', 'proteina', 'rojo', 'Picada en tortilla', 'Trocitos', { a: 'marisco' }),
-    F('tofu', 'Tofu', '🧊', 'proteina', 'blanco', 'Bastones firmes a la plancha', 'Dados', { a: 'soja' }),
+    F('huevo', 'Huevo', '🥚', 'proteina', 'amarillo', 'Tortilla en tiras o huevo duro en cuartos', 'Revuelto', { a: 'huevo', fe: 1 }),
+    F('pollo', 'Pollo', '🍗', 'proteina', 'blanco', 'Muslo en tiras o hueso grande con carne', 'Desmenuzado', { fe: 2 }),
+    F('pavo', 'Pavo', '🦃', 'proteina', 'blanco', 'Albóndigas o tiras', 'Desmenuzado', { fe: 2 }),
+    F('ternera', 'Ternera', '🥩', 'proteina', 'marron', 'Tira grande para chupar o albóndigas', 'Picada', { fe: 2 }),
+    F('cerdo', 'Cerdo (lomo)', '🐖', 'proteina', 'blanco', 'Tiras tiernas', 'Desmenuzado', { fe: 2 }),
+    F('cordero', 'Cordero', '🐑', 'proteina', 'marron', 'Costilla para roer', 'Desmenuzado', { fe: 2 }),
+    F('merluza', 'Merluza', '🐟', 'proteina', 'blanco', 'Lomos sin espinas en láminas', 'Desmigada', { a: 'pescado', fe: 2 }),
+    F('salmon', 'Salmón', '🍣', 'proteina', 'naranja', 'Láminas sin espinas', 'Desmigado', { a: 'pescado', fe: 2 }),
+    F('sardina', 'Sardina', '🐠', 'proteina', 'marron', 'Sin espinas en tostada', 'Aplastada', { a: 'pescado', fe: 2 }),
+    F('bacalao', 'Bacalao', '🎣', 'proteina', 'blanco', 'Desalado, en láminas', 'Desmigado', { a: 'pescado', fe: 2 }),
+    F('gamba', 'Gamba', '🦐', 'proteina', 'rojo', 'Picada en tortilla', 'Trocitos', { a: 'marisco', fe: 2 }),
+    F('tofu', 'Tofu', '🧊', 'proteina', 'blanco', 'Bastones firmes a la plancha', 'Dados', { a: 'soja', fe: 1 }),
     // Legumbres
-    F('lentejas', 'Lentejas', '🟫', 'legumbre', 'marron', 'Hamburguesita o bien cocidas para cuchara precargada', 'Guiso con pinza'),
-    F('garbanzos', 'Garbanzos', '🟡', 'legumbre', 'amarillo', 'Hummus en tostada o aplastados', 'Aplastados', { r: true }),
-    F('alubias', 'Alubias', '⚫', 'legumbre', 'blanco', 'Aplastadas', 'Enteras blandas'),
-    F('edamame', 'Edamame', '🫛', 'legumbre', 'verde', 'Aplastado', 'Aplastado', { a: 'soja', r: true }),
-    F('hummus', 'Hummus', '🥣', 'legumbre', 'blanco', 'Untado en tostada o palito', 'Para mojar', { a: 'sesamo' }),
+    F('lentejas', 'Lentejas', '🟫', 'legumbre', 'marron', 'Hamburguesita o bien cocidas para cuchara precargada', 'Guiso con pinza', { fe: 1 }),
+    F('garbanzos', 'Garbanzos', '🟡', 'legumbre', 'amarillo', 'Hummus en tostada o aplastados', 'Aplastados', { r: true, fe: 1 }),
+    F('alubias', 'Alubias', '⚫', 'legumbre', 'blanco', 'Aplastadas', 'Enteras blandas', { fe: 1 }),
+    F('edamame', 'Edamame', '🫛', 'legumbre', 'verde', 'Aplastado', 'Aplastado', { a: 'soja', r: true, fe: 1 }),
+    F('hummus', 'Hummus', '🥣', 'legumbre', 'blanco', 'Untado en tostada o palito', 'Para mojar', { a: 'sesamo', fe: 1 }),
     // Cereales
     F('pan', 'Pan', '🍞', 'cereal', 'marron', 'Tostada en tiras con untable', 'Trozos', { a: 'gluten' }),
     F('pasta', 'Pasta', '🍝', 'cereal', 'blanco', 'Fusilli o macarrón grande', 'Formas pequeñas', { a: 'gluten' }),
     F('arroz', 'Arroz', '🍚', 'cereal', 'blanco', 'Bolitas de arroz pegajoso', 'Suelto con cuchara'),
-    F('avena', 'Avena', '🥣', 'cereal', 'blanco', 'Porridge espeso o tortitas', 'Porridge con fruta', { a: 'gluten', note: 'Puede contener trazas de gluten' }),
-    F('quinoa', 'Quinoa', '🌾', 'cereal', 'blanco', 'Bolitas o mezclada con aguacate', 'Suelta'),
+    F('avena', 'Avena', '🥣', 'cereal', 'blanco', 'Porridge espeso o tortitas', 'Porridge con fruta', { a: 'gluten', note: 'Puede contener trazas de gluten', fe: 1 }),
+    F('quinoa', 'Quinoa', '🌾', 'cereal', 'blanco', 'Bolitas o mezclada con aguacate', 'Suelta', { fe: 1 }),
     F('cuscus', 'Cuscús', '🫓', 'cereal', 'amarillo', 'Bolitas', 'Suelto', { a: 'gluten' }),
-    F('mijo', 'Mijo', '🌻', 'cereal', 'amarillo', 'Croquetitas', 'Suelto'),
+    F('mijo', 'Mijo', '🌻', 'cereal', 'amarillo', 'Croquetitas', 'Suelto', { fe: 1 }),
     F('tortita_maiz', 'Tortita de maíz', '🫔', 'cereal', 'amarillo', 'En tiras', 'Trozos'),
     // Lácteos
     F('yogur', 'Yogur natural', '🥛', 'lacteo', 'blanco', 'Cuchara precargada, entero sin azúcar', 'Con fruta', { a: 'leche' }),
@@ -985,11 +1074,11 @@ form[data-kind="wet"] .only-poo { display: none; }
     F('mantequilla', 'Mantequilla', '🧈', 'lacteo', 'amarillo', 'Para cocinar o untar', 'Para cocinar o untar', { a: 'leche' }),
     // Grasas y semillas
     F('aceite_oliva', 'Aceite de oliva', '🫒', 'grasa', 'verde', 'En crudo sobre cualquier plato', 'En crudo'),
-    F('cacahuete', 'Crema de cacahuete', '🥜', 'grasa', 'marron', 'Muy fina, diluida en yogur o fruta (nunca entero)', 'Untada fina', { a: 'cacahuete', r: true }),
-    F('almendra', 'Almendra molida', '🌰', 'grasa', 'marron', 'Molida en porridge o crema (nunca entera)', 'Molida', { a: 'frutos_secos', r: true }),
+    F('cacahuete', 'Crema de cacahuete', '🥜', 'grasa', 'marron', 'Muy fina, diluida en yogur o fruta (nunca entero)', 'Untada fina', { a: 'cacahuete', r: true, fe: 1 }),
+    F('almendra', 'Almendra molida', '🌰', 'grasa', 'marron', 'Molida en porridge o crema (nunca entera)', 'Molida', { a: 'frutos_secos', r: true, fe: 1 }),
     F('nuez', 'Nuez molida', '🥮', 'grasa', 'marron', 'Molida (nunca entera)', 'Molida', { a: 'frutos_secos', r: true }),
-    F('tahini', 'Tahini', '⚪', 'grasa', 'blanco', 'Diluido en yogur o hummus', 'Untado', { a: 'sesamo' }),
-    F('chia', 'Chía', '⚫', 'grasa', 'marron', 'Hidratada, en porridge', 'En yogur')
+    F('tahini', 'Tahini', '⚪', 'grasa', 'blanco', 'Diluido en yogur o hummus', 'Untado', { a: 'sesamo', fe: 1 }),
+    F('chia', 'Chía', '⚫', 'grasa', 'marron', 'Hidratada, en porridge', 'En yogur', { fe: 1 })
   ];
   N.FOOD_BY_ID = Object.fromEntries(N.FOODS.map((f) => [f.id, f]));
 
@@ -1132,6 +1221,33 @@ form[data-kind="wet"] .only-poo { display: none; }
     { id: 'cansado', name: 'Cansado', emoji: '🥱' }, { id: 'molesto', name: 'Molesto', emoji: '😣' },
     { id: 'malito', name: 'Malito', emoji: '🤒' }
   ];
+
+  /* ---------- Actividades ----------------------------------------------
+     timer: se puede cronometrar · goal: minutos diarios recomendados.
+     Boca abajo: la OMS recomienda al menos 30 min al día repartidos
+     mientras el bebé aún no gatea. */
+  N.ACTIVITIES = [
+    { id: 'tummy', name: 'Boca abajo', emoji: '🐢', timer: true, hint: 'Fortalece cuello, espalda y hombros' },
+    { id: 'bath', name: 'Baño', emoji: '🛁', hint: 'Parte de la rutina de noche' },
+    { id: 'walk', name: 'Paseo', emoji: '🌳', timer: true, hint: 'Aire libre y luz natural' },
+    { id: 'play', name: 'Juego en el suelo', emoji: '🧸', timer: true, hint: 'Alcanzar, girar, explorar' },
+    { id: 'reading', name: 'Cuento', emoji: '📖', hint: 'Lenguaje y vínculo' },
+    { id: 'massage', name: 'Masaje', emoji: '🤲', hint: 'Relaja antes de dormir' },
+    { id: 'music', name: 'Música y canciones', emoji: '🎶', hint: '' },
+    { id: 'other', name: 'Otra', emoji: '✨', hint: '' }
+  ];
+  N.TUMMY_GOAL = 30;
+
+  /* ---------- Avisos por defecto ---------- */
+  N.REMINDER_DEFAULTS = {
+    nap: { on: true, before: 10 },        // minutos antes de la siesta prevista
+    bed: { on: true, before: 20 },        // minutos antes de la hora de dormir
+    feed: { on: false, hours: 3 },        // si no hay toma en X horas (de día)
+    appt: { on: true },                   // día anterior 20:00 y 1 h antes
+    vitd: { on: true, time: '10:00' },    // si toma vitamina D y aún no se ha dado
+    allergen: { on: true, time: '10:30' },// alérgeno en curso o a mantener
+    meds: { on: true }                    // próxima dosis pedida al registrar
+  };
 })(window.Nido = window.Nido || {});
 
 </script>
@@ -1228,12 +1344,12 @@ form[data-kind="wet"] .only-poo { display: none; }
 
   /* ======================= Almacenamiento ======================= */
   const KEY = 'nido.v1';
-  const COLLECTIONS = ['sleeps', 'feeds', 'diapers', 'meals', 'measures', 'appointments', 'vaccines', 'meds', 'temps', 'diary', 'events', 'pumps'];
+  const COLLECTIONS = ['sleeps', 'feeds', 'diapers', 'meals', 'measures', 'appointments', 'vaccines', 'meds', 'temps', 'diary', 'events', 'pumps', 'activities', 'reminders'];
 
   const empty = () => ({
     version: 1, activeBabyId: null,
     settings: { theme: 'auto', caregiver: 'Mamá' },
-    babies: [], milestones: {}, teeth: {}, timers: {},
+    babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sent: {},
     ...Object.fromEntries(COLLECTIONS.map((c) => [c, []]))
   });
 
@@ -1439,12 +1555,28 @@ form[data-kind="wet"] .only-poo { display: none; }
     };
   };
 
+  /* ---- Actividades ---- */
+  S.activities = () => Store.list('activities').sort((a, b) => a.time - b.time);
+  S.activeActivity = () => { const t = Store.state.timers.activity; return t && t.babyId === Store.state.activeBabyId ? t : null; };
+  S.activityMinutes = (kind, key = U.today()) => {
+    let min = U.sum(S.onDay(S.activities(), key).filter((a) => a.kind === kind), (a) => a.dur || 0);
+    const t = S.activeActivity();
+    if (t && t.kind === kind && U.dayKey(t.start) === key) min += (Date.now() - t.start) / MIN;
+    return min;
+  };
+
+  /* ---- Avisos: ajustes con valores por defecto ---- */
+  S.reminderSettings = () => {
+    const cur = Store.state.settings.reminders || {};
+    return Object.fromEntries(Object.entries(N.REMINDER_DEFAULTS).map(([k, v]) => [k, Object.assign({}, v, cur[k])]));
+  };
+
   /* ---- Tomas y pañales ---- */
   S.feeds = () => Store.list('feeds').sort((a, b) => a.time - b.time);
   S.diapers = () => Store.list('diapers').sort((a, b) => a.time - b.time);
   S.onDay = (arr, key, f = 'time') => arr.filter((x) => U.dayKey(x[f]) === key);
   S.lastBreastSide = () => {
-    const f = S.feeds().filter((x) => x.kind === 'breast').pop();
+    const f = S.feeds().filter((x) => x.kind === 'breast' && !x.sideUnknown).pop();
     if (!f) return null;
     return f.lastSide || (f.durR > f.durL ? 'R' : 'L');
   };
@@ -1485,6 +1617,28 @@ form[data-kind="wet"] .only-poo { display: none; }
     else if (exposures.length) state = 'progress';
     return { ...al, foods, exposures: exposures.length, last, daysSince, state };
   });
+
+  /* Hierro: a partir de los 6 meses las reservas se agotan y cada comida
+     debería llevar una fuente de hierro. El hierro vegetal se absorbe
+     mejor acompañado de vitamina C. */
+  S.mealIron = (m) => {
+    const fs = (m.foods || []).map((f) => N.FOOD_BY_ID[f.id]).filter(Boolean);
+    const heme = fs.some((f) => f.fe === 2), plant = fs.some((f) => f.fe === 1), vc = fs.some((f) => f.vc);
+    return { iron: heme || plant, heme, plant, vc, boosted: plant && vc };
+  };
+  S.ironStats = (days = 7, now = Date.now()) => {
+    const meals = S.meals().filter((m) => m.time > now - days * DAY && m.time <= now);
+    const info = meals.map(S.mealIron);
+    return { meals: meals.length, iron: info.filter((i) => i.iron).length, heme: info.filter((i) => i.heme).length, boosted: info.filter((i) => i.boosted).length };
+  };
+  /* Volver a ofrecer: rechazados o apenas probados. Muchos bebés necesitan
+     entre 8 y 15 exposiciones para aceptar un sabor nuevo. */
+  S.RETRY_TARGET = 15;
+  S.retryFoods = (stats = S.foodStats()) => Object.entries(stats)
+    .filter(([, st]) => st.reaction === 'none' && st.tries < S.RETRY_TARGET && (st.status === 'disliked' || st.amountAvg < 1.5))
+    .map(([id, st]) => ({ id, food: N.FOOD_BY_ID[id], ...st, daysSince: Math.floor((Date.now() - st.last) / DAY) }))
+    .filter((x) => x.food)
+    .sort((a, b) => a.last - b.last);
 
   /* ---- Crecimiento ---- */
   S.measures = () => Store.list('measures').sort((a, b) => U.parseDay(a.date) - U.parseDay(b.date));
@@ -1543,6 +1697,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     S.onDay(S.meals(), key).forEach((m) => out.push({ t: m.time, kind: 'meal', rec: m, col: 'meals' }));
     S.onDay(Store.list('meds'), key).forEach((m) => out.push({ t: m.time, kind: 'med', rec: m, col: 'meds' }));
     S.onDay(Store.list('temps'), key).forEach((m) => out.push({ t: m.time, kind: 'temp', rec: m, col: 'temps' }));
+    S.onDay(S.activities(), key).forEach((a) => out.push({ t: a.time, kind: 'activity', rec: a, col: 'activities' }));
     return out.filter((x) => U.dayKey(x.t) === key || x.kind === 'sleep').sort((a, b) => b.t - a.t);
   };
 
@@ -1590,6 +1745,11 @@ form[data-kind="wet"] .only-poo { display: none; }
     menu: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
     phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+    bell: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4Z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    cart: '<path d="M3 4h2l2.4 11h10.2L20 8H6.2"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+    repeat: '<path d="M4 12a8 8 0 0 1 14-5.3L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L4 15"/><path d="M4 20v-5h5"/>',
+    drop: '<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11Z"/>',
+    ball: '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4a12 12 0 0 1 0 16M12 4a12 12 0 0 0 0 16"/>',
     bed: '<path d="M3 18V8M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/>'
   };
   N.icon = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;
@@ -1871,6 +2031,7 @@ form[data-kind="wet"] .only-poo { display: none; }
     { id: 'crecimiento', name: 'Crecimiento', icon: 'ruler', cls: 'c-growth' },
     { id: 'salud', name: 'Salud', icon: 'heart', cls: 'c-health' },
     { id: 'calendario', name: 'Calendario', icon: 'calendar' },
+    { id: 'actividades', name: 'Actividades', icon: 'ball', cls: 'c-mile' },
     { id: 'hitos', name: 'Hitos y dientes', icon: 'star', cls: 'c-mile' },
     { id: 'diario', name: 'Diario', icon: 'book' },
     { id: 'informe', name: 'Informe pediatra', icon: 'file' },
@@ -2346,7 +2507,12 @@ form[data-kind="wet"] .only-poo { display: none; }
   /* ======================= Comidas BLW ======================= */
   F.meal = (rec, preset) => {
     const now = Date.now(), h = new Date(now).getHours();
-    const r = rec || { time: now, mealType: h < 11 ? 'desayuno' : h < 16 ? 'comida' : h < 19 ? 'merienda' : 'cena', foods: preset ? [{ id: preset, amount: 1, liked: 0, reaction: 'none' }] : [], gag: false, choke: false };
+    // preset: id de un alimento, o { foods: [ids], mealType, date } desde el plan semanal
+    const pre = typeof preset === 'string' ? { foods: [preset] } : preset || {};
+    const r = rec || {
+      time: pre.date ? U.fromInputs(pre.date, U.time(now)) : now, mealType: pre.mealType || (h < 11 ? 'desayuno' : h < 16 ? 'comida' : h < 19 ? 'merienda' : 'cena'),
+      foods: (pre.foods || []).map((id) => ({ id, amount: 1, liked: 0, reaction: 'none' })), gag: false, choke: false
+    };
     const sel = r.foods.map((x) => Object.assign({}, x));
     const stats = S.foodStats();
     const [d, t] = splitDT(r.time);
@@ -2503,12 +2669,19 @@ form[data-kind="wet"] .only-poo { display: none; }
       body: `<label class="fld full"><span>Medicamento</span><input id="f-medname" name="name" list="med-list" value="${U.esc(r.name)}" required placeholder="Paracetamol, vitamina D…"><datalist id="med-list">${recent.map((n) => `<option value="${U.esc(n)}">`).join('')}</datalist></label>` +
         f.row(f.num('dose', 'Dosis', r.dose, 'step="0.1" min="0"'), f.select('unit', 'Unidad', [['ml', 'ml'], ['gotas', 'gotas'], ['mg', 'mg'], ['UI', 'UI'], ['sobre', 'sobre']], r.unit)) +
         f.row(f.date('d', 'Día', d), f.time('t', 'Hora', t)) + f.text('reason', 'Motivo', r.reason, 'placeholder="Fiebre, suplemento…"') +
+        f.select('remind', 'Avisarme de la próxima dosis', [[0, 'No'], [4, 'En 4 h'], [6, 'En 6 h'], [8, 'En 8 h'], [12, 'En 12 h'], [24, 'Mañana a la misma hora']], 0) +
         '<p class="hint">Consulta siempre la dosis por peso con tu pediatra o farmacéutico.</p>',
       onDelete: rec && (() => { UI.closeSheet(); UI.removeWithUndo('meds', rec.id); }),
       onSubmit: (x) => {
         if (!x.name.trim()) { UI.toast('Escribe el nombre del medicamento'); return false; }
         const data = { time: U.fromInputs(x.d, x.t), name: x.name.trim(), dose: parseFloat(x.dose) || null, unit: x.unit, reason: x.reason };
-        rec ? Store.update('meds', rec.id, data) : Store.add('meds', data); UI.toast('Medicación registrada');
+        const saved = rec ? Store.update('meds', rec.id, data) : Store.add('meds', data);
+        const h = Number(x.remind);
+        if (h) {
+          const at = data.time + h * U.HOUR;
+          Store.add('reminders', { at, title: `Próxima dosis: ${data.name}`, body: data.dose ? `${U.num(data.dose, data.dose % 1 ? 1 : 0)} ${data.unit}` : '', hash: 'salud', medId: saved.id });
+          UI.toast(`Medicación registrada. Te aviso a las ${U.time(at)}`);
+        } else UI.toast('Medicación registrada');
       }
     });
   };
@@ -2686,6 +2859,8 @@ form[data-kind="wet"] .only-poo { display: none; }
         ${tile('form-appt', 'calendar', 'Cita médica', 'Con preguntas', 'c-growth')}
         ${tile('form-pump', 'pump', 'Extracción', 'Leche extraída', 'c-feed')}
         ${tile('form-diary', 'book', 'Recuerdo', 'Nota y foto', 'c-mile')}
+        ${tile('activity-start', 'ball', 'Boca abajo', 'Cronometrar', 'c-mile', 'data-kind="tummy"')}
+        ${tile('form-activity', 'star', 'Actividad', 'Baño, paseo, cuento…', 'c-mile')}
         ${tile('go-sounds', 'moon', 'Sonidos', N.Sounds.state.key ? 'Sonando ahora' : 'Ruido blanco, nana…', 'c-sleep')}
       </div>
       <div class="qa-diapers"><span>Pañal en un toque</span>
@@ -2718,12 +2893,13 @@ form[data-kind="wet"] .only-poo { display: none; }
     event: (id, el) => F.event(id && Store.get('events', id), el.dataset.date),
     diary: (id) => F.diary(id && Store.get('diary', id)),
     milestone: (id) => F.milestone(id),
-    tooth: (id) => F.tooth(id)
+    tooth: (id) => F.tooth(id),
+    activity: (id) => F.activity(id && Store.get('activities', id))
   };
   Object.entries(forms).forEach(([k, fn]) => { A['form-' + k] = (el) => fn(el.dataset.id, el); });
   /* Edición desde la línea de tiempo */
   A.edit = (el) => {
-    const map = { sleeps: 'sleep', feeds: 'feed', diapers: 'diaper', meals: 'meal', meds: 'med', temps: 'temp', pumps: 'pump', appointments: 'appt', events: 'event', diary: 'diary', measures: 'measure' };
+    const map = { activities: 'activity', sleeps: 'sleep', feeds: 'feed', diapers: 'diaper', meals: 'meal', meds: 'med', temps: 'temp', pumps: 'pump', appointments: 'appt', events: 'event', diary: 'diary', measures: 'measure' };
     forms[map[el.dataset.col]](el.dataset.id, el);
   };
 
@@ -2799,19 +2975,20 @@ form[data-kind="wet"] .only-poo { display: none; }
 
   const kindMeta = {
     sleep: { ic: 'moon', cls: 'c-sleep' }, feed: { ic: 'bottle', cls: 'c-feed' }, diaper: { ic: 'diaper', cls: 'c-diaper' },
-    meal: { ic: 'leaf', cls: 'c-blw' }, med: { ic: 'pill', cls: 'c-health' }, temp: { ic: 'thermo', cls: 'c-health' }
+    meal: { ic: 'leaf', cls: 'c-blw' }, med: { ic: 'pill', cls: 'c-health' }, temp: { ic: 'thermo', cls: 'c-health' }, activity: { ic: 'ball', cls: 'c-mile' }
   };
   W.describe = (it) => {
     const r = it.rec;
     switch (it.kind) {
       case 'sleep': return [`${r.type === 'nap' ? 'Siesta' : 'Noche'} · ${U.dur((r.end - r.start) / U.MIN)}`, `${U.time(r.start)} – ${U.time(r.end)}${r.place ? ' · ' + r.place : ''}`];
       case 'feed': return r.kind === 'breast'
-        ? [`Pecho · ${(r.durL || 0) + (r.durR || 0)} min`, `Izq. ${r.durL || 0}′ · Dcho. ${r.durR || 0}′ · terminó en ${r.lastSide === 'L' ? 'izquierdo' : 'derecho'}`]
+        ? [`Pecho · ${(r.durL || 0) + (r.durR || 0)} min`, r.sideUnknown ? 'Lado sin registrar' : `Izq. ${r.durL || 0}′ · Dcho. ${r.durR || 0}′ · terminó en ${r.lastSide === 'L' ? 'izquierdo' : 'derecho'}`]
         : [`Biberón · ${r.ml} ml`, r.milk === 'formula' ? 'Fórmula' : r.milk === 'mixta' ? 'Mixta' : 'Leche materna'];
       case 'diaper': { const c = N.DIAPER_COLORS.find((x) => x.id === r.color); return [`Pañal · ${{ wet: 'pipí', dirty: 'caca', mixed: 'pipí y caca' }[r.kind]}`, c ? `<i class="swatch" style="background:${c.hex}"></i>${c.name}` : 'Mojado']; }
-      case 'meal': return [`${(N.MEAL_TYPES.find((m) => m.id === r.mealType) || {}).name || 'Comida'} · ${r.foods.length} alimento${r.foods.length > 1 ? 's' : ''}`, r.foods.map((f) => N.FOOD_BY_ID[f.id].emoji + ' ' + N.FOOD_BY_ID[f.id].name).join(', ')];
+      case 'meal': return [`${(N.MEAL_TYPES.find((m) => m.id === r.mealType) || {}).name || 'Comida'} · ${r.foods.length} alimento${r.foods.length > 1 ? 's' : ''}${S.mealIron(r).iron ? ' <i class="iron-tag" title="Con hierro">hierro</i>' : ''}`, r.foods.map((f) => N.FOOD_BY_ID[f.id].emoji + ' ' + N.FOOD_BY_ID[f.id].name).join(', ')];
       case 'med': return [`${U.esc(r.name)}${r.dose ? ` · ${U.num(r.dose, r.dose % 1 ? 1 : 0)} ${r.unit}` : ''}`, U.esc(r.reason || 'Medicación')];
       case 'temp': return [`${U.num(r.value)} ºC`, `${r.method}${r.value >= 38 ? ' · fiebre' : ''}`];
+      case 'activity': { const a = N.ACTIVITIES.find((x) => x.id === r.kind) || {}; return [`${a.emoji || ''} ${a.name || 'Actividad'}${r.dur ? ' · ' + U.dur(r.dur) : ''}`, U.esc(r.note || a.hint || '')]; }
     }
     return ['', ''];
   };
@@ -2902,10 +3079,11 @@ form[data-kind="wet"] .only-poo { display: none; }
         </div>
         <aside class="col-side">
           ${W.plan()}
+          ${W.tummy()}
           ${W.card('Su día en 24 horas', `<div class="clock-wrap">${Charts.dayClock(sd.blocks, feeds.filter((f) => f.kind !== 'solids').map((f) => f.time), Date.now())}
             <ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul></div>`)}
           ${V.hoy.reminders()}
-          ${V.hoy.idea(stats)}
+          ${V.hoy.idea()}
         </aside>
       </div>`;
     },
@@ -2928,19 +3106,23 @@ form[data-kind="wet"] .only-poo { display: none; }
       if (fever.length) out.push(`<li class="rem crit"><a href="#salud">${icon('thermo')}<span><b>Fiebre en las últimas 24 h</b><small>${U.num(fever[fever.length - 1].value)} ºC ${U.ago(fever[fever.length - 1].time)}</small></span></a></li>`);
       return W.card('Pendiente', out.length ? `<ul class="rems">${out.join('')}</ul>` : '<p class="muted pad">Todo al día.</p>');
     },
-    idea(stats) {
+    idea() {
       const age = S.ageMonths();
       if (age < 5.5) return W.card('Alimentación', `<p class="muted pad">La alimentación complementaria suele empezar hacia los 6 meses, cuando se sienta con apoyo y muestra interés por la comida.</p>`);
-      const pending = N.FOODS.filter((f) => !stats[f.id] && !f.r);
-      const al = S.allergenStatus().find((a) => a.state === 'progress') || S.allergenStatus().find((a) => a.state === 'pending');
-      const seed = new Date().getDate();
-      const pick = pending.length ? pending[seed % pending.length] : null;
-      return W.card('Idea para hoy', `<div class="idea">
-        ${pick ? `<button type="button" class="idea-food" data-act="form-meal" data-food="${pick.id}"><span class="fe big">${pick.emoji}</span><span><b>${pick.name}</b><small>${age < 9 ? pick.s6 : pick.s9}</small></span></button>` : ''}
-        ${al ? `<p class="idea-al">${icon('info')} <span>Alérgeno en curso: <b>${al.name}</b> · ${al.exposures}/3 exposiciones. Ofrécelo por la mañana y observa 2 horas.</span></p>` : ''}
-      </div>`);
+      // Las comidas de hoy según el plan semanal de BLW.
+      const day = N.BlwPlan.current().days.find((d) => d.date === U.today());
+      if (!day) return '';
+      const logged = S.onDay(S.meals(), U.today());
+      return W.card('Hoy en el plan de BLW', `<div class="idea">${day.meals.map((m, mi) => {
+        const done = logged.find((x) => x.mealType === m.type);
+        return `<div class="idea-meal ${done ? 'is-logged' : ''}"><div class="pmeal-h"><span>${N.MEAL_TYPES.find((t) => t.id === m.type).name}</span>${m.iron.iron ? `<i class="iron ${m.iron.heme ? 'heme' : ''}" title="Con hierro">${icon('drop')}</i>` : ''}
+          ${done ? `<span class="pill good">Hecha</span>` : `<button type="button" class="link sm" data-act="plan-log" data-day="${day.date}" data-meal="${mi}">Registrar</button>`}</div>
+          <p>${m.items.map((x) => `${N.FOOD_BY_ID[x.id].emoji} ${N.FOOD_BY_ID[x.id].name}${x.tag === 'new' ? ' <b class="txt-new">nuevo</b>' : x.tag === 'allergen' ? ' <b class="txt-warn">alérgeno</b>' : ''}`).join(', ')}</p></div>`;
+      }).join('')}
+      ${day.allergen ? `<p class="idea-al">${icon('info')} <span>Alérgeno de hoy: <b>${day.allergen.name}</b>. Ofrécelo por la mañana y observa 2 horas.</span></p>` : ''}</div>`, { act: '<button type="button" class="link" data-act="blw-plan">Ver semana</button>' });
     }
   };
+  N.actions['blw-plan'] = () => { UI.st.seg.blw = 'plan'; UI.go('blw'); };
   N.actions['med-vitd'] = () => {
     const last = Store.list('meds').filter((m) => /vitamina d/i.test(m.name)).pop();
     Store.add('meds', { time: Date.now(), name: last.name, dose: last.dose, unit: last.unit, reason: last.reason });
@@ -3019,7 +3201,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       const mlToday = U.sum(today.filter((f) => f.kind === 'bottle'), (f) => f.ml || 0);
       const gaps = []; const wk = all.filter((f) => f.time > Date.now() - 7 * U.DAY); for (let i = 1; i < wk.length; i++) gaps.push((wk[i].time - wk[i - 1].time) / U.MIN);
       const last = all[all.length - 1];
-      const sideL = U.sum(wk, (f) => f.durL || 0), sideR = U.sum(wk, (f) => f.durR || 0);
+      const sided = wk.filter((f) => !f.sideUnknown), sideL = U.sum(sided, (f) => f.durL || 0), sideR = U.sum(sided, (f) => f.durR || 0);
       const next = S.lastBreastSide() === 'L' ? 'R' : 'L';
       const groups = {}; all.slice(-50).reverse().forEach((f) => { (groups[U.dayKey(f.time)] = groups[U.dayKey(f.time)] || []).push(f); });
       return `<div class="grid-2">
@@ -3101,27 +3283,50 @@ form[data-kind="wet"] .only-poo { display: none; }
       const reactions = Object.entries(stats).filter(([, s]) => s.reaction !== 'none');
       const gags = meals.filter((m) => m.gag).length;
 
-      return UI.head('BLW · Alimentación complementaria', start ? `Día ${blwDay} desde el primer bocado (${U.date(start)}) · ${meals.length} comidas registradas` : 'Empieza hacia los 6 meses, cuando se sienta con apoyo', `<button type="button" class="btn primary" data-act="form-meal">${icon('plus')}Nueva comida</button>`) + `
+      const tab = UI.st.seg.blw || 'resumen';
+      const iron = S.ironStats(7);
+      const retry = S.retryFoods(stats);
+      const head = UI.head('BLW · Alimentación complementaria', start ? `Día ${blwDay} desde el primer bocado (${U.date(start)}) · ${meals.length} comidas registradas` : 'Empieza hacia los 6 meses, cuando se sienta con apoyo', `<button type="button" class="btn primary" data-act="form-meal">${icon('plus')}Nueva comida</button>`) +
+        UI.seg('blw', [['resumen', 'Resumen'], ['plan', 'Plan semanal'], ['catalogo', 'Catálogo'], ['comidas', 'Comidas y seguridad']], tab);
+      if (tab === 'plan') return head + W.card('Plan de esta semana', N.BlwPlan.render()) + `<div id="compra">${W.card('Lista de la compra', N.BlwPlan.shopping())}</div>`;
+      if (tab === 'catalogo') return head + this.catalog(stats);
+      if (tab === 'comidas') return head + `<div class="grid-2">
+        ${W.card('Últimas comidas', meals.length ? W.timeline(meals.slice(-20).reverse().map((m) => ({ t: m.time, kind: 'meal', rec: m, col: 'meals' })), { date: true }) : UI.empty('leaf', 'Aún no hay comidas', 'Registra la primera comida para empezar el seguimiento.'))}
+        ${this.safety()}</div>`;
+
+      return head + `
       <div class="grid-blw">
         ${W.card('', `<div class="hundred">
           <div class="ring-box">${Charts.ring(tried, 100, 150, 14, 'r-blw')}<div class="ring-c"><b>${tried}</b><span>de 100</span></div></div>
           <div><h2>Reto 100 alimentos antes del año</h2><p class="muted">${tried ? `Lleva ${tried} alimentos distintos. ${100 - tried > 0 ? `Faltan ${100 - tried}.` : '¡Reto conseguido!'}` : 'Cada alimento nuevo cuenta.'}</p>
           <ul class="cat-bars">${byCat.map((c) => `<li><span>${c.name}</span><span class="cat-track"><i style="width:${(c.tried / c.total) * 100}%;background:${c.color}"></i></span><b>${c.tried}/${c.total}</b></li>`).join('')}</ul></div></div>`, { cls: 'span-2' })}
+        ${this.iron(iron)}
+      </div>
+      <div class="grid-2">
+        ${this.retry(retry)}
         ${W.card('Arcoíris de la semana', `<div class="rainbow">${Object.entries(N.RAINBOW).map(([k, c]) => `<div class="rb ${colorsWeek.has(k) ? 'on' : ''}" data-tip="${c.name}|${colorsWeek.has(k) ? 'Comido esta semana' : 'Aún no esta semana'}"><i style="--rb:${c.hex}"></i><span>${c.name.split(' ')[0]}</span></div>`).join('')}</div>
           <p class="muted small">${colorsWeek.size}/7 colores en los últimos 7 días. La variedad de color es variedad de nutrientes.</p>
           <div class="mini-stats"><span><b>${gags}</b> comidas con arcadas</span><span><b>${meals.filter((m) => m.choke).length}</b> atragantamientos</span><span><b>${reactions.length}</b> alimentos con reacción</span></div>`)}
       </div>
-      ${W.card('Alérgenos', `<p class="muted small pad-b">Introduce cada alérgeno solo, por la mañana y de uno en uno. Tras 3 exposiciones sin reacción se considera introducido; después mantenlo 1–2 veces por semana.</p>
+      ${W.card('Alérgenos', `<p class="muted small pad-b">Introduce cada alérgeno solo, por la mañana y de uno en uno. Tras 3 exposiciones sin reacción se considera introducido; después mantenlo 1–2 veces por semana. Si tiene eczema grave o ya reaccionó a un alimento, consulta con tu pediatra antes de empezar.</p>
         <div class="allergens">${als.map((a) => `<div class="al al-${a.state}">
           <span class="al-e">${a.emoji}</span><b>${a.name}</b>
           <span class="al-dots" aria-label="${a.exposures} de 3 exposiciones">${[0, 1, 2].map((i) => `<i class="${i < a.exposures ? 'on' : ''}"></i>`).join('')}</span>
           ${UI.pill(AL_STATE[a.state].name, AL_STATE[a.state].tone)}
-          <small>${a.last ? `última: ${U.relDay(U.dayKey(a.last))}` : a.foods.map((f) => f.name).slice(0, 2).join(', ')}</small></div>`).join('')}</div>`)}
-      ${this.catalog(stats)}
-      <div class="grid-2">
-        ${W.card('Últimas comidas', meals.length ? W.timeline(meals.slice(-8).reverse().map((m) => ({ t: m.time, kind: 'meal', rec: m, col: 'meals' })), { date: true }) : UI.empty('leaf', 'Aún no hay comidas', 'Registra la primera comida para empezar el seguimiento.'))}
-        ${this.safety()}
-      </div>`;
+          <small>${a.last ? `última: ${U.relDay(U.dayKey(a.last))}` : a.foods.map((f) => f.name).slice(0, 2).join(', ')}</small></div>`).join('')}</div>`)}`;
+    },
+    iron(st) {
+      const pct = st.meals ? Math.round((st.iron / st.meals) * 100) : 0;
+      const tone = pct >= 80 ? 'good' : pct >= 50 ? 'warn' : 'crit';
+      return W.card('Hierro esta semana', `<div class="iron-box"><div class="ring-box sm">${Charts.ring(st.iron, Math.max(1, st.meals), 84, 9, 'r-iron')}<div class="ring-c"><b>${st.iron}</b><span>de ${st.meals}</span></div></div>
+        <div><p>${UI.pill(`${pct} % de las comidas`, tone)}</p><p class="muted small">${st.heme} con hierro hemo (carne o pescado) · ${st.boosted} vegetales acompañadas de vitamina C</p></div></div>
+        <p class="muted small pad-t">Desde los 6 meses sus reservas de hierro bajan. Intenta que cada comida lleve una fuente de hierro; si es vegetal (legumbres, huevo, avena), acompáñala de fruta o verdura rica en vitamina C.</p>`);
+    },
+    retry(list) {
+      return W.card('Volver a ofrecer', list.length ? `<p class="muted small pad-b">Rechazar un sabor nuevo es normal. Muchos bebés lo aceptan tras 8–15 exposiciones: ofrécelo junto a algo que ya le guste, sin insistir.</p>
+        <ul class="retry">${list.slice(0, 6).map((x) => `<li><button type="button" class="retry-it" data-act="form-meal" data-food="${x.id}"><span class="fe">${x.food.emoji}</span><span><b>${x.food.name}</b><small>${x.status === 'disliked' ? 'no le gustó' : 'apenas lo probó'} · última vez ${U.relDay(U.dayKey(x.last))}</small></span>
+          <span class="retry-bar" aria-label="${x.tries} de ${S.RETRY_TARGET} exposiciones"><i style="width:${(x.tries / S.RETRY_TARGET) * 100}%"></i></span><em>${x.tries}/${S.RETRY_TARGET}</em></button></li>`).join('')}</ul>`
+        : '<p class="muted">Nada pendiente: todo lo que ha probado le ha gustado o lo come bien.</p>');
     },
     catalog(stats) {
       const fl = UI.st.foodFilter, q = UI.st.foodQuery.toLowerCase();
@@ -3211,6 +3416,8 @@ form[data-kind="wet"] .only-poo { display: none; }
     }
   };
 
+  N.actions['dose-cancel'] = (el) => { Store.remove('reminders', el.dataset.id); UI.toast('Aviso cancelado'); };
+
   /* ======================= SALUD ======================= */
   V.salud = {
     render() {
@@ -3259,7 +3466,9 @@ form[data-kind="wet"] .only-poo { display: none; }
       const meds = Store.list('meds').sort((a, b) => b.time - a.time);
       const temps = Store.list('temps').sort((a, b) => b.time - a.time);
       const lastBy = {}; meds.forEach((m) => { if (!lastBy[m.name]) lastBy[m.name] = m; });
-      return `<div class="grid-2">
+      const doses = Store.list('reminders').filter((r) => r.at > Date.now()).sort((a, b) => a.at - b.at);
+      return `${doses.length ? `<div class="suggest">${icon('bell')}<span>${doses.map((d) => `<b>${U.esc(d.title.replace('Próxima dosis: ', ''))}</b> a las ${U.time(d.at)}${U.dayKey(d.at) !== U.today() ? ' (' + U.relDay(U.dayKey(d.at)) + ')' : ''}`).join(' · ')}</span><button type="button" class="btn soft sm" data-act="dose-cancel" data-id="${doses[0].id}">Cancelar aviso</button></div>` : ''}
+      <div class="grid-2">
         ${W.card('Última dosis de cada medicamento', Object.values(lastBy).length ? `<ul class="rows">${Object.values(lastBy).map((m) => `<li><button type="button" class="row" data-act="form-med" data-id="${m.id}"><span><b>${U.esc(m.name)}</b></span><b>${m.dose ? U.num(m.dose, m.dose % 1 ? 1 : 0) + ' ' + m.unit : ''}</b><small data-ago="${m.time}"></small></button></li>`).join('')}</ul>` : UI.empty('pill', 'Sin medicación', 'Registra dosis para saber cuándo tocó la última.'))}
         ${W.card('Temperatura', temps.length ? `<ul class="rows">${temps.slice(0, 12).map((t) => `<li><button type="button" class="row" data-act="form-temp" data-id="${t.id}"><span>${U.date(t.time)} · ${U.time(t.time)}</span><b class="${t.value >= 38 ? 'txt-crit' : ''}">${U.num(t.value)} ºC</b><small>${t.method}</small></button></li>`).join('')}</ul>` : UI.empty('thermo', 'Sin registros', 'Anota la temperatura si tiene fiebre para enseñarla en consulta.'))}
       </div>
@@ -3499,10 +3708,11 @@ form[data-kind="wet"] .only-poo { display: none; }
         ${W.card('Bebés', `<div class="baby-list">${Store.state.babies.map((b) => `<button type="button" class="baby-row" data-act="pick-edit-baby" data-id="${b.id}"><span class="avatar" style="--av:${b.sex === 'm' ? 'var(--c-sleep)' : 'var(--c-feed)'}">${U.esc(b.name[0])}</span><span><b>${U.esc(b.name)}</b><small>${U.ageText(b.birth)}</small></span>${icon('edit')}</button>`).join('')}
           <button type="button" class="baby-row add" data-act="new-baby"><span class="avatar">+</span><span><b>Añadir bebé</b></span></button></div>`)}
         ${W.card('Tus datos', `<p class="muted small">Todo se guarda solo en este dispositivo: registros ${(bytes / 1024).toFixed(0)} KB<span id="storage-est"></span>. Nada sale de tu navegador. La copia incluye las fotos.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
-          <div class="btn-row"><button type="button" class="btn soft" data-act="export">${icon('download')}Exportar copia</button><button type="button" class="btn soft" data-act="import">${icon('upload')}Importar copia</button></div>
+          <div class="btn-row"><button type="button" class="btn soft" data-act="export">${icon('download')}Exportar copia</button><button type="button" class="btn soft" data-act="import">${icon('upload')}Importar copia</button><button type="button" class="btn soft" data-act="import-napper">${icon('moon')}Importar desde Napper</button></div>
           <div class="btn-row"><button type="button" class="btn soft" data-act="load-demo">${icon('spark')}Cargar datos de ejemplo</button><button type="button" class="btn ghost danger" data-act="wipe">${icon('trash')}Borrar todo</button></div>`)}
         ${W.card('Fuentes', `<ul class="sources"><li>Curvas de crecimiento: OMS, Child Growth Standards (2006).</li><li>Calendario vacunal: Consejo Interterritorial del SNS, calendario común 2025.</li><li>Sueño: recomendaciones de la AASM y la AAP.</li><li>BLW y alérgenos: AEP y ESPGHAN.</li></ul><p class="muted small">Nido es una herramienta de registro. No sustituye el consejo de tu pediatra.</p>`)}
         ${W.card('Nido en tu móvil', this.install())}
+        ${W.card('Avisos', N.Reminders.card(), { cls: 'span-2' })}
       </div>`;
     },
     install() {
@@ -3576,6 +3786,586 @@ form[data-kind="wet"] .only-poo { display: none; }
 </script>
   <script>
 /* ==========================================================================
+   Nido · Plan semanal de BLW y lista de la compra
+   Genera una semana de comidas a partir de lo que el bebé ya ha probado:
+   - cada comida lleva una fuente de hierro (y vitamina C si es vegetal);
+   - como mucho un alimento nuevo al día, en la comida del mediodía;
+   - alérgenos de uno en uno, por la mañana, hasta 3 exposiciones seguidas,
+     y los ya introducidos se mantienen 2 veces por semana;
+   - los alimentos rechazados vuelven a aparecer junto a otros que le gustan.
+   El plan se guarda por semana para que no cambie al volver a abrirlo.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, icon } = N;
+  const P = {};
+  N.BlwPlan = P;
+
+  const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  P.weekStart = (t = Date.now()) => { const d = new Date(U.dayStart(t)); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return U.dayKey(d.getTime()); };
+  P.mealsFor = (age) => (age < 7 ? ['comida', 'merienda'] : age < 9 ? ['desayuno', 'comida', 'cena'] : ['desayuno', 'comida', 'merienda', 'cena']);
+
+  /* Genera el plan. Pura respecto al estado: se puede probar con datos fijos. */
+  P.build = (week, seed = 1) => {
+    const r = rng(seed * 7919 + U.parseDay(week) / 86400000);
+    const age = S.ageMonths(U.parseDay(week));
+    const stats = S.foodStats();
+    const als = S.allergenStatus(stats);
+    const reacted = new Set(Object.keys(stats).filter((id) => stats[id].reaction !== 'none'));
+    const blockedAl = new Set(als.filter((a) => a.state === 'reaction').map((a) => a.id));
+    const introducedAl = new Set(als.filter((a) => a.state === 'done' || a.state === 'maintain').map((a) => a.id));
+    const okFood = (f) => !reacted.has(f.id) && !(f.a && blockedAl.has(f.a)) && !(age < 12 && f.id === 'miel');
+    // Base: probados sin reacción, cuyo alérgeno (si lo tiene) ya está introducido.
+    const base = N.FOODS.filter((f) => stats[f.id] && okFood(f) && (!f.a || introducedAl.has(f.a)));
+    const untried = N.FOODS.filter((f) => !stats[f.id] && okFood(f) && !f.a);
+    const retry = S.retryFoods(stats).slice(0, 3).map((x) => x.id);
+    const used = {};
+    const meals = P.mealsFor(age);
+
+    // Calendario de alérgenos: primero termina el que está en curso, luego uno nuevo cada 3‑4 días.
+    const alDays = {};
+    const inProgress = als.filter((a) => a.state === 'progress');
+    const pending = als.filter((a) => a.state === 'pending');
+    let day = 0;
+    inProgress.forEach((a) => { for (let k = a.exposures; k < 3 && day < 7; k++) alDays[day++] = { al: a, food: pickAlFood(a) }; });
+    // Tras cerrar uno, un día de descanso y el siguiente alérgeno durante 3 días.
+    if (day > 0) day++;
+    pending.forEach((a) => { if (day + 2 < 7) { const food = pickAlFood(a); for (let k = 0; k < 3; k++) alDays[day++] = { al: a, food }; day++; } });
+    function pickAlFood(a) {
+      const opts = a.foods.filter(okFood);
+      return (opts.find((f) => stats[f.id]) || opts.sort((x, y) => (x.r ? 1 : 0) - (y.r ? 1 : 0))[0] || {}).id;
+    }
+    // Alérgenos ya introducidos: mantener dos veces en la semana.
+    const maintain = [];
+    als.filter((a) => a.state === 'done' || a.state === 'maintain').forEach((a) => {
+      const f = a.foods.find((x) => stats[x.id] && okFood(x)); if (!f) return;
+      const d1 = Math.floor(r() * 3), d2 = 3 + Math.floor(r() * 4);
+      maintain.push([d1, f.id], [d2, f.id]);
+    });
+
+    const pick = (pool, extra = () => 0) => {
+      if (!pool.length) return null;
+      let best = null, bestScore = -1e9;
+      pool.forEach((f) => {
+        const st = stats[f.id];
+        const score = r() * 2 - (used[f.id] || 0) * 1.4 + (st && st.status === 'liked' ? 0.8 : 0) + extra(f);
+        if (score > bestScore) { bestScore = score; best = f; }
+      });
+      used[best.id] = (used[best.id] || 0) + 1;
+      return best;
+    };
+    const is = (cats) => (f) => cats.includes(f.c);
+
+    const days = [];
+    for (let d = 0; d < 7; d++) {
+      const date = U.dayKey(U.addDays(U.parseDay(week), d));
+      const al = alDays[d];
+      const newFood = !al && untried.length ? pick(untried.filter((f) => !(age < 9 && f.r) && !(used[f.id])), (f) => (f.fe ? 0.8 : 0) + (f.vc ? 0.3 : 0)) : null;
+      if (newFood) untried.splice(untried.indexOf(newFood), 1);
+      const dayMeals = meals.map((type) => ({ type, items: [] }));
+      const add = (mi, f, tag) => { if (f && !dayMeals[mi].items.some((x) => x.id === f.id)) dayMeals[mi].items.push({ id: f.id, tag: tag || null }); };
+      // El alérgeno o el alimento nuevo, en la primera comida del día que no sea la cena.
+      const morning = 0;
+      if (al && al.food) add(morning, N.FOOD_BY_ID[al.food], 'allergen');
+      if (newFood) add(meals.indexOf('comida'), newFood, 'new');
+      maintain.filter(([md]) => md === d).forEach(([, id], k) => add((k + 1) % meals.length, N.FOOD_BY_ID[id], 'maintain'));
+
+      dayMeals.forEach((m, mi) => {
+        const has = () => m.items.map((x) => N.FOOD_BY_ID[x.id]);
+        // 1) Hierro: en la comida principal, preferiblemente hemo.
+        if (!has().some((f) => f.fe)) add(mi, pick(base.filter((f) => f.fe), (f) => (m.type === 'comida' || m.type === 'cena') && f.fe === 2 ? 0.9 : 0));
+        // 2) Verdura o fruta; con vitamina C si el hierro es vegetal.
+        const needVc = has().some((f) => f.fe === 1) && !has().some((f) => f.fe === 2 || f.vc);
+        const vegCat = m.type === 'comida' || m.type === 'cena' ? ['verdura'] : ['fruta'];
+        add(mi, pick(base.filter(is(needVc ? ['verdura', 'fruta'] : vegCat)).filter((f) => !needVc || f.vc), () => 0) || pick(base.filter(is(vegCat))));
+        // 3) Energía: cereal, lácteo o grasa, según la comida.
+        const eCat = m.type === 'desayuno' ? ['cereal', 'lacteo'] : m.type === 'merienda' ? ['lacteo', 'grasa'] : ['cereal', 'legumbre'];
+        if (has().length < 3) add(mi, pick(base.filter(is(eCat))));
+      });
+      // 4) Volver a ofrecer: uno al día, por turnos (cada uno sale 2‑3 veces por semana),
+      //    en la comida que le corresponde y junto a alimentos que ya le gustan.
+      if (retry.length) {
+        const rf = N.FOOD_BY_ID[retry[d % retry.length]];
+        const savory = ['verdura', 'proteina', 'legumbre', 'cereal'].includes(rf.c);
+        const want = savory ? ['comida', 'cena'] : ['merienda', 'desayuno'];
+        let mi = meals.findIndex((t) => want.includes(t)); if (mi < 0) mi = meals.indexOf('comida');
+        const m = dayMeals[mi];
+        // Si ya va lleno, sustituye el acompañante de su misma categoría.
+        const same = m.items.findIndex((x) => !x.tag && N.FOOD_BY_ID[x.id].c === rf.c && !N.FOOD_BY_ID[x.id].fe);
+        if (same >= 0 && m.items.length >= 3) m.items.splice(same, 1);
+        if (m.items.length < 4) add(mi, rf, 'retry');
+      }
+      dayMeals.forEach((m) => { m.iron = S.mealIron({ foods: m.items }); });
+      days.push({ date, meals: dayMeals, allergen: al ? { name: al.al.name, food: al.food } : null, newFood: newFood ? newFood.id : null });
+    }
+    return { week, seed, age, days, created: Date.now() };
+  };
+
+  /* Plan guardado de la semana (se genera la primera vez). */
+  P.current = (regen) => {
+    const b = Store.state.activeBabyId, week = P.weekStart();
+    const all = Store.state.blwPlans || (Store.state.blwPlans = {});
+    let plan = all[b];
+    if (!plan || plan.week !== week || regen) {
+      plan = P.build(week, regen ? (plan && plan.week === week ? plan.seed + 1 : 2) : 1);
+      all[b] = plan; Store.save();
+    }
+    return plan;
+  };
+
+  /* Comidas registradas que corresponden a una comida del plan. */
+  const logged = (date, type) => S.meals().find((m) => U.dayKey(m.time) === date && m.mealType === type);
+
+  const TAG = { new: ['Nuevo', 'soft'], allergen: ['Alérgeno', 'warn'], retry: ['Otra vez', 'muted'], maintain: ['Mantener', 'good'] };
+
+  P.render = () => {
+    const plan = P.current();
+    const today = U.today();
+    const days = plan.days.map((d) => {
+      const dt = new Date(U.parseDay(d.date));
+      const past = d.date < today;
+      return `<article class="pday ${d.date === today ? 'is-today' : ''} ${past ? 'is-past' : ''}">
+        <header><b>${U.WEEKDAYS_LONG[dt.getDay()]}</b><span>${dt.getDate()} ${U.MONTHS[dt.getMonth()]}</span>
+          ${d.allergen ? UI.pill(`${d.allergen.name}`, 'warn') : ''}${d.newFood ? UI.pill('1 nuevo', 'soft') : ''}</header>
+        ${d.meals.map((m, mi) => {
+          const lg = logged(d.date, m.type);
+          return `<div class="pmeal ${lg ? 'is-logged' : ''}">
+            <div class="pmeal-h"><span>${N.MEAL_TYPES.find((t) => t.id === m.type).name}</span>
+              ${m.iron.iron ? `<i class="iron ${m.iron.heme ? 'heme' : ''}" title="${m.iron.heme ? 'Hierro hemo' : 'Hierro vegetal'}${m.iron.boosted ? ' + vitamina C' : ''}">${icon('drop')}</i>` : ''}
+              ${lg ? `<button type="button" class="link sm" data-act="edit" data-col="meals" data-id="${lg.id}">${icon('check', 'sm')}Hecha</button>` : past ? '' : `<button type="button" class="link sm" data-act="plan-log" data-day="${d.date}" data-meal="${mi}">Registrar</button>`}</div>
+            <ul>${m.items.map((x) => { const f = N.FOOD_BY_ID[x.id]; return `<li><span class="fe">${f.emoji}</span><span>${f.name}</span>${x.tag ? UI.pill(TAG[x.tag][0], TAG[x.tag][1]) : ''}</li>`; }).join('')}</ul>
+          </div>`;
+        }).join('')}
+      </article>`;
+    }).join('');
+    const ironMeals = U.sum(plan.days, (d) => d.meals.filter((m) => m.iron.iron).length), allMeals = U.sum(plan.days, (d) => d.meals.length);
+    return `<div class="plan-top"><p class="muted small">Semana del ${U.date(plan.week)} · ${plan.days[0].meals.length} comidas al día para su edad · ${ironMeals}/${allMeals} con hierro.
+        Nuevo, alérgeno y "otra vez" están marcados; los alérgenos van por la mañana para poder vigilar 2 horas.</p>
+        <div class="btn-row"><button type="button" class="btn soft sm" data-act="plan-regen">${icon('repeat')}Otra propuesta</button><button type="button" class="btn soft sm" data-act="go-shop">${icon('cart')}Lista de la compra</button></div></div>
+      <div class="pweek">${days}</div>`;
+  };
+
+  P.shopping = () => {
+    const plan = P.current(), today = U.today();
+    const key = Store.state.activeBabyId + ':' + plan.week;
+    const done = (Store.state.shopping || {})[key] || {};
+    const count = {};
+    plan.days.filter((d) => d.date >= today).forEach((d) => d.meals.forEach((m) => m.items.forEach((x) => { count[x.id] = (count[x.id] || 0) + 1; })));
+    const groups = Object.entries(N.FOOD_CATS).map(([cat, c]) => ({ cat, name: c.name, items: Object.keys(count).filter((id) => N.FOOD_BY_ID[id].c === cat) })).filter((g) => g.items.length);
+    if (!groups.length) return '<p class="muted">No quedan comidas en el plan de esta semana.</p>';
+    return `<div class="shop">${groups.map((g) => `<section><h3 class="day-h">${g.name}</h3><ul>${g.items.map((id) => { const f = N.FOOD_BY_ID[id]; return `<li><label><input type="checkbox" data-act="shop-toggle" data-id="${id}" ${done[id] ? 'checked' : ''}><span class="fe">${f.emoji}</span><span>${f.name}</span><small>×${count[id]}</small></label></li>`; }).join('')}</ul></section>`).join('')}</div>
+      <div class="btn-row"><button type="button" class="btn soft sm" data-act="shop-copy">${icon('copy')}Copiar lista</button></div>
+      <textarea id="shop-text" class="sr-only" readonly aria-hidden="true" tabindex="-1">${U.esc(groups.map((g) => `${g.name}:\n` + g.items.filter((id) => !done[id]).map((id) => `- ${N.FOOD_BY_ID[id].name}`).join('\n')).join('\n\n'))}</textarea>`;
+  };
+
+  N.actions['plan-regen'] = () => { P.current(true); UI.render(); UI.toast('Nueva propuesta para la semana'); };
+  N.actions['plan-log'] = (el) => {
+    const plan = P.current(); const d = plan.days.find((x) => x.date === el.dataset.day); const m = d.meals[+el.dataset.meal];
+    N.Forms.meal(null, { foods: m.items.map((x) => x.id), mealType: m.type, date: d.date });
+  };
+  N.actions['go-shop'] = () => { UI.st.seg.blw = 'plan'; UI.render(); setTimeout(() => { const el = document.getElementById('compra'); el && el.scrollIntoView({ behavior: 'smooth' }); }, 60); };
+  N.actions['shop-toggle'] = (el) => {
+    const plan = P.current(); const key = Store.state.activeBabyId + ':' + plan.week;
+    const all = Store.state.shopping || (Store.state.shopping = {});
+    const m = all[key] || (all[key] = {}); m[el.dataset.id] = !m[el.dataset.id]; Store.commit();
+  };
+  N.actions['shop-copy'] = () => {
+    const ta = document.getElementById('shop-text');
+    try { navigator.clipboard.writeText(ta.value).then(() => UI.toast('Lista copiada'), () => { ta.select(); }); } catch (e) { ta.select(); }
+  };
+})(window.Nido = window.Nido || {});
+
+</script>
+  <script>
+/* ==========================================================================
+   Nido · Actividades
+   Tiempo boca abajo con cronómetro y objetivo diario, baño, paseo, juego,
+   cuento, masaje… Se ven en la línea de tiempo y en su propia sección.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, Charts, W, icon } = N;
+  const A = N.actions;
+  const byId = (id) => N.ACTIVITIES.find((a) => a.id === id) || N.ACTIVITIES[N.ACTIVITIES.length - 1];
+  const { f } = UI;
+
+  /* ---------- Formulario ---------- */
+  N.Forms.activity = (rec, kind) => {
+    const r = rec || { time: Date.now() - 15 * U.MIN, kind: kind || 'tummy', dur: 10 };
+    UI.sheet({
+      title: rec ? 'Editar actividad' : 'Registrar actividad',
+      body: f.chips('kind', 'Actividad', N.ACTIVITIES.map((a) => [a.id, `${a.emoji} ${a.name}`]), r.kind) +
+        f.row(f.date('d', 'Día', U.dateInput(r.time)), f.time('t', 'Hora', U.timeInput(r.time)), f.num('dur', 'Duración', r.dur, 'min="0" max="600"', 'min')) +
+        f.area('note', 'Nota', r.note, 'Cómo estuvo, dónde, con quién…'),
+      onDelete: rec && (() => { UI.closeSheet(); UI.removeWithUndo('activities', rec.id, 'Actividad eliminada'); }),
+      onSubmit: (x) => {
+        const data = { time: U.fromInputs(x.d, x.t), kind: x.kind, dur: +x.dur || 0, note: x.note };
+        rec ? Store.update('activities', rec.id, data) : Store.add('activities', data);
+        UI.toast(`${byId(x.kind).name} guardado`);
+      }
+    });
+  };
+
+  /* ---------- Cronómetro ---------- */
+  A['activity-start'] = (el) => {
+    const cur = S.activeActivity(); if (cur) A['activity-stop']();
+    Store.state.timers.activity = { babyId: Store.state.activeBabyId, kind: el.dataset.kind || 'tummy', start: Date.now() };
+    Store.commit(); UI.closeSheet();
+  };
+  A['activity-stop'] = () => {
+    const t = S.activeActivity(); if (!t) return;
+    delete Store.state.timers.activity;
+    const dur = Math.round((Date.now() - t.start) / U.MIN);
+    if (dur < 1) { Store.commit(); UI.toast('Descartado (menos de 1 min)'); return; }
+    const rec = Store.add('activities', { time: t.start, kind: t.kind, dur });
+    const goal = t.kind === 'tummy' ? ` · ${Math.round(S.activityMinutes('tummy'))}/${N.TUMMY_GOAL} min hoy` : '';
+    UI.toast(`${byId(t.kind).name}: ${U.dur(dur)}${goal}`, () => Store.remove('activities', rec.id));
+  };
+  A['activity-cancel'] = () => { delete Store.state.timers.activity; Store.commit(); };
+  A['form-activity'] = (el) => N.Forms.activity(el.dataset.id && Store.get('activities', el.dataset.id), el.dataset.kind);
+
+  /* ---------- Widget: tiempo boca abajo de hoy ---------- */
+  W.tummy = () => {
+    const age = S.ageMonths();
+    const crawling = (Store.state.milestones[Store.state.activeBabyId] || {}).gateo;
+    if (age > 12 || crawling) return '';
+    const min = S.activityMinutes('tummy'), t = S.activeActivity();
+    const running = t && t.kind === 'tummy';
+    const other = t && !running ? byId(t.kind) : null;
+    return W.card('Boca abajo hoy', `<div class="tummy">
+      <div class="ring-box sm">${Charts.ring(Math.min(min, N.TUMMY_GOAL), N.TUMMY_GOAL, 84, 9, 'r-mile')}<div class="ring-c"><b>${Math.round(min)}</b><span>de ${N.TUMMY_GOAL} min</span></div></div>
+      <div class="tummy-c">
+        ${running ? `<p class="tummy-live"><b data-since="${t.start}">00:00</b> en marcha</p><div class="btn-row"><button type="button" class="btn primary sm" data-act="activity-stop">${icon('check')}Terminar</button><button type="button" class="link" data-act="activity-cancel">Descartar</button></div>`
+          : `<p class="muted small">${min >= N.TUMMY_GOAL ? 'Objetivo del día cumplido.' : 'En ratos cortos, varias veces al día, siempre despierta y vigilada.'}</p>
+          ${other ? `<p class="small">${other.emoji} ${other.name} en marcha: <b data-since="${t.start}">00:00</b> <button type="button" class="link" data-act="activity-stop">Terminar</button></p>` : ''}
+          <div class="btn-row"><button type="button" class="btn soft sm" data-act="activity-start" data-kind="tummy">${icon('play')}Empezar</button><button type="button" class="link" data-act="go" data-to="actividades">Otras actividades</button></div>`}
+      </div></div>`, { cls: 'c-mile' });
+  };
+
+  /* ---------- Vista ---------- */
+  N.views.actividades = {
+    render() {
+      const t = S.activeActivity();
+      const days = []; for (let i = 6; i >= 0; i--) { const k = U.dayKey(U.addDays(Date.now(), -i)); const d = new Date(U.parseDay(k)); const v = Math.round(S.activityMinutes('tummy', k)); days.push({ v, label: U.WEEKDAYS[d.getDay()][0].toUpperCase(), tip: `${U.dateLong(k)}|${v} min boca abajo` }); }
+      const list = S.activities().slice(-40).reverse();
+      const groups = {}; list.forEach((a) => { (groups[U.dayKey(a.time)] = groups[U.dayKey(a.time)] || []).push(a); });
+      const week = S.activities().filter((a) => a.time > Date.now() - 7 * U.DAY);
+      const counts = N.ACTIVITIES.map((a) => ({ a, n: week.filter((x) => x.kind === a.id).length, min: U.sum(week.filter((x) => x.kind === a.id), (x) => x.dur || 0) })).filter((x) => x.n);
+      return UI.head('Actividades', 'Boca abajo, baño, paseos, juego y rutinas', `<button type="button" class="btn primary" data-act="form-activity">${icon('plus')}Registrar</button>`) + `
+      ${t ? `<section class="live"><div class="live-top"><span class="eyebrow">${byId(t.kind).emoji} ${byId(t.kind).name} · desde las ${U.time(t.start)}</span><button type="button" class="link" data-act="activity-cancel">Descartar</button></div>
+        <b class="live-clock" data-since="${t.start}">00:00</b><div class="live-actions"><button type="button" class="btn primary" data-act="activity-stop">${icon('check')}Terminar</button></div></section>` : ''}
+      <div class="grid-2">
+        <div class="stack">${W.tummy()}
+          ${W.card('Empezar ahora', `<div class="act-grid">${N.ACTIVITIES.filter((a) => a.id !== 'other').map((a) => `<button type="button" class="act" data-act="${a.timer ? 'activity-start' : 'form-activity'}" data-kind="${a.id}"><span class="fe">${a.emoji}</span><b>${a.name}</b><small>${a.timer ? 'cronometrar' : 'anotar'}</small></button>`).join('')}</div>`)}
+        </div>
+        <div class="stack">${W.card('Minutos boca abajo', Charts.miniBars(days, 'm-mile'))}
+          ${W.card('Últimos 7 días', counts.length ? `<ul class="rows">${counts.map((c) => `<li><div class="row"><span>${c.a.emoji} ${c.a.name}</span><b>${c.n} ${c.n === 1 ? 'vez' : 'veces'}</b><small>${c.min ? U.dur(c.min) + ' en total' : ''}</small></div></li>`).join('')}</ul>` : '<p class="muted">Sin actividades esta semana.</p>')}
+        </div>
+      </div>
+      ${W.card('Registro', Object.keys(groups).length ? Object.keys(groups).slice(0, 5).map((k) => `<h3 class="day-h">${U.relDay(k)}</h3>` + W.timeline(groups[k].map((a) => ({ t: a.time, kind: 'activity', rec: a, col: 'activities' })), { who: true })).join('') : UI.empty('ball', 'Sin actividades', 'Cronometra el tiempo boca abajo o anota el baño y los paseos.'))}`;
+    }
+  };
+})(window.Nido = window.Nido || {});
+
+</script>
+  <script>
+/* ==========================================================================
+   Nido · Avisos
+   Calcula los avisos a partir de los datos (plan de siestas, última toma,
+   citas, vitamina D, alérgenos del plan) y de los que pide el usuario
+   (próxima dosis). Se comprueban cada 30 s mientras la app está abierta,
+   también en segundo plano, y se muestran como notificación del sistema si
+   hay permiso y, siempre, dentro de la app.
+   Límite honesto: una web no puede despertarse sola con la app cerrada sin
+   un servidor de notificaciones push, así que con Nido cerrado no avisa.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, icon } = N;
+  const R = {};
+  N.Reminders = R;
+  const WINDOW = 30 * U.MIN; // un aviso que se pasó hace más de 30 min ya no se muestra
+
+  R.list = (now = Date.now(), horizon = U.DAY) => {
+    const b = S.baby(); if (!b) return [];
+    const cfg = S.reminderSettings(), out = [], today = U.dayKey(now);
+    const add = (key, at, title, body, hash, kind) => { if (at > now - WINDOW && at < now + horizon) out.push({ key, at, title, body, hash, kind }); };
+
+    if (cfg.nap.on || cfg.bed.on) {
+      const plan = S.dayPlan(now);
+      plan.items.forEach((x) => {
+        if (cfg.nap.on && x.kind === 'nap' && x.state === 'planned') add(`nap:${today}:${x.idx}`, x.start - cfg.nap.before * U.MIN, `Siesta ${x.idx + 1} en ${cfg.nap.before} min`, `Prevista a las ${U.time(x.start)}. Empieza a bajar el ritmo: luz tenue y calma.`, 'sueno', 'nap');
+        if (cfg.bed.on && x.kind === 'bed' && x.state !== 'done') add(`bed:${today}`, x.t - cfg.bed.before * U.MIN, `A la cama en ${cfg.bed.before} min`, `Hora prevista: ${U.time(x.t)}. Buen momento para el baño o la rutina.`, 'sueno', 'bed');
+      });
+    }
+    if (cfg.feed.on) {
+      const last = S.feeds().pop();
+      if (last) {
+        const at = last.time + cfg.feed.hours * U.HOUR, h = new Date(at).getHours();
+        if (h >= 7 && h < 21 && !S.activeSleep()) add(`feed:${last.id}`, at, 'Hora de ofrecer una toma', `La última fue a las ${U.time(last.time)}.`, 'tomas', 'feed');
+      }
+    }
+    if (cfg.appt.on) S.upcoming().forEach((a) => {
+      const t = U.fromInputs(a.date, a.time || '09:00');
+      add(`appt:${a.id}:eve`, U.parseDay(a.date) - 4 * U.HOUR, `Mañana: ${a.title}`, `${a.time ? 'A las ' + a.time : ''}${a.place ? ' · ' + a.place : ''}${(a.questions || []).some((q) => !q.done) ? ' · revisa las preguntas' : ''}`, 'salud', 'appt');
+      if (a.time) add(`appt:${a.id}:1h`, t - U.HOUR, `En 1 hora: ${a.title}`, a.place || '', 'salud', 'appt');
+    });
+    if (cfg.vitd.on) {
+      const meds = Store.list('meds'), vd = meds.filter((m) => /vitamina d/i.test(m.name));
+      if (vd.length && !S.onDay(meds, today).some((m) => /vitamina d/i.test(m.name))) add(`vitd:${today}`, U.fromInputs(today, cfg.vitd.time), 'Vitamina D', 'Aún no está anotada la dosis de hoy.', 'hoy', 'vitd');
+    }
+    if (cfg.allergen.on && S.ageMonths(now) >= 5.5 && N.BlwPlan) {
+      const d = N.BlwPlan.current().days.find((x) => x.date === today);
+      if (d && d.allergen && !S.onDay(S.meals(), today).some((m) => m.foods.some((f) => f.id === d.allergen.food)))
+        add(`al:${today}`, U.fromInputs(today, cfg.allergen.time), `Alérgeno de hoy: ${d.allergen.name}`, 'Ofrécelo por la mañana y observa 2 horas.', 'blw', 'allergen');
+    }
+    if (cfg.meds.on) Store.list('reminders').forEach((r) => add(`rem:${r.id}`, r.at, r.title, r.body || '', r.hash || 'salud', 'med'));
+    return out.sort((a, b) => a.at - b.at);
+  };
+
+  R.fire = (it) => {
+    const b = S.baby();
+    const title = `${b ? b.name + ' · ' : ''}${it.title}`;
+    UI.toast(`${title}${it.body ? ' — ' + it.body : ''}`, () => UI.go(it.hash), 'Ver');
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const opts = { body: it.body, tag: it.key, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', data: { hash: it.hash } };
+    // Mejor a través del service worker (funciona en móvil y al tocarla abre Nido); si no, desde la página.
+    const page = () => { try { const n = new Notification(title, opts); n.onclick = () => { window.focus(); UI.go(it.hash); }; } catch (e) { /* sin notificaciones */ } };
+    const sw = navigator.serviceWorker;
+    if (!sw) return page();
+    sw.getRegistration().then((reg) => (reg && reg.active ? reg.showNotification(title, opts) : page())).catch(page);
+  };
+
+  R.check = (now = Date.now()) => {
+    const sent = Store.state.sent || (Store.state.sent = {});
+    let changed = false;
+    R.list(now, 0).forEach((it) => { if (it.at <= now && !sent[it.key]) { sent[it.key] = now; changed = true; R.fire(it); } });
+    // Limpia avisos enviados hace más de 3 días y recordatorios de dosis ya pasados.
+    Object.keys(sent).forEach((k) => { if (now - sent[k] > 3 * U.DAY) { delete sent[k]; changed = true; } });
+    const old = Store.state.reminders.filter((r) => r.at < now - U.DAY);
+    if (old.length) { Store.state.reminders = Store.state.reminders.filter((r) => r.at >= now - U.DAY); changed = true; }
+    if (changed) Store.save();
+  };
+
+  R.permission = () => (!('Notification' in window) ? 'unsupported' : Notification.permission);
+
+  /* ---------- Tarjeta de ajustes ---------- */
+  R.card = () => {
+    const cfg = S.reminderSettings(), perm = R.permission();
+    const permTxt = { granted: UI.pill('Notificaciones activadas', 'good'), denied: UI.pill('Bloqueadas en el navegador', 'crit'), default: '', unsupported: UI.pill('Este navegador no las admite', 'muted') }[perm];
+    const row = (k, label, param) => `<li class="rem-set"><label class="switch"><input type="checkbox" data-act="rem-toggle" data-k="${k}" ${cfg[k].on ? 'checked' : ''}><span></span></label><span class="rem-l">${label}</span>${param || ''}</li>`;
+    const num = (k, p, unit, min, max) => `<span class="rem-p"><input type="number" data-rem="${k}.${p}" value="${cfg[k][p]}" min="${min}" max="${max}" aria-label="${unit}"><i>${unit}</i></span>`;
+    const time = (k) => `<span class="rem-p"><input type="time" data-rem="${k}.time" value="${cfg[k].time}" aria-label="Hora"></span>`;
+    const next = R.list(Date.now(), U.DAY).filter((x) => x.at > Date.now()).slice(0, 5);
+    return `<p class="small">${permTxt} ${perm === 'default' ? `<button type="button" class="btn primary sm" data-act="rem-permission">${icon('bell')}Activar notificaciones</button>` : ''}</p>
+      <ul class="rem-list">
+        ${row('nap', 'Antes de cada siesta prevista', num('nap', 'before', 'min', 0, 60))}
+        ${row('bed', 'Antes de la hora de dormir', num('bed', 'before', 'min', 0, 90))}
+        ${row('feed', 'Si pasa tiempo sin toma (de día)', num('feed', 'hours', 'h', 1, 8))}
+        ${row('appt', 'Citas: la víspera y 1 h antes')}
+        ${row('vitd', 'Vitamina D si no está anotada', time('vitd'))}
+        ${row('allergen', 'Alérgeno del plan de BLW', time('allergen'))}
+        ${row('meds', 'Próxima dosis de medicación')}
+      </ul>
+      ${next.length ? `<h3 class="day-h">Próximos avisos</h3><ul class="rows">${next.map((x) => `<li><div class="row"><span>${U.relDay(U.dayKey(x.at))} ${U.time(x.at)}</span><b>${U.esc(x.title)}</b></div></li>`).join('')}</ul>` : ''}
+      <p class="muted small pad-t">Avisa mientras Nido está abierta, aunque sea en segundo plano. Con la app cerrada del todo no puede avisar, porque eso necesitaría un servidor de notificaciones.${N.install.framed() ? ' Dentro de otra página solo se muestran dentro de la app.' : ''}</p>`;
+  };
+
+  N.actions['rem-permission'] = () => {
+    try {
+      Promise.resolve(Notification.requestPermission()).then((p) => { UI.render(); UI.toast(p === 'granted' ? 'Notificaciones activadas' : 'Sin permiso: los avisos se verán dentro de la app'); });
+    } catch (e) { UI.toast('Este navegador no permite notificaciones'); }
+  };
+  const setCfg = (k, patch) => {
+    const all = Store.state.settings.reminders || (Store.state.settings.reminders = {});
+    all[k] = Object.assign({}, all[k], patch); Store.commit();
+  };
+  N.actions['rem-toggle'] = (el) => setCfg(el.dataset.k, { on: el.checked });
+  document.addEventListener('change', (e) => {
+    const k = e.target.dataset && e.target.dataset.rem; if (!k) return;
+    const [key, p] = k.split('.');
+    setCfg(key, { [p]: e.target.type === 'number' ? Number(e.target.value) : e.target.value });
+  });
+})(window.Nido = window.Nido || {});
+
+</script>
+  <script>
+/* ==========================================================================
+   Nido · Importar desde Napper
+   Napper no tiene API pública. Este importador lee lo que produce la
+   herramienta comunitaria napper-export (github.com/brittraee/napper-export):
+     · napper_events.csv  → date,event_type,start,end,start_time,end_time,…
+     · all_events.json    → [{ category, start, end, comment, … }]
+     · sleep_logs_full.json → { "2026-09-01": [ … ], … }
+   y, si Napper ofrece una exportación propia con estructura parecida
+   (categoría + inicio + fin), también la acepta.
+   Napper guarda la noche como hitos: BED_TIME (a la cama), NIGHT_WAKING
+   (despertares con inicio y fin) y WOKE_UP (despertar). Aquí se convierten
+   en tramos de sueño nocturno, igual que los registra Nido.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, icon } = N;
+  const I = {};
+  N.Import = I;
+
+  /* ---------- Lectura ---------- */
+  I.parseCSV = (text) => {
+    const rows = []; let row = [], cell = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+      else if (c === '"') q = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+      else cell += c;
+    }
+    if (cell || row.length) { row.push(cell); rows.push(row); }
+    const head = (rows.shift() || []).map((h) => h.trim());
+    return rows.filter((r) => r.some((x) => x.trim())).map((r) => Object.fromEntries(head.map((h, i) => [h, (r[i] || '').trim()])));
+  };
+
+  /* Marca de tiempo: ISO completo si existe; si no, fecha + HH:MM local. */
+  const ts = (iso, date, hm) => {
+    if (iso) { const t = Date.parse(iso); if (!isNaN(t)) return t; }
+    if (date && /^\d{1,2}:\d{2}/.test(hm || '')) return U.fromInputs(date.slice(0, 10), hm.slice(0, 5));
+    return null;
+  };
+  const truthy = (v) => v === true || /^(true|1|yes|sí|si)$/i.test(String(v || ''));
+
+  /* Convierte cualquiera de los formatos a eventos { cat, start, end, skipped, comment, raw }. */
+  I.events = (text) => {
+    const t = text.trim();
+    let list = [];
+    if (t.startsWith('[') || t.startsWith('{')) {
+      const j = JSON.parse(t);
+      const arr = Array.isArray(j) ? j : Array.isArray(j.allLogs) ? j.allLogs : Array.isArray(j.events) ? j.events : Object.values(j).flat();
+      list = arr.filter((e) => e && typeof e === 'object').map((e) => ({
+        cat: String(e.category || e.type || e.event_type || '').toUpperCase(),
+        start: ts(e.start || e.startTime || e.start_time), end: ts(e.end || e.endTime || e.end_time),
+        skipped: truthy(e.skipped) || truthy(e.isSkipped), comment: e.comment || e.note || '', raw: e
+      }));
+    } else {
+      const rows = I.parseCSV(t);
+      if (!rows.length || !('event_type' in rows[0] || 'category' in rows[0])) throw new Error('formato');
+      list = rows.map((r) => {
+        const start = ts(r.start, r.date, r.start_time);
+        let end = ts(r.end, r.date, r.end_time);
+        if (start && end && end < start && !r.end) end += U.DAY; // HH:MM que cruza medianoche
+        return { cat: String(r.event_type || r.category).toUpperCase(), start, end, skipped: truthy(r.skipped), comment: r.comment || '', raw: r };
+      });
+    }
+    return list.filter((e) => e.cat && e.start).sort((a, b) => a.start - b.start);
+  };
+
+  const num = (raw, keys) => { for (const k of Object.keys(raw || {})) if (keys.test(k)) { const v = parseFloat(raw[k]); if (!isNaN(v)) return v; } return null; };
+  const mins = (v) => (v == null ? null : v > 180 ? Math.round(v / 60) : Math.round(v)); // segundos o minutos
+
+  /* ---------- Conversión a registros de Nido ---------- */
+  I.convert = (events, existing = { sleeps: S.sleeps(), keys: new Set(Store.COLLECTIONS.flatMap((c) => Store.list(c).map((x) => x.src).filter(Boolean))) }) => {
+    const out = { sleeps: [], feeds: [], meds: [], diapers: [], pumps: [] };
+    const skipped = { dup: 0, unsupported: {}, incomplete: 0 };
+    const push = (col, rec, src) => {
+      rec.src = 'napper:' + src;
+      if (existing.keys.has(rec.src)) { skipped.dup++; return; }
+      if (col === 'sleeps' && existing.sleeps.some((s) => Math.min(s.end, rec.end) - Math.max(s.start, rec.start) > (rec.end - rec.start) / 2)) { skipped.dup++; return; }
+      rec.by = 'Napper'; out[col].push(rec);
+    };
+    const beds = [], wakes = [], wakings = [];
+    events.forEach((e) => {
+      const key = `${e.cat}:${e.start}`;
+      switch (e.cat) {
+        case 'NAP':
+          if (e.skipped) return;
+          if (!e.end || e.end <= e.start) { skipped.incomplete++; return; }
+          push('sleeps', { start: e.start, end: e.end, type: 'nap', place: '', quality: 3, note: e.comment }, key); return;
+        case 'BED_TIME': beds.push(e.start); return;
+        case 'WOKE_UP': wakes.push(e.start); return;
+        case 'NIGHT_WAKING': wakings.push([e.start, e.end && e.end > e.start ? e.end : e.start + 5 * U.MIN]); return;
+        case 'NURSING': case 'BREASTFEEDING': {
+          const l = mins(num(e.raw, /left/i)), r = mins(num(e.raw, /right/i));
+          const total = e.end ? Math.round((e.end - e.start) / U.MIN) : mins(num(e.raw, /duration/i)) || 0;
+          const rec = l != null || r != null ? { durL: l || 0, durR: r || 0, lastSide: (r || 0) > (l || 0) ? 'R' : 'L' } : { durL: total, durR: 0, sideUnknown: true };
+          push('feeds', Object.assign({ time: e.start, kind: 'breast', note: e.comment }, rec), key); return;
+        }
+        case 'BOTTLE': case 'FORMULA': {
+          const ml = num(e.raw, /^(amount|amountml|volume|quantity|ml)$/i) ?? (String(e.comment).match(/(\d{2,3})\s*ml/i) || [])[1];
+          push('feeds', { time: e.start, kind: 'bottle', ml: ml != null ? Number(ml) : null, milk: /f[oó]rmula/i.test(e.cat + e.comment) ? 'formula' : 'materna', note: e.comment }, key); return;
+        }
+        case 'MEDICINE': case 'MEDICATION':
+          push('meds', { time: e.start, name: e.comment || 'Medicina (Napper)', dose: null, unit: 'ml', reason: '' }, key); return;
+        case 'PUMPING': case 'PUMP':
+          push('pumps', { time: e.start, ml: num(e.raw, /^(amount|amountml|volume|ml)$/i) || 0, side: 'B' }, key); return;
+        default:
+          if (/DIAPER|POO|PEE|NAPPY/.test(e.cat)) {
+            const kind = /POO|DIRTY|SOLID/.test(e.cat + e.comment.toUpperCase()) ? (/PEE|WET/.test(e.cat + e.comment.toUpperCase()) ? 'mixed' : 'dirty') : 'wet';
+            push('diapers', { time: e.start, kind, color: kind === 'wet' ? null : 'amarillo', note: e.comment }, key); return;
+          }
+          skipped.unsupported[e.cat] = (skipped.unsupported[e.cat] || 0) + 1;
+      }
+    });
+    // Noches: de cada BED_TIME al siguiente WOKE_UP (máx. 16 h), partidas por los despertares.
+    beds.sort((a, b) => a - b); wakes.sort((a, b) => a - b);
+    beds.forEach((bed, i) => {
+      const wake = wakes.find((w) => w > bed && w - bed < 16 * U.HOUR && !(beds[i + 1] && beds[i + 1] < w));
+      if (!wake) { skipped.incomplete++; return; }
+      const inside = wakings.filter(([a, b]) => a > bed && b < wake).sort((x, y) => x[0] - y[0]);
+      let cur = bed;
+      inside.forEach(([a, b], k) => { if (a > cur) push('sleeps', { start: cur, end: a, type: 'night', place: '', quality: 3 }, `NIGHT:${bed}:${k}`); cur = b; });
+      if (wake > cur) push('sleeps', { start: cur, end: wake, type: 'night', place: '', quality: 3 }, `NIGHT:${bed}:end`);
+    });
+    const all = Object.values(out).flat(), times = all.map((r) => r.time || r.start);
+    return { out, skipped, total: all.length, from: times.length ? Math.min(...times) : null, to: times.length ? Math.max(...times) : null };
+  };
+
+  I.apply = (res) => {
+    const b = Store.state.activeBabyId;
+    Object.entries(res.out).forEach(([col, recs]) => recs.forEach((r) => Store.state[col].push(Object.assign({ id: U.uid(), babyId: b }, r))));
+    Store.commit();
+  };
+
+  /* ---------- Hoja de importación ---------- */
+  const LABELS = { sleeps: 'Sueños (siestas y tramos de noche)', feeds: 'Tomas', meds: 'Medicación', diapers: 'Pañales', pumps: 'Extracciones' };
+  N.actions['import-napper'] = () => {
+    let res = null;
+    UI.sheet({
+      title: 'Importar desde Napper', submit: 'Importar', wide: true,
+      body: `<p class="muted small">Napper no tiene API pública. Puedes traer tus datos con la exportación de Napper, si tu versión la tiene, o con la herramienta comunitaria <b>napper-export</b> (github.com/brittraee/napper-export). Elige <code>napper_events.csv</code>, <code>all_events.json</code> o <code>sleep_logs_full.json</code>.</p>
+        <label class="photo-drop small-drop">${icon('upload')}<span>Elegir archivo .csv o .json</span><input type="file" id="f-napper" accept=".csv,.json,text/csv,application/json" hidden></label>
+        <details><summary class="small">O pega el contenido</summary><textarea id="f-napper-text" class="code" rows="5" placeholder="date,event_type,start,end,…"></textarea></details>
+        <div id="napper-preview"></div>
+        <p class="muted small">Se importa en el perfil de <b>${U.esc(S.baby().name)}</b>. Lo que ya esté en Nido (mismo registro o un sueño que se solapa) se salta, así que puedes importar varias veces.</p>`,
+      onMount: (form) => {
+        const prev = form.querySelector('#napper-preview');
+        const run = (text) => {
+          try {
+            res = I.convert(I.events(text));
+            const unsup = Object.entries(res.skipped.unsupported);
+            prev.innerHTML = res.total || res.skipped.dup ? `<div class="imp">
+              <p><b>${res.total} registros nuevos</b>${res.from ? ` del ${U.date(res.from, true)} al ${U.date(res.to, true)}` : ''}</p>
+              <ul class="rows">${Object.entries(res.out).filter(([, v]) => v.length).map(([k, v]) => `<li><div class="row"><span>${LABELS[k]}</span><b>${v.length}</b></div></li>`).join('')}</ul>
+              <p class="muted small">${res.skipped.dup ? `${res.skipped.dup} ya estaban en Nido. ` : ''}${res.skipped.incomplete ? `${res.skipped.incomplete} incompletos (sin fin o noche sin despertar). ` : ''}${unsup.length ? `No se importan: ${unsup.map(([k, n]) => `${k.toLowerCase()} (${n})`).join(', ')}.` : ''}
+              ${res.out.feeds.some((f) => f.sideUnknown) ? ' Las tomas de pecho sin lado se guardan sin lado.' : ''}</p></div>`
+              : '<p class="alert warn">No hay registros que importar en ese archivo.</p>';
+          } catch (e) { res = null; prev.innerHTML = '<p class="alert warn">No reconozco el formato. Usa napper_events.csv o los JSON de napper-export.</p>'; }
+        };
+        form.addEventListener('change', (e) => {
+          if (e.target.id !== 'f-napper' || !e.target.files[0]) return;
+          const r = new FileReader(); r.onload = () => run(String(r.result)); r.readAsText(e.target.files[0]);
+        });
+        form.querySelector('#f-napper-text').addEventListener('input', (e) => { if (e.target.value.trim().length > 20) run(e.target.value); });
+      },
+      onSubmit: () => {
+        if (!res || !res.total) { UI.toast('Elige un archivo con registros nuevos'); return false; }
+        I.apply(res); UI.toast(`${res.total} registros importados de Napper`); UI.go('sueno');
+      }
+    });
+  };
+})(window.Nido = window.Nido || {});
+
+</script>
+  <script>
+/* ==========================================================================
    Nido · Datos de ejemplo
    Genera tres semanas realistas de una bebé de 6 meses y medio que acaba de
    empezar con BLW. Todas las fechas son relativas a hoy, así que la demo
@@ -3612,7 +4402,7 @@ form[data-kind="wet"] .only-poo { display: none; }
       settings: { theme: 'auto', caregiver: 'Mamá' },
       babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', gestWeeks: 39, gestDays: 4, birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
       milestones: {}, teeth: {}, timers: {},
-      sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: []
+      sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: [], activities: [], reminders: [], blwPlans: {}, shopping: {}, sent: {}
     };
     const add = (col, rec) => st[col].push(Object.assign({ id: U.uid() + st[col].length, babyId, by: r() < 0.7 ? 'Mamá' : 'Papá' }, rec));
 
@@ -3666,6 +4456,15 @@ form[data-kind="wet"] .only-poo { display: none; }
       if (r() < 0.3) { const t = day0 + 17.5 * HOUR; if (t < now) st.feeds.push({ id: U.uid() + 'b' + d, babyId, by: 'Papá', time: t, kind: 'bottle', ml: pick([90, 120, 120, 150]), milk: 'materna' }); }
       // Vitamina D cada mañana
       const vd = wake + 40 * MIN; if (vd < now) add('meds', { time: vd, name: 'Vitamina D', dose: 400, unit: 'UI', reason: 'Suplemento diario' });
+    }
+    // Actividades: boca abajo varias veces al día, paseo, baño y cuento antes de dormir
+    for (let d = -DAYS; d <= 0; d++) {
+      const day0 = today0 + d * DAY;
+      const acts = [[8.1, 'tummy', 6 + Math.round(r() * 6)], [10.9, 'tummy', 5 + Math.round(r() * 8)], [11.4, 'walk', 40 + Math.round(r() * 30)], [16.6, 'tummy', 4 + Math.round(r() * 8)], [17.2, 'play', 15 + Math.round(r() * 15)]];
+      if (d % 2 === 0) acts.push([18.3, 'bath', 12]);
+      acts.push([18.6, 'reading', 8]);
+      if (r() < 0.3) acts.push([18.45, 'massage', 10]);
+      acts.forEach(([h, kind, dur]) => { const t = day0 + h * HOUR + jit(15); if (t + dur * MIN < now) add('activities', { time: t, kind, dur }); });
     }
     // Extracciones
     for (let d = -10; d <= -1; d += 2) add('pumps', { time: today0 + d * DAY + 10.5 * HOUR, ml: 80 + Math.round(r() * 60), side: 'B' });
@@ -3811,6 +4610,8 @@ form[data-kind="wet"] .only-poo { display: none; }
         });
       });
     }).catch(() => { /* sin modo sin conexión */ });
+    // Al tocar una notificación, el service worker pide abrir la sección del aviso.
+    navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.go) UI.go(e.data.go); });
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloading && N.install.updating) { reloading = true; location.reload(); } });
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); N.install.prompt = e; if (UI.current() === 'ajustes') UI.render(); });
@@ -3843,6 +4644,9 @@ form[data-kind="wet"] .only-poo { display: none; }
     window.addEventListener('hashchange', () => { UI.closeSheet(); UI.render(); });
     Store.subscribe(() => UI.render());
     setInterval(UI.tick, 1000);
+    setInterval(() => N.Reminders.check(), 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) N.Reminders.check(); });
+    setTimeout(() => N.Reminders.check(), 2500);
     // Refresca predicciones y "hace X min" cada minuto sin tocar formularios abiertos ni controles en uso.
     setInterval(() => { if (document.getElementById('sheet').hidden && document.activeElement?.id !== 'snd-vol') UI.render(); }, 60000);
     UI.render();

@@ -35,7 +35,7 @@
       settings: { theme: 'auto', caregiver: 'Mamá' },
       babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', gestWeeks: 39, gestDays: 4, birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
       milestones: {}, teeth: {}, timers: {},
-      sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: []
+      sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: [], activities: [], reminders: [], blwPlans: {}, shopping: {}, sent: {}
     };
     const add = (col, rec) => st[col].push(Object.assign({ id: U.uid() + st[col].length, babyId, by: r() < 0.7 ? 'Mamá' : 'Papá' }, rec));
 
@@ -89,6 +89,15 @@
       if (r() < 0.3) { const t = day0 + 17.5 * HOUR; if (t < now) st.feeds.push({ id: U.uid() + 'b' + d, babyId, by: 'Papá', time: t, kind: 'bottle', ml: pick([90, 120, 120, 150]), milk: 'materna' }); }
       // Vitamina D cada mañana
       const vd = wake + 40 * MIN; if (vd < now) add('meds', { time: vd, name: 'Vitamina D', dose: 400, unit: 'UI', reason: 'Suplemento diario' });
+    }
+    // Actividades: boca abajo varias veces al día, paseo, baño y cuento antes de dormir
+    for (let d = -DAYS; d <= 0; d++) {
+      const day0 = today0 + d * DAY;
+      const acts = [[8.1, 'tummy', 6 + Math.round(r() * 6)], [10.9, 'tummy', 5 + Math.round(r() * 8)], [11.4, 'walk', 40 + Math.round(r() * 30)], [16.6, 'tummy', 4 + Math.round(r() * 8)], [17.2, 'play', 15 + Math.round(r() * 15)]];
+      if (d % 2 === 0) acts.push([18.3, 'bath', 12]);
+      acts.push([18.6, 'reading', 8]);
+      if (r() < 0.3) acts.push([18.45, 'massage', 10]);
+      acts.forEach(([h, kind, dur]) => { const t = day0 + h * HOUR + jit(15); if (t + dur * MIN < now) add('activities', { time: t, kind, dur }); });
     }
     // Extracciones
     for (let d = -10; d <= -1; d += 2) add('pumps', { time: today0 + d * DAY + 10.5 * HOUR, ml: 80 + Math.round(r() * 60), side: 'B' });

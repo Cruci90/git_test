@@ -134,7 +134,12 @@
   /* ======================= Comidas BLW ======================= */
   F.meal = (rec, preset) => {
     const now = Date.now(), h = new Date(now).getHours();
-    const r = rec || { time: now, mealType: h < 11 ? 'desayuno' : h < 16 ? 'comida' : h < 19 ? 'merienda' : 'cena', foods: preset ? [{ id: preset, amount: 1, liked: 0, reaction: 'none' }] : [], gag: false, choke: false };
+    // preset: id de un alimento, o { foods: [ids], mealType, date } desde el plan semanal
+    const pre = typeof preset === 'string' ? { foods: [preset] } : preset || {};
+    const r = rec || {
+      time: pre.date ? U.fromInputs(pre.date, U.time(now)) : now, mealType: pre.mealType || (h < 11 ? 'desayuno' : h < 16 ? 'comida' : h < 19 ? 'merienda' : 'cena'),
+      foods: (pre.foods || []).map((id) => ({ id, amount: 1, liked: 0, reaction: 'none' })), gag: false, choke: false
+    };
     const sel = r.foods.map((x) => Object.assign({}, x));
     const stats = S.foodStats();
     const [d, t] = splitDT(r.time);
@@ -291,12 +296,19 @@
       body: `<label class="fld full"><span>Medicamento</span><input id="f-medname" name="name" list="med-list" value="${U.esc(r.name)}" required placeholder="Paracetamol, vitamina D…"><datalist id="med-list">${recent.map((n) => `<option value="${U.esc(n)}">`).join('')}</datalist></label>` +
         f.row(f.num('dose', 'Dosis', r.dose, 'step="0.1" min="0"'), f.select('unit', 'Unidad', [['ml', 'ml'], ['gotas', 'gotas'], ['mg', 'mg'], ['UI', 'UI'], ['sobre', 'sobre']], r.unit)) +
         f.row(f.date('d', 'Día', d), f.time('t', 'Hora', t)) + f.text('reason', 'Motivo', r.reason, 'placeholder="Fiebre, suplemento…"') +
+        f.select('remind', 'Avisarme de la próxima dosis', [[0, 'No'], [4, 'En 4 h'], [6, 'En 6 h'], [8, 'En 8 h'], [12, 'En 12 h'], [24, 'Mañana a la misma hora']], 0) +
         '<p class="hint">Consulta siempre la dosis por peso con tu pediatra o farmacéutico.</p>',
       onDelete: rec && (() => { UI.closeSheet(); UI.removeWithUndo('meds', rec.id); }),
       onSubmit: (x) => {
         if (!x.name.trim()) { UI.toast('Escribe el nombre del medicamento'); return false; }
         const data = { time: U.fromInputs(x.d, x.t), name: x.name.trim(), dose: parseFloat(x.dose) || null, unit: x.unit, reason: x.reason };
-        rec ? Store.update('meds', rec.id, data) : Store.add('meds', data); UI.toast('Medicación registrada');
+        const saved = rec ? Store.update('meds', rec.id, data) : Store.add('meds', data);
+        const h = Number(x.remind);
+        if (h) {
+          const at = data.time + h * U.HOUR;
+          Store.add('reminders', { at, title: `Próxima dosis: ${data.name}`, body: data.dose ? `${U.num(data.dose, data.dose % 1 ? 1 : 0)} ${data.unit}` : '', hash: 'salud', medId: saved.id });
+          UI.toast(`Medicación registrada. Te aviso a las ${U.time(at)}`);
+        } else UI.toast('Medicación registrada');
       }
     });
   };
@@ -474,6 +486,8 @@
         ${tile('form-appt', 'calendar', 'Cita médica', 'Con preguntas', 'c-growth')}
         ${tile('form-pump', 'pump', 'Extracción', 'Leche extraída', 'c-feed')}
         ${tile('form-diary', 'book', 'Recuerdo', 'Nota y foto', 'c-mile')}
+        ${tile('activity-start', 'ball', 'Boca abajo', 'Cronometrar', 'c-mile', 'data-kind="tummy"')}
+        ${tile('form-activity', 'star', 'Actividad', 'Baño, paseo, cuento…', 'c-mile')}
         ${tile('go-sounds', 'moon', 'Sonidos', N.Sounds.state.key ? 'Sonando ahora' : 'Ruido blanco, nana…', 'c-sleep')}
       </div>
       <div class="qa-diapers"><span>Pañal en un toque</span>
@@ -506,12 +520,13 @@
     event: (id, el) => F.event(id && Store.get('events', id), el.dataset.date),
     diary: (id) => F.diary(id && Store.get('diary', id)),
     milestone: (id) => F.milestone(id),
-    tooth: (id) => F.tooth(id)
+    tooth: (id) => F.tooth(id),
+    activity: (id) => F.activity(id && Store.get('activities', id))
   };
   Object.entries(forms).forEach(([k, fn]) => { A['form-' + k] = (el) => fn(el.dataset.id, el); });
   /* Edición desde la línea de tiempo */
   A.edit = (el) => {
-    const map = { sleeps: 'sleep', feeds: 'feed', diapers: 'diaper', meals: 'meal', meds: 'med', temps: 'temp', pumps: 'pump', appointments: 'appt', events: 'event', diary: 'diary', measures: 'measure' };
+    const map = { activities: 'activity', sleeps: 'sleep', feeds: 'feed', diapers: 'diaper', meals: 'meal', meds: 'med', temps: 'temp', pumps: 'pump', appointments: 'appt', events: 'event', diary: 'diary', measures: 'measure' };
     forms[map[el.dataset.col]](el.dataset.id, el);
   };
 

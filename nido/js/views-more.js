@@ -212,10 +212,11 @@
         ${W.card('Bebés', `<div class="baby-list">${Store.state.babies.map((b) => `<button type="button" class="baby-row" data-act="pick-edit-baby" data-id="${b.id}"><span class="avatar" style="--av:${b.sex === 'm' ? 'var(--c-sleep)' : 'var(--c-feed)'}">${U.esc(b.name[0])}</span><span><b>${U.esc(b.name)}</b><small>${U.ageText(b.birth)}</small></span>${icon('edit')}</button>`).join('')}
           <button type="button" class="baby-row add" data-act="new-baby"><span class="avatar">+</span><span><b>Añadir bebé</b></span></button></div>`)}
         ${W.card('Tus datos', `<p class="muted small">Todo se guarda solo en este dispositivo: registros ${(bytes / 1024).toFixed(0)} KB<span id="storage-est"></span>. Nada sale de tu navegador. La copia incluye las fotos.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
-          <div class="btn-row"><button type="button" class="btn soft" data-act="export">${icon('download')}Exportar copia</button><button type="button" class="btn soft" data-act="import">${icon('upload')}Importar copia</button></div>
+          <div class="btn-row"><button type="button" class="btn soft" data-act="export">${icon('download')}Exportar copia</button><button type="button" class="btn soft" data-act="import">${icon('upload')}Importar copia</button><button type="button" class="btn soft" data-act="import-napper">${icon('moon')}Importar desde Napper</button></div>
           <div class="btn-row"><button type="button" class="btn soft" data-act="load-demo">${icon('spark')}Cargar datos de ejemplo</button><button type="button" class="btn ghost danger" data-act="wipe">${icon('trash')}Borrar todo</button></div>`)}
         ${W.card('Fuentes', `<ul class="sources"><li>Curvas de crecimiento: OMS, Child Growth Standards (2006).</li><li>Calendario vacunal: Consejo Interterritorial del SNS, calendario común 2025.</li><li>Sueño: recomendaciones de la AASM y la AAP.</li><li>BLW y alérgenos: AEP y ESPGHAN.</li></ul><p class="muted small">Nido es una herramienta de registro. No sustituye el consejo de tu pediatra.</p>`)}
         ${W.card('Nido en tu móvil', this.install())}
+        ${W.card('Avisos', N.Reminders.card(), { cls: 'span-2' })}
       </div>`;
     },
     install() {

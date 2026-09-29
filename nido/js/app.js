@@ -33,6 +33,8 @@
         });
       });
     }).catch(() => { /* sin modo sin conexión */ });
+    // Al tocar una notificación, el service worker pide abrir la sección del aviso.
+    navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.go) UI.go(e.data.go); });
     let reloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloading && N.install.updating) { reloading = true; location.reload(); } });
     window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); N.install.prompt = e; if (UI.current() === 'ajustes') UI.render(); });
@@ -65,6 +67,9 @@
     window.addEventListener('hashchange', () => { UI.closeSheet(); UI.render(); });
     Store.subscribe(() => UI.render());
     setInterval(UI.tick, 1000);
+    setInterval(() => N.Reminders.check(), 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) N.Reminders.check(); });
+    setTimeout(() => N.Reminders.check(), 2500);
     // Refresca predicciones y "hace X min" cada minuto sin tocar formularios abiertos ni controles en uso.
     setInterval(() => { if (document.getElementById('sheet').hidden && document.activeElement?.id !== 'snd-vol') UI.render(); }, 60000);
     UI.render();

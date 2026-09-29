@@ -18,9 +18,12 @@ Funciona sin servidor, sin cuenta y sin dependencias. Los datos se quedan en el 
 | **Hoy** | Edad exacta, estado en vivo (durmiendo, dando el pecho o despierta con la ventana de vigilia), predicción de próxima siesta y hora de dormir, resumen del día, reloj de 24 h, pendientes (citas, vacunas, alérgenos que mantener, vitamina D, fiebre) e idea de alimento para hoy. |
 | **Sueño** | Cronómetro, **plan del día** (siestas hechas y previstas con la hora de dormir, aprendido de sus últimos 7 días), **sonidos para dormir** sintetizados (ruido blanco, rosa y marrón, shhh, útero, latido, lluvia, olas y nana de Brahms) con temporizador y apagado suave, registro manual, horas por día frente al rango recomendado, patrón de 14 días con tomas superpuestas, medias (despertares, tramo más largo, hora de acostarse y despertar) y guía por edad. |
 | **Tomas** | Cronómetro de pecho con cambio de lado y pausa, sugerencia del lado que toca, biberón (materna, fórmula, mixta), extracciones y pañales con color de la caca y avisos. |
-| **BLW** | Reto de 100 alimentos, catálogo de 71 alimentos con cómo ofrecerlos a los 6 y 9 meses, marcas de alérgeno y riesgo de atragantamiento, seguimiento de los 9 alérgenos (3 exposiciones y mantenimiento), arcoíris semanal, registro de comidas con cantidad, gusto, reacciones, arcadas y guía de seguridad. |
+| **BLW** | Cuatro pestañas. **Plan semanal** generado a partir de lo que ya ha probado: hierro en cada comida (con vitamina C si es vegetal), como mucho un alimento nuevo al día, alérgenos de uno en uno por la mañana hasta 3 exposiciones y mantenimiento de los ya introducidos, y alimentos rechazados que vuelven a salir; con lista de la compra y registro de la comida con un toque. **Hierro de la semana** y **volver a ofrecer** (8–15 exposiciones). Reto de 100 alimentos, catálogo de 71 alimentos con cómo ofrecerlos a los 6 y 9 meses, marcas de alérgeno y riesgo de atragantamiento, seguimiento de los 9 alérgenos (3 exposiciones y mantenimiento), arcoíris semanal, registro de comidas con cantidad, gusto, reacciones, arcadas y guía de seguridad. |
 | **Crecimiento** | Peso, longitud y perímetro craneal con percentil calculado por el método LMS de la OMS (0‑24 meses), curva con bandas P3–P97 y P15–P85, ganancia de peso en g/día y tabla histórica. |
 | **Salud** | Citas con preguntas para la consulta y lo que dijo el pediatra, sugerencia de la próxima revisión del programa de salud infantil, calendario vacunal (España 2025) con fecha y lote, medicación, temperatura y ficha médica con teléfonos de urgencia. |
+| **Actividades** | Tiempo boca abajo con cronómetro y objetivo de 30 min diarios (hasta que gatea), paseo, juego, baño, cuento, masaje y música. |
+| **Avisos** | Antes de cada siesta prevista y de la hora de dormir, si pasa tiempo sin toma, citas (víspera y 1 h antes), vitamina D, alérgeno del plan y próxima dosis de un medicamento. Como notificación del sistema si se da permiso y siempre dentro de la app. Funcionan con Nido abierta (también en segundo plano); con la app cerrada no, porque eso exige un servidor de notificaciones push. |
+| **Importar desde Napper** | Lee `napper_events.csv`, `all_events.json` o `sleep_logs_full.json` de la herramienta comunitaria [napper-export](https://github.com/brittraee/napper-export). Convierte BED_TIME + NIGHT_WAKING + WOKE_UP en tramos de noche, siestas, tomas, biberones y medicación; salta duplicados, así que se puede importar varias veces. |
 | **Calendario** | Vista mensual con citas, vacunas previstas, hitos, eventos y el "cumplemés". |
 | **Hitos y dientes** | 23 hitos del desarrollo con su rango habitual frente a la edad actual, y odontograma de los 20 dientes de leche (notación FDI). |
 | **Diario** | Recuerdos con estado de ánimo y foto. Las fotos se reducen a 1000 px y se guardan en IndexedDB, sin el límite de ~5 MB de localStorage. |
@@ -42,6 +45,10 @@ js/core.js          Utilidades (fechas, edad, formato), Store (localStorage + su
                     selectores de dominio (S.*) e iconos SVG
 js/media.js         Fotos en IndexedDB: guardar, cargar, migrar, limpiar y exportar
 js/sounds.js        Sonidos para dormir sintetizados con Web Audio y temporizador
+js/blwplan.js       Generador del plan semanal de BLW y lista de la compra
+js/activities.js    Actividades y cronómetro de tiempo boca abajo
+js/reminders.js     Motor de avisos y notificaciones
+js/importers.js     Importador de Napper (CSV y JSON de napper-export)
 js/charts.js        Gráficos SVG propios: barras de sueño, patrón 24 h, curva OMS,
                     anillo de progreso, mini barras y reloj del día
 js/ui.js            Enrutador por hash, navegación, hoja inferior, campos de formulario,
@@ -70,7 +77,7 @@ cd nido
 npm test
 ```
 
-Cubren la edad en meses de calendario, la edad corregida, los percentiles OMS (contrastados con valores publicados de la tabla de puntuaciones z), el reparto del sueño entre días, el plan de siestas, el estado de alimentos y alérgenos y la coherencia de la demo.
+Cubren el plan semanal de BLW (un nuevo al día, un alérgeno cada vez, nada con reacción, hierro), el importador de Napper (noches partidas por despertares, duplicados, CSV con comillas), hierro, volver a ofrecer, avisos, la edad en meses de calendario, la edad corregida, los percentiles OMS (contrastados con valores publicados de la tabla de puntuaciones z), el reparto del sueño entre días, el plan de siestas, el estado de alimentos y alérgenos y la coherencia de la demo.
 
 ## Aviso
 

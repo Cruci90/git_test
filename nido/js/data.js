@@ -100,7 +100,9 @@
 
   /* ---------- Catálogo BLW -----------------------------------------------
      c: categoría · col: color (arcoíris semanal) · a: alérgeno
-     r: riesgo de atragantamiento (requiere preparación) · s6/s9: cómo ofrecerlo */
+     r: riesgo de atragantamiento (requiere preparación) · s6/s9: cómo ofrecerlo
+     fe: fuente de hierro (2 = hierro hemo, muy absorbible; 1 = vegetal)
+     vc: rico en vitamina C (ayuda a absorber el hierro vegetal) */
   const F = (id, name, emoji, c, col, s6, s9, extra) =>
     Object.assign({ id, name, emoji, c, col, s6, s9 }, extra || {});
 
@@ -130,66 +132,66 @@
     F('aguacate', 'Aguacate', '🥑', 'fruta', 'verde', 'Tiras gruesas, rebozadas en coco o avena si resbala', 'Dados blandos'),
     F('manzana', 'Manzana', '🍎', 'fruta', 'rojo', 'Solo cocida o asada en gajos (cruda es de riesgo)', 'Rallada cruda o cocida en dados', { r: true }),
     F('pera', 'Pera', '🍐', 'fruta', 'verde', 'Madura en gajos gruesos; si está dura, cocida', 'Dados blandos'),
-    F('mango', 'Mango', '🥭', 'fruta', 'naranja', 'Hueso con algo de pulpa o tiras gruesas', 'Dados'),
-    F('fresa', 'Fresa', '🍓', 'fruta', 'rojo', 'Grande entera o aplastada', 'Cortada en cuartos'),
+    F('mango', 'Mango', '🥭', 'fruta', 'naranja', 'Hueso con algo de pulpa o tiras gruesas', 'Dados', { vc: true }),
+    F('fresa', 'Fresa', '🍓', 'fruta', 'rojo', 'Grande entera o aplastada', 'Cortada en cuartos', { vc: true }),
     F('arandanos', 'Arándanos', '🫐', 'fruta', 'morado', 'Aplastados con el dedo', 'Aplastados o cortados por la mitad', { r: true }),
     F('uva', 'Uva', '🍇', 'fruta', 'morado', 'Cortada a lo largo en cuartos, sin pepitas', 'Siempre en cuartos a lo largo', { r: true }),
-    F('sandia', 'Sandía', '🍉', 'fruta', 'rojo', 'Triángulos gruesos sin pepitas', 'Dados sin pepitas'),
-    F('melon', 'Melón', '🍈', 'fruta', 'verde', 'Tiras gruesas con piel como mango', 'Dados'),
-    F('melocoton', 'Melocotón', '🍑', 'fruta', 'naranja', 'Mitad sin hueso, muy madura', 'Gajos finos'),
-    F('kiwi', 'Kiwi', '🥝', 'fruta', 'verde', 'Mitad pelada o gajos gruesos', 'Dados'),
-    F('naranja', 'Naranja', '🍊', 'fruta', 'naranja', 'Gajo sin membrana ni pepitas', 'Trocitos de gajo'),
+    F('sandia', 'Sandía', '🍉', 'fruta', 'rojo', 'Triángulos gruesos sin pepitas', 'Dados sin pepitas', { vc: true }),
+    F('melon', 'Melón', '🍈', 'fruta', 'verde', 'Tiras gruesas con piel como mango', 'Dados', { vc: true }),
+    F('melocoton', 'Melocotón', '🍑', 'fruta', 'naranja', 'Mitad sin hueso, muy madura', 'Gajos finos', { vc: true }),
+    F('kiwi', 'Kiwi', '🥝', 'fruta', 'verde', 'Mitad pelada o gajos gruesos', 'Dados', { vc: true }),
+    F('naranja', 'Naranja', '🍊', 'fruta', 'naranja', 'Gajo sin membrana ni pepitas', 'Trocitos de gajo', { vc: true }),
     F('ciruela', 'Ciruela', '🟣', 'fruta', 'morado', 'Mitad sin hueso, madura', 'Cuartos'),
     F('higo', 'Higo', '🟤', 'fruta', 'morado', 'Abierto por la mitad', 'Trozos'),
-    F('papaya', 'Papaya', '🧡', 'fruta', 'naranja', 'Tiras gruesas', 'Dados'),
-    F('frambuesa', 'Frambuesa', '🔴', 'fruta', 'rojo', 'Aplastada', 'Entera o a mitades'),
+    F('papaya', 'Papaya', '🧡', 'fruta', 'naranja', 'Tiras gruesas', 'Dados', { vc: true }),
+    F('frambuesa', 'Frambuesa', '🔴', 'fruta', 'rojo', 'Aplastada', 'Entera o a mitades', { vc: true }),
     F('cereza', 'Cereza', '🍒', 'fruta', 'rojo', 'Sin hueso y en cuartos', 'Sin hueso y en cuartos', { r: true }),
     // Verduras
-    F('brocoli', 'Brócoli', '🥦', 'verdura', 'verde', 'Arbolito al vapor con tallo como mango', 'Ramilletes pequeños'),
+    F('brocoli', 'Brócoli', '🥦', 'verdura', 'verde', 'Arbolito al vapor con tallo como mango', 'Ramilletes pequeños', { vc: true }),
     F('zanahoria', 'Zanahoria', '🥕', 'verdura', 'naranja', 'Bastones cocidos muy blandos (cruda no)', 'Rodajas cocidas o rallada', { r: true }),
     F('boniato', 'Boniato', '🍠', 'verdura', 'naranja', 'Bastones asados', 'Dados asados o puré'),
-    F('calabacin', 'Calabacín', '🥒', 'verdura', 'verde', 'Bastones al vapor con piel', 'Medias lunas'),
+    F('calabacin', 'Calabacín', '🥒', 'verdura', 'verde', 'Bastones al vapor con piel', 'Medias lunas', { vc: true }),
     F('calabaza', 'Calabaza', '🎃', 'verdura', 'naranja', 'Gajos asados', 'Dados asados'),
     F('patata', 'Patata', '🥔', 'verdura', 'blanco', 'Gajos cocidos o asados', 'Dados'),
-    F('coliflor', 'Coliflor', '🤍', 'verdura', 'blanco', 'Ramillete grande al vapor', 'Ramilletes pequeños'),
+    F('coliflor', 'Coliflor', '🤍', 'verdura', 'blanco', 'Ramillete grande al vapor', 'Ramilletes pequeños', { vc: true }),
     F('judia_verde', 'Judía verde', '🫛', 'verdura', 'verde', 'Enteras, cocidas muy tiernas', 'Trocitos'),
     F('guisantes', 'Guisantes', '🟢', 'verdura', 'verde', 'Aplastados', 'Aplastados o enteros para pinza', { r: true }),
-    F('tomate', 'Tomate', '🍅', 'verdura', 'rojo', 'Gajos grandes sin piel dura', 'Cherry en cuartos', { r: true }),
-    F('pimiento', 'Pimiento rojo', '🫑', 'verdura', 'rojo', 'Tiras asadas sin piel', 'Tiras finas asadas'),
+    F('tomate', 'Tomate', '🍅', 'verdura', 'rojo', 'Gajos grandes sin piel dura', 'Cherry en cuartos', { r: true, vc: true }),
+    F('pimiento', 'Pimiento rojo', '🫑', 'verdura', 'rojo', 'Tiras asadas sin piel', 'Tiras finas asadas', { vc: true }),
     F('berenjena', 'Berenjena', '🍆', 'verdura', 'morado', 'Tiras asadas', 'Dados asados'),
     F('remolacha', 'Remolacha', '🟥', 'verdura', 'morado', 'Gajos cocidos', 'Dados o rallada'),
-    F('espinaca', 'Espinaca', '🌿', 'verdura', 'verde', 'Cocida, mezclada en tortilla o croqueta', 'Salteada picada', { note: 'Nitratos: evitar grandes cantidades antes de 1 año' }),
+    F('espinaca', 'Espinaca', '🌿', 'verdura', 'verde', 'Cocida, mezclada en tortilla o croqueta', 'Salteada picada', { note: 'Nitratos: evitar grandes cantidades antes de 1 año', fe: 1 }),
     F('champinon', 'Champiñón', '🍄', 'verdura', 'marron', 'Laminado grueso y salteado', 'Picado'),
     F('puerro', 'Puerro', '🧅', 'verdura', 'blanco', 'En cremas o guisos', 'Picado'),
     F('maiz', 'Maíz', '🌽', 'verdura', 'amarillo', 'Mazorca cocida para roer', 'Granos aplastados', { r: true }),
-    F('esparrago', 'Espárrago', '🌱', 'verdura', 'verde', 'Enteros al vapor', 'Trozos'),
+    F('esparrago', 'Espárrago', '🌱', 'verdura', 'verde', 'Enteros al vapor', 'Trozos', { vc: true }),
     // Proteínas
-    F('huevo', 'Huevo', '🥚', 'proteina', 'amarillo', 'Tortilla en tiras o huevo duro en cuartos', 'Revuelto', { a: 'huevo' }),
-    F('pollo', 'Pollo', '🍗', 'proteina', 'blanco', 'Muslo en tiras o hueso grande con carne', 'Desmenuzado'),
-    F('pavo', 'Pavo', '🦃', 'proteina', 'blanco', 'Albóndigas o tiras', 'Desmenuzado'),
-    F('ternera', 'Ternera', '🥩', 'proteina', 'marron', 'Tira grande para chupar o albóndigas', 'Picada'),
-    F('cerdo', 'Cerdo (lomo)', '🐖', 'proteina', 'blanco', 'Tiras tiernas', 'Desmenuzado'),
-    F('cordero', 'Cordero', '🐑', 'proteina', 'marron', 'Costilla para roer', 'Desmenuzado'),
-    F('merluza', 'Merluza', '🐟', 'proteina', 'blanco', 'Lomos sin espinas en láminas', 'Desmigada', { a: 'pescado' }),
-    F('salmon', 'Salmón', '🍣', 'proteina', 'naranja', 'Láminas sin espinas', 'Desmigado', { a: 'pescado' }),
-    F('sardina', 'Sardina', '🐠', 'proteina', 'marron', 'Sin espinas en tostada', 'Aplastada', { a: 'pescado' }),
-    F('bacalao', 'Bacalao', '🎣', 'proteina', 'blanco', 'Desalado, en láminas', 'Desmigado', { a: 'pescado' }),
-    F('gamba', 'Gamba', '🦐', 'proteina', 'rojo', 'Picada en tortilla', 'Trocitos', { a: 'marisco' }),
-    F('tofu', 'Tofu', '🧊', 'proteina', 'blanco', 'Bastones firmes a la plancha', 'Dados', { a: 'soja' }),
+    F('huevo', 'Huevo', '🥚', 'proteina', 'amarillo', 'Tortilla en tiras o huevo duro en cuartos', 'Revuelto', { a: 'huevo', fe: 1 }),
+    F('pollo', 'Pollo', '🍗', 'proteina', 'blanco', 'Muslo en tiras o hueso grande con carne', 'Desmenuzado', { fe: 2 }),
+    F('pavo', 'Pavo', '🦃', 'proteina', 'blanco', 'Albóndigas o tiras', 'Desmenuzado', { fe: 2 }),
+    F('ternera', 'Ternera', '🥩', 'proteina', 'marron', 'Tira grande para chupar o albóndigas', 'Picada', { fe: 2 }),
+    F('cerdo', 'Cerdo (lomo)', '🐖', 'proteina', 'blanco', 'Tiras tiernas', 'Desmenuzado', { fe: 2 }),
+    F('cordero', 'Cordero', '🐑', 'proteina', 'marron', 'Costilla para roer', 'Desmenuzado', { fe: 2 }),
+    F('merluza', 'Merluza', '🐟', 'proteina', 'blanco', 'Lomos sin espinas en láminas', 'Desmigada', { a: 'pescado', fe: 2 }),
+    F('salmon', 'Salmón', '🍣', 'proteina', 'naranja', 'Láminas sin espinas', 'Desmigado', { a: 'pescado', fe: 2 }),
+    F('sardina', 'Sardina', '🐠', 'proteina', 'marron', 'Sin espinas en tostada', 'Aplastada', { a: 'pescado', fe: 2 }),
+    F('bacalao', 'Bacalao', '🎣', 'proteina', 'blanco', 'Desalado, en láminas', 'Desmigado', { a: 'pescado', fe: 2 }),
+    F('gamba', 'Gamba', '🦐', 'proteina', 'rojo', 'Picada en tortilla', 'Trocitos', { a: 'marisco', fe: 2 }),
+    F('tofu', 'Tofu', '🧊', 'proteina', 'blanco', 'Bastones firmes a la plancha', 'Dados', { a: 'soja', fe: 1 }),
     // Legumbres
-    F('lentejas', 'Lentejas', '🟫', 'legumbre', 'marron', 'Hamburguesita o bien cocidas para cuchara precargada', 'Guiso con pinza'),
-    F('garbanzos', 'Garbanzos', '🟡', 'legumbre', 'amarillo', 'Hummus en tostada o aplastados', 'Aplastados', { r: true }),
-    F('alubias', 'Alubias', '⚫', 'legumbre', 'blanco', 'Aplastadas', 'Enteras blandas'),
-    F('edamame', 'Edamame', '🫛', 'legumbre', 'verde', 'Aplastado', 'Aplastado', { a: 'soja', r: true }),
-    F('hummus', 'Hummus', '🥣', 'legumbre', 'blanco', 'Untado en tostada o palito', 'Para mojar', { a: 'sesamo' }),
+    F('lentejas', 'Lentejas', '🟫', 'legumbre', 'marron', 'Hamburguesita o bien cocidas para cuchara precargada', 'Guiso con pinza', { fe: 1 }),
+    F('garbanzos', 'Garbanzos', '🟡', 'legumbre', 'amarillo', 'Hummus en tostada o aplastados', 'Aplastados', { r: true, fe: 1 }),
+    F('alubias', 'Alubias', '⚫', 'legumbre', 'blanco', 'Aplastadas', 'Enteras blandas', { fe: 1 }),
+    F('edamame', 'Edamame', '🫛', 'legumbre', 'verde', 'Aplastado', 'Aplastado', { a: 'soja', r: true, fe: 1 }),
+    F('hummus', 'Hummus', '🥣', 'legumbre', 'blanco', 'Untado en tostada o palito', 'Para mojar', { a: 'sesamo', fe: 1 }),
     // Cereales
     F('pan', 'Pan', '🍞', 'cereal', 'marron', 'Tostada en tiras con untable', 'Trozos', { a: 'gluten' }),
     F('pasta', 'Pasta', '🍝', 'cereal', 'blanco', 'Fusilli o macarrón grande', 'Formas pequeñas', { a: 'gluten' }),
     F('arroz', 'Arroz', '🍚', 'cereal', 'blanco', 'Bolitas de arroz pegajoso', 'Suelto con cuchara'),
-    F('avena', 'Avena', '🥣', 'cereal', 'blanco', 'Porridge espeso o tortitas', 'Porridge con fruta', { a: 'gluten', note: 'Puede contener trazas de gluten' }),
-    F('quinoa', 'Quinoa', '🌾', 'cereal', 'blanco', 'Bolitas o mezclada con aguacate', 'Suelta'),
+    F('avena', 'Avena', '🥣', 'cereal', 'blanco', 'Porridge espeso o tortitas', 'Porridge con fruta', { a: 'gluten', note: 'Puede contener trazas de gluten', fe: 1 }),
+    F('quinoa', 'Quinoa', '🌾', 'cereal', 'blanco', 'Bolitas o mezclada con aguacate', 'Suelta', { fe: 1 }),
     F('cuscus', 'Cuscús', '🫓', 'cereal', 'amarillo', 'Bolitas', 'Suelto', { a: 'gluten' }),
-    F('mijo', 'Mijo', '🌻', 'cereal', 'amarillo', 'Croquetitas', 'Suelto'),
+    F('mijo', 'Mijo', '🌻', 'cereal', 'amarillo', 'Croquetitas', 'Suelto', { fe: 1 }),
     F('tortita_maiz', 'Tortita de maíz', '🫔', 'cereal', 'amarillo', 'En tiras', 'Trozos'),
     // Lácteos
     F('yogur', 'Yogur natural', '🥛', 'lacteo', 'blanco', 'Cuchara precargada, entero sin azúcar', 'Con fruta', { a: 'leche' }),
@@ -198,11 +200,11 @@
     F('mantequilla', 'Mantequilla', '🧈', 'lacteo', 'amarillo', 'Para cocinar o untar', 'Para cocinar o untar', { a: 'leche' }),
     // Grasas y semillas
     F('aceite_oliva', 'Aceite de oliva', '🫒', 'grasa', 'verde', 'En crudo sobre cualquier plato', 'En crudo'),
-    F('cacahuete', 'Crema de cacahuete', '🥜', 'grasa', 'marron', 'Muy fina, diluida en yogur o fruta (nunca entero)', 'Untada fina', { a: 'cacahuete', r: true }),
-    F('almendra', 'Almendra molida', '🌰', 'grasa', 'marron', 'Molida en porridge o crema (nunca entera)', 'Molida', { a: 'frutos_secos', r: true }),
+    F('cacahuete', 'Crema de cacahuete', '🥜', 'grasa', 'marron', 'Muy fina, diluida en yogur o fruta (nunca entero)', 'Untada fina', { a: 'cacahuete', r: true, fe: 1 }),
+    F('almendra', 'Almendra molida', '🌰', 'grasa', 'marron', 'Molida en porridge o crema (nunca entera)', 'Molida', { a: 'frutos_secos', r: true, fe: 1 }),
     F('nuez', 'Nuez molida', '🥮', 'grasa', 'marron', 'Molida (nunca entera)', 'Molida', { a: 'frutos_secos', r: true }),
-    F('tahini', 'Tahini', '⚪', 'grasa', 'blanco', 'Diluido en yogur o hummus', 'Untado', { a: 'sesamo' }),
-    F('chia', 'Chía', '⚫', 'grasa', 'marron', 'Hidratada, en porridge', 'En yogur')
+    F('tahini', 'Tahini', '⚪', 'grasa', 'blanco', 'Diluido en yogur o hummus', 'Untado', { a: 'sesamo', fe: 1 }),
+    F('chia', 'Chía', '⚫', 'grasa', 'marron', 'Hidratada, en porridge', 'En yogur', { fe: 1 })
   ];
   N.FOOD_BY_ID = Object.fromEntries(N.FOODS.map((f) => [f.id, f]));
 
@@ -345,4 +347,31 @@
     { id: 'cansado', name: 'Cansado', emoji: '🥱' }, { id: 'molesto', name: 'Molesto', emoji: '😣' },
     { id: 'malito', name: 'Malito', emoji: '🤒' }
   ];
+
+  /* ---------- Actividades ----------------------------------------------
+     timer: se puede cronometrar · goal: minutos diarios recomendados.
+     Boca abajo: la OMS recomienda al menos 30 min al día repartidos
+     mientras el bebé aún no gatea. */
+  N.ACTIVITIES = [
+    { id: 'tummy', name: 'Boca abajo', emoji: '🐢', timer: true, hint: 'Fortalece cuello, espalda y hombros' },
+    { id: 'bath', name: 'Baño', emoji: '🛁', hint: 'Parte de la rutina de noche' },
+    { id: 'walk', name: 'Paseo', emoji: '🌳', timer: true, hint: 'Aire libre y luz natural' },
+    { id: 'play', name: 'Juego en el suelo', emoji: '🧸', timer: true, hint: 'Alcanzar, girar, explorar' },
+    { id: 'reading', name: 'Cuento', emoji: '📖', hint: 'Lenguaje y vínculo' },
+    { id: 'massage', name: 'Masaje', emoji: '🤲', hint: 'Relaja antes de dormir' },
+    { id: 'music', name: 'Música y canciones', emoji: '🎶', hint: '' },
+    { id: 'other', name: 'Otra', emoji: '✨', hint: '' }
+  ];
+  N.TUMMY_GOAL = 30;
+
+  /* ---------- Avisos por defecto ---------- */
+  N.REMINDER_DEFAULTS = {
+    nap: { on: true, before: 10 },        // minutos antes de la siesta prevista
+    bed: { on: true, before: 20 },        // minutos antes de la hora de dormir
+    feed: { on: false, hours: 3 },        // si no hay toma en X horas (de día)
+    appt: { on: true },                   // día anterior 20:00 y 1 h antes
+    vitd: { on: true, time: '10:00' },    // si toma vitamina D y aún no se ha dado
+    allergen: { on: true, time: '10:30' },// alérgeno en curso o a mantener
+    meds: { on: true }                    // próxima dosis pedida al registrar
+  };
 })(window.Nido = window.Nido || {});

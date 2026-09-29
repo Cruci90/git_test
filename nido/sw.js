@@ -2,12 +2,12 @@
    Guarda la app en caché para que abra sin conexión. Los archivos propios se
    sirven desde caché y se actualizan en segundo plano; las fuentes de Google
    se guardan la primera vez que se descargan. Sube VERSION al publicar. */
-const VERSION = 'nido-v2';
+const VERSION = 'nido-v3';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
   './css/nido.css',
-  './js/data.js', './js/core.js', './js/charts.js', './js/media.js', './js/ui.js', './js/sounds.js', './js/actions.js',
+  './js/data.js', './js/core.js', './js/charts.js', './js/media.js', './js/ui.js', './js/sounds.js', './js/actions.js', './js/blwplan.js', './js/activities.js', './js/reminders.js', './js/importers.js',
   './js/views-daily.js', './js/views-care.js', './js/views-more.js', './js/demo.js', './js/app.js'
 ];
 const FONTS = /^https:\/\/fonts\.(googleapis|gstatic)\.com\//;
@@ -19,6 +19,17 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== VERSION && k !== 'nido-fonts').map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
 self.addEventListener('message', (e) => { if (e.data === 'skip-waiting') self.skipWaiting(); });
+
+// Tocar un aviso abre (o enfoca) Nido en la sección correspondiente.
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const hash = (e.notification.data && e.notification.data.hash) || 'hoy';
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    const c = list[0];
+    if (c) { c.postMessage({ go: hash }); return c.focus(); }
+    return self.clients.openWindow('./index.html#' + hash);
+  }));
+});
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;

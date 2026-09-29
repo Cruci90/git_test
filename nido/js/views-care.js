@@ -30,27 +30,50 @@
       const reactions = Object.entries(stats).filter(([, s]) => s.reaction !== 'none');
       const gags = meals.filter((m) => m.gag).length;
 
-      return UI.head('BLW · Alimentación complementaria', start ? `Día ${blwDay} desde el primer bocado (${U.date(start)}) · ${meals.length} comidas registradas` : 'Empieza hacia los 6 meses, cuando se sienta con apoyo', `<button type="button" class="btn primary" data-act="form-meal">${icon('plus')}Nueva comida</button>`) + `
+      const tab = UI.st.seg.blw || 'resumen';
+      const iron = S.ironStats(7);
+      const retry = S.retryFoods(stats);
+      const head = UI.head('BLW · Alimentación complementaria', start ? `Día ${blwDay} desde el primer bocado (${U.date(start)}) · ${meals.length} comidas registradas` : 'Empieza hacia los 6 meses, cuando se sienta con apoyo', `<button type="button" class="btn primary" data-act="form-meal">${icon('plus')}Nueva comida</button>`) +
+        UI.seg('blw', [['resumen', 'Resumen'], ['plan', 'Plan semanal'], ['catalogo', 'Catálogo'], ['comidas', 'Comidas y seguridad']], tab);
+      if (tab === 'plan') return head + W.card('Plan de esta semana', N.BlwPlan.render()) + `<div id="compra">${W.card('Lista de la compra', N.BlwPlan.shopping())}</div>`;
+      if (tab === 'catalogo') return head + this.catalog(stats);
+      if (tab === 'comidas') return head + `<div class="grid-2">
+        ${W.card('Últimas comidas', meals.length ? W.timeline(meals.slice(-20).reverse().map((m) => ({ t: m.time, kind: 'meal', rec: m, col: 'meals' })), { date: true }) : UI.empty('leaf', 'Aún no hay comidas', 'Registra la primera comida para empezar el seguimiento.'))}
+        ${this.safety()}</div>`;
+
+      return head + `
       <div class="grid-blw">
         ${W.card('', `<div class="hundred">
           <div class="ring-box">${Charts.ring(tried, 100, 150, 14, 'r-blw')}<div class="ring-c"><b>${tried}</b><span>de 100</span></div></div>
           <div><h2>Reto 100 alimentos antes del año</h2><p class="muted">${tried ? `Lleva ${tried} alimentos distintos. ${100 - tried > 0 ? `Faltan ${100 - tried}.` : '¡Reto conseguido!'}` : 'Cada alimento nuevo cuenta.'}</p>
           <ul class="cat-bars">${byCat.map((c) => `<li><span>${c.name}</span><span class="cat-track"><i style="width:${(c.tried / c.total) * 100}%;background:${c.color}"></i></span><b>${c.tried}/${c.total}</b></li>`).join('')}</ul></div></div>`, { cls: 'span-2' })}
+        ${this.iron(iron)}
+      </div>
+      <div class="grid-2">
+        ${this.retry(retry)}
         ${W.card('Arcoíris de la semana', `<div class="rainbow">${Object.entries(N.RAINBOW).map(([k, c]) => `<div class="rb ${colorsWeek.has(k) ? 'on' : ''}" data-tip="${c.name}|${colorsWeek.has(k) ? 'Comido esta semana' : 'Aún no esta semana'}"><i style="--rb:${c.hex}"></i><span>${c.name.split(' ')[0]}</span></div>`).join('')}</div>
           <p class="muted small">${colorsWeek.size}/7 colores en los últimos 7 días. La variedad de color es variedad de nutrientes.</p>
           <div class="mini-stats"><span><b>${gags}</b> comidas con arcadas</span><span><b>${meals.filter((m) => m.choke).length}</b> atragantamientos</span><span><b>${reactions.length}</b> alimentos con reacción</span></div>`)}
       </div>
-      ${W.card('Alérgenos', `<p class="muted small pad-b">Introduce cada alérgeno solo, por la mañana y de uno en uno. Tras 3 exposiciones sin reacción se considera introducido; después mantenlo 1–2 veces por semana.</p>
+      ${W.card('Alérgenos', `<p class="muted small pad-b">Introduce cada alérgeno solo, por la mañana y de uno en uno. Tras 3 exposiciones sin reacción se considera introducido; después mantenlo 1–2 veces por semana. Si tiene eczema grave o ya reaccionó a un alimento, consulta con tu pediatra antes de empezar.</p>
         <div class="allergens">${als.map((a) => `<div class="al al-${a.state}">
           <span class="al-e">${a.emoji}</span><b>${a.name}</b>
           <span class="al-dots" aria-label="${a.exposures} de 3 exposiciones">${[0, 1, 2].map((i) => `<i class="${i < a.exposures ? 'on' : ''}"></i>`).join('')}</span>
           ${UI.pill(AL_STATE[a.state].name, AL_STATE[a.state].tone)}
-          <small>${a.last ? `última: ${U.relDay(U.dayKey(a.last))}` : a.foods.map((f) => f.name).slice(0, 2).join(', ')}</small></div>`).join('')}</div>`)}
-      ${this.catalog(stats)}
-      <div class="grid-2">
-        ${W.card('Últimas comidas', meals.length ? W.timeline(meals.slice(-8).reverse().map((m) => ({ t: m.time, kind: 'meal', rec: m, col: 'meals' })), { date: true }) : UI.empty('leaf', 'Aún no hay comidas', 'Registra la primera comida para empezar el seguimiento.'))}
-        ${this.safety()}
-      </div>`;
+          <small>${a.last ? `última: ${U.relDay(U.dayKey(a.last))}` : a.foods.map((f) => f.name).slice(0, 2).join(', ')}</small></div>`).join('')}</div>`)}`;
+    },
+    iron(st) {
+      const pct = st.meals ? Math.round((st.iron / st.meals) * 100) : 0;
+      const tone = pct >= 80 ? 'good' : pct >= 50 ? 'warn' : 'crit';
+      return W.card('Hierro esta semana', `<div class="iron-box"><div class="ring-box sm">${Charts.ring(st.iron, Math.max(1, st.meals), 84, 9, 'r-iron')}<div class="ring-c"><b>${st.iron}</b><span>de ${st.meals}</span></div></div>
+        <div><p>${UI.pill(`${pct} % de las comidas`, tone)}</p><p class="muted small">${st.heme} con hierro hemo (carne o pescado) · ${st.boosted} vegetales acompañadas de vitamina C</p></div></div>
+        <p class="muted small pad-t">Desde los 6 meses sus reservas de hierro bajan. Intenta que cada comida lleve una fuente de hierro; si es vegetal (legumbres, huevo, avena), acompáñala de fruta o verdura rica en vitamina C.</p>`);
+    },
+    retry(list) {
+      return W.card('Volver a ofrecer', list.length ? `<p class="muted small pad-b">Rechazar un sabor nuevo es normal. Muchos bebés lo aceptan tras 8–15 exposiciones: ofrécelo junto a algo que ya le guste, sin insistir.</p>
+        <ul class="retry">${list.slice(0, 6).map((x) => `<li><button type="button" class="retry-it" data-act="form-meal" data-food="${x.id}"><span class="fe">${x.food.emoji}</span><span><b>${x.food.name}</b><small>${x.status === 'disliked' ? 'no le gustó' : 'apenas lo probó'} · última vez ${U.relDay(U.dayKey(x.last))}</small></span>
+          <span class="retry-bar" aria-label="${x.tries} de ${S.RETRY_TARGET} exposiciones"><i style="width:${(x.tries / S.RETRY_TARGET) * 100}%"></i></span><em>${x.tries}/${S.RETRY_TARGET}</em></button></li>`).join('')}</ul>`
+        : '<p class="muted">Nada pendiente: todo lo que ha probado le ha gustado o lo come bien.</p>');
     },
     catalog(stats) {
       const fl = UI.st.foodFilter, q = UI.st.foodQuery.toLowerCase();
@@ -140,6 +163,8 @@
     }
   };
 
+  N.actions['dose-cancel'] = (el) => { Store.remove('reminders', el.dataset.id); UI.toast('Aviso cancelado'); };
+
   /* ======================= SALUD ======================= */
   V.salud = {
     render() {
@@ -188,7 +213,9 @@
       const meds = Store.list('meds').sort((a, b) => b.time - a.time);
       const temps = Store.list('temps').sort((a, b) => b.time - a.time);
       const lastBy = {}; meds.forEach((m) => { if (!lastBy[m.name]) lastBy[m.name] = m; });
-      return `<div class="grid-2">
+      const doses = Store.list('reminders').filter((r) => r.at > Date.now()).sort((a, b) => a.at - b.at);
+      return `${doses.length ? `<div class="suggest">${icon('bell')}<span>${doses.map((d) => `<b>${U.esc(d.title.replace('Próxima dosis: ', ''))}</b> a las ${U.time(d.at)}${U.dayKey(d.at) !== U.today() ? ' (' + U.relDay(U.dayKey(d.at)) + ')' : ''}`).join(' · ')}</span><button type="button" class="btn soft sm" data-act="dose-cancel" data-id="${doses[0].id}">Cancelar aviso</button></div>` : ''}
+      <div class="grid-2">
         ${W.card('Última dosis de cada medicamento', Object.values(lastBy).length ? `<ul class="rows">${Object.values(lastBy).map((m) => `<li><button type="button" class="row" data-act="form-med" data-id="${m.id}"><span><b>${U.esc(m.name)}</b></span><b>${m.dose ? U.num(m.dose, m.dose % 1 ? 1 : 0) + ' ' + m.unit : ''}</b><small data-ago="${m.time}"></small></button></li>`).join('')}</ul>` : UI.empty('pill', 'Sin medicación', 'Registra dosis para saber cuándo tocó la última.'))}
         ${W.card('Temperatura', temps.length ? `<ul class="rows">${temps.slice(0, 12).map((t) => `<li><button type="button" class="row" data-act="form-temp" data-id="${t.id}"><span>${U.date(t.time)} · ${U.time(t.time)}</span><b class="${t.value >= 38 ? 'txt-crit' : ''}">${U.num(t.value)} ºC</b><small>${t.method}</small></button></li>`).join('')}</ul>` : UI.empty('thermo', 'Sin registros', 'Anota la temperatura si tiene fiebre para enseñarla en consulta.'))}
       </div>

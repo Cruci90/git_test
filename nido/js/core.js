@@ -90,12 +90,12 @@
 
   /* ======================= Almacenamiento ======================= */
   const KEY = 'nido.v1';
-  const COLLECTIONS = ['sleeps', 'feeds', 'diapers', 'meals', 'measures', 'appointments', 'vaccines', 'meds', 'temps', 'diary', 'events', 'pumps'];
+  const COLLECTIONS = ['sleeps', 'feeds', 'diapers', 'meals', 'measures', 'appointments', 'vaccines', 'meds', 'temps', 'diary', 'events', 'pumps', 'activities', 'reminders'];
 
   const empty = () => ({
     version: 1, activeBabyId: null,
     settings: { theme: 'auto', caregiver: 'Mamá' },
-    babies: [], milestones: {}, teeth: {}, timers: {},
+    babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sent: {},
     ...Object.fromEntries(COLLECTIONS.map((c) => [c, []]))
   });
 
@@ -301,12 +301,28 @@
     };
   };
 
+  /* ---- Actividades ---- */
+  S.activities = () => Store.list('activities').sort((a, b) => a.time - b.time);
+  S.activeActivity = () => { const t = Store.state.timers.activity; return t && t.babyId === Store.state.activeBabyId ? t : null; };
+  S.activityMinutes = (kind, key = U.today()) => {
+    let min = U.sum(S.onDay(S.activities(), key).filter((a) => a.kind === kind), (a) => a.dur || 0);
+    const t = S.activeActivity();
+    if (t && t.kind === kind && U.dayKey(t.start) === key) min += (Date.now() - t.start) / MIN;
+    return min;
+  };
+
+  /* ---- Avisos: ajustes con valores por defecto ---- */
+  S.reminderSettings = () => {
+    const cur = Store.state.settings.reminders || {};
+    return Object.fromEntries(Object.entries(N.REMINDER_DEFAULTS).map(([k, v]) => [k, Object.assign({}, v, cur[k])]));
+  };
+
   /* ---- Tomas y pañales ---- */
   S.feeds = () => Store.list('feeds').sort((a, b) => a.time - b.time);
   S.diapers = () => Store.list('diapers').sort((a, b) => a.time - b.time);
   S.onDay = (arr, key, f = 'time') => arr.filter((x) => U.dayKey(x[f]) === key);
   S.lastBreastSide = () => {
-    const f = S.feeds().filter((x) => x.kind === 'breast').pop();
+    const f = S.feeds().filter((x) => x.kind === 'breast' && !x.sideUnknown).pop();
     if (!f) return null;
     return f.lastSide || (f.durR > f.durL ? 'R' : 'L');
   };
@@ -347,6 +363,28 @@
     else if (exposures.length) state = 'progress';
     return { ...al, foods, exposures: exposures.length, last, daysSince, state };
   });
+
+  /* Hierro: a partir de los 6 meses las reservas se agotan y cada comida
+     debería llevar una fuente de hierro. El hierro vegetal se absorbe
+     mejor acompañado de vitamina C. */
+  S.mealIron = (m) => {
+    const fs = (m.foods || []).map((f) => N.FOOD_BY_ID[f.id]).filter(Boolean);
+    const heme = fs.some((f) => f.fe === 2), plant = fs.some((f) => f.fe === 1), vc = fs.some((f) => f.vc);
+    return { iron: heme || plant, heme, plant, vc, boosted: plant && vc };
+  };
+  S.ironStats = (days = 7, now = Date.now()) => {
+    const meals = S.meals().filter((m) => m.time > now - days * DAY && m.time <= now);
+    const info = meals.map(S.mealIron);
+    return { meals: meals.length, iron: info.filter((i) => i.iron).length, heme: info.filter((i) => i.heme).length, boosted: info.filter((i) => i.boosted).length };
+  };
+  /* Volver a ofrecer: rechazados o apenas probados. Muchos bebés necesitan
+     entre 8 y 15 exposiciones para aceptar un sabor nuevo. */
+  S.RETRY_TARGET = 15;
+  S.retryFoods = (stats = S.foodStats()) => Object.entries(stats)
+    .filter(([, st]) => st.reaction === 'none' && st.tries < S.RETRY_TARGET && (st.status === 'disliked' || st.amountAvg < 1.5))
+    .map(([id, st]) => ({ id, food: N.FOOD_BY_ID[id], ...st, daysSince: Math.floor((Date.now() - st.last) / DAY) }))
+    .filter((x) => x.food)
+    .sort((a, b) => a.last - b.last);
 
   /* ---- Crecimiento ---- */
   S.measures = () => Store.list('measures').sort((a, b) => U.parseDay(a.date) - U.parseDay(b.date));
@@ -405,6 +443,7 @@
     S.onDay(S.meals(), key).forEach((m) => out.push({ t: m.time, kind: 'meal', rec: m, col: 'meals' }));
     S.onDay(Store.list('meds'), key).forEach((m) => out.push({ t: m.time, kind: 'med', rec: m, col: 'meds' }));
     S.onDay(Store.list('temps'), key).forEach((m) => out.push({ t: m.time, kind: 'temp', rec: m, col: 'temps' }));
+    S.onDay(S.activities(), key).forEach((a) => out.push({ t: a.time, kind: 'activity', rec: a, col: 'activities' }));
     return out.filter((x) => U.dayKey(x.t) === key || x.kind === 'sleep').sort((a, b) => b.t - a.t);
   };
 
@@ -452,6 +491,11 @@
     menu: '<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
     phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+    bell: '<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4Z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+    cart: '<path d="M3 4h2l2.4 11h10.2L20 8H6.2"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+    repeat: '<path d="M4 12a8 8 0 0 1 14-5.3L20 9"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5.3L4 15"/><path d="M4 20v-5h5"/>',
+    drop: '<path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11Z"/>',
+    ball: '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4a12 12 0 0 1 0 16M12 4a12 12 0 0 0 0 16"/>',
     bed: '<path d="M3 18V8M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5"/><circle cx="7" cy="11" r="1.8"/>'
   };
   N.icon = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;
