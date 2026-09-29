@@ -1,0 +1,8 @@
+{
+  "name": "nido-relay",
+  "private": true,
+  "type": "module",
+  "description": "Relé de sincronización cifrada de extremo a extremo para Nido. Sin dependencias.",
+  "engines": { "node": ">=18" },
+  "scripts": { "start": "node relay.mjs" }
+}

@@ -211,11 +211,12 @@
         ${W.card('Quién registra', `<p>Ahora mismo: <b>${U.esc(s.caregiver)}</b></p><button type="button" class="btn soft" data-act="caregiver">${icon('users')}Cambiar cuidador</button>`)}
         ${W.card('Bebés', `<div class="baby-list">${Store.state.babies.map((b) => `<button type="button" class="baby-row" data-act="pick-edit-baby" data-id="${b.id}"><span class="avatar" style="--av:${b.sex === 'm' ? 'var(--c-sleep)' : 'var(--c-feed)'}">${U.esc(b.name[0])}</span><span><b>${U.esc(b.name)}</b><small>${U.ageText(b.birth)}</small></span>${icon('edit')}</button>`).join('')}
           <button type="button" class="baby-row add" data-act="new-baby"><span class="avatar">+</span><span><b>Añadir bebé</b></span></button></div>`)}
-        ${W.card('Tus datos', `<p class="muted small">Todo se guarda solo en este dispositivo: registros ${(bytes / 1024).toFixed(0)} KB<span id="storage-est"></span>. Nada sale de tu navegador. La copia incluye las fotos.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
+        ${W.card('Tus datos', `<p class="muted small">Todo se guarda en este dispositivo: registros ${(bytes / 1024).toFixed(0)} KB<span id="storage-est"></span>. ${N.Sync.enabled ? 'Se comparte con tu familia cifrado de extremo a extremo.' : 'Nada sale de tu navegador.'} La copia incluye las fotos.${Store.persistent ? '' : ' <b class="txt-warn">Este navegador no permite guardar: los cambios se perderán al cerrar.</b>'}</p>
           <div class="btn-row"><button type="button" class="btn soft" data-act="export">${icon('download')}Exportar copia</button><button type="button" class="btn soft" data-act="import">${icon('upload')}Importar copia</button><button type="button" class="btn soft" data-act="import-napper">${icon('moon')}Importar desde Napper</button></div>
           <div class="btn-row"><button type="button" class="btn soft" data-act="load-demo">${icon('spark')}Cargar datos de ejemplo</button><button type="button" class="btn ghost danger" data-act="wipe">${icon('trash')}Borrar todo</button></div>`)}
         ${W.card('Fuentes', `<ul class="sources"><li>Curvas de crecimiento: OMS, Child Growth Standards (2006).</li><li>Calendario vacunal: Consejo Interterritorial del SNS, calendario común 2025.</li><li>Sueño: recomendaciones de la AASM y la AAP.</li><li>BLW y alérgenos: AEP y ESPGHAN.</li></ul><p class="muted small">Nido es una herramienta de registro. No sustituye el consejo de tu pediatra.</p>`)}
         ${W.card('Nido en tu móvil', this.install())}
+        ${W.card('Compartir con otro cuidador', N.Sync.card(), { cls: 'span-2' })}
         ${W.card('Avisos', N.Reminders.card(), { cls: 'span-2' })}
       </div>`;
     },
@@ -239,8 +240,8 @@
     orig(el);
   })(N.actions.seg);
   N.actions['pick-edit-baby'] = (el) => { Store.state.activeBabyId = el.dataset.id; Store.commit(); N.Forms.baby(S.baby()); };
-  N.actions['load-demo'] = () => UI.confirm('¿Cargar datos de ejemplo?', 'Se sustituirán los datos actuales por tres semanas de ejemplo de Lucía, 6 meses.', 'Cargar ejemplo', () => { N.seedDemo(); N.Media.gc(); UI.go('hoy'); UI.toast('Datos de ejemplo cargados'); });
-  N.actions.wipe = () => UI.confirm('¿Borrar todos los datos?', 'Se eliminarán todos los bebés y registros de este dispositivo. Exporta antes una copia si quieres conservarlos.', 'Borrar todo', () => { Store.reset(); N.Media.clear(); UI.go('hoy'); });
+  N.actions['load-demo'] = () => UI.confirm('¿Cargar datos de ejemplo?', `Se sustituirán los datos actuales por tres semanas de ejemplo de Lucía, 6 meses.${N.Sync.enabled ? ' Este móvil dejará de compartir con la familia (los demás no se ven afectados).' : ''}`, 'Cargar ejemplo', () => { if (N.Sync.enabled) N.Sync.leave(); N.seedDemo(); N.Media.gc(); UI.go('hoy'); UI.toast('Datos de ejemplo cargados'); });
+  N.actions.wipe = () => UI.confirm('¿Borrar todos los datos?', `Se eliminarán todos los bebés y registros de este dispositivo. Exporta antes una copia si quieres conservarlos.${N.Sync.enabled ? ' Este móvil dejará de compartir; los datos de la familia en el servidor y en los otros móviles no se tocan.' : ''}`, 'Borrar todo', () => { if (N.Sync.enabled) N.Sync.leave(); Store.reset(); N.Media.clear(); UI.go('hoy'); });
   /* La copia incluye las fotos de IndexedDB para poder restaurarlo todo. */
   const backup = async () => Object.assign({}, Store.state, { media: await N.Media.exportAll().catch(() => ({})) });
   N.actions.export = async () => {

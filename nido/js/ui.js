@@ -44,6 +44,7 @@
       <nav class="side-links">${UI.NAV.map((n) => `
         <a href="#${n.id}" class="side-link ${n.cls || ''} ${cur === n.id ? 'on' : ''}" ${cur === n.id ? 'aria-current="page"' : ''}>${icon(n.icon)}<span>${n.name}</span></a>`).join('')}
       </nav>
+      ${N.Sync && N.Sync.enabled ? `<a class="side-sync" href="#ajustes">${N.Sync.navLine()}</a>` : ''}
       <p class="side-foot">Registrando como <button type="button" class="link" data-act="caregiver">${U.esc(Store.state.settings.caregiver)}</button></p>`;
     const tab = document.getElementById('tabbar');
     const main = UI.NAV.filter((n) => n.main);

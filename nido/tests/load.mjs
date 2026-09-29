@@ -7,8 +7,9 @@ const dir = new URL('../js/', import.meta.url);
 export function loadNido(files = ['data.js', 'core.js', 'demo.js']) {
   const mem = new Map();
   const ctx = {
-    console, Math, Date, JSON, Intl,
-    document: { addEventListener() {}, getElementById: () => null, querySelectorAll: () => [] },
+    console, Math, Date, JSON, Intl, crypto: globalThis.crypto, fetch: globalThis.fetch, TextEncoder, TextDecoder, btoa, atob, setTimeout, clearTimeout, Uint8Array, Promise,
+    navigator: { onLine: true },
+    document: { hidden: false, addEventListener() {}, getElementById: () => null, querySelectorAll: () => [] },
     localStorage: { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) }
   };
   ctx.window = ctx;

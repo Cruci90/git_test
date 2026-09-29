@@ -78,6 +78,7 @@
     N.Media.migrate().then(() => N.Media.gc()).catch(() => {});
     try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) { /* opcional */ }
     registerOffline();
+    N.Sync.start();
   }
 
   function localStorageFlag(k, v) {

@@ -2,12 +2,12 @@
    Guarda la app en caché para que abra sin conexión. Los archivos propios se
    sirven desde caché y se actualizan en segundo plano; las fuentes de Google
    se guardan la primera vez que se descargan. Sube VERSION al publicar. */
-const VERSION = 'nido-v3';
+const VERSION = 'nido-v4';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
   './css/nido.css',
-  './js/data.js', './js/core.js', './js/charts.js', './js/media.js', './js/ui.js', './js/sounds.js', './js/actions.js', './js/blwplan.js', './js/activities.js', './js/reminders.js', './js/importers.js',
+  './js/data.js', './js/core.js', './js/charts.js', './js/media.js', './js/ui.js', './js/sounds.js', './js/actions.js', './js/blwplan.js', './js/activities.js', './js/reminders.js', './js/importers.js', './js/sync.js',
   './js/views-daily.js', './js/views-care.js', './js/views-more.js', './js/demo.js', './js/app.js'
 ];
 const FONTS = /^https:\/\/fonts\.(googleapis|gstatic)\.com\//;

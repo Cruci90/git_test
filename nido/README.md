@@ -24,6 +24,7 @@ Funciona sin servidor, sin cuenta y sin dependencias. Los datos se quedan en el 
 | **Actividades** | Tiempo boca abajo con cronómetro y objetivo de 30 min diarios (hasta que gatea), paseo, juego, baño, cuento, masaje y música. |
 | **Avisos** | Antes de cada siesta prevista y de la hora de dormir, si pasa tiempo sin toma, citas (víspera y 1 h antes), vitamina D, alérgeno del plan y próxima dosis de un medicamento. Como notificación del sistema si se da permiso y siempre dentro de la app. Funcionan con Nido abierta (también en segundo plano); con la app cerrada no, porque eso exige un servidor de notificaciones push. |
 | **Importar desde Napper** | Lee `napper_events.csv`, `all_events.json` o `sleep_logs_full.json` de la herramienta comunitaria [napper-export](https://github.com/brittraee/napper-export). Convierte BED_TIME + NIGHT_WAKING + WOKE_UP en tramos de noche, siestas, tomas, biberones y medicación; salta duplicados, así que se puede importar varias veces. |
+| **Compartir** | Varios cuidadores con los mismos datos al momento, **cifrado de extremo a extremo**: el servidor (`server/`) solo reenvía bloques ilegibles. Se invita con un código; gana el cambio más reciente; funciona sin conexión y envía al volver; se puede cambiar la clave y borrar la familia del servidor. Ver [`server/README.md`](server/README.md). |
 | **Calendario** | Vista mensual con citas, vacunas previstas, hitos, eventos y el "cumplemés". |
 | **Hitos y dientes** | 23 hitos del desarrollo con su rango habitual frente a la edad actual, y odontograma de los 20 dientes de leche (notación FDI). |
 | **Diario** | Recuerdos con estado de ánimo y foto. Las fotos se reducen a 1000 px y se guardan en IndexedDB, sin el límite de ~5 MB de localStorage. |
@@ -49,6 +50,8 @@ js/blwplan.js       Generador del plan semanal de BLW y lista de la compra
 js/activities.js    Actividades y cronómetro de tiempo boca abajo
 js/reminders.js     Motor de avisos y notificaciones
 js/importers.js     Importador de Napper (CSV y JSON de napper-export)
+js/sync.js          Sincronización cifrada entre cuidadores y su pantalla
+server/             Relé de sincronización (Node sin dependencias, Dockerfile)
 js/charts.js        Gráficos SVG propios: barras de sueño, patrón 24 h, curva OMS,
                     anillo de progreso, mini barras y reloj del día
 js/ui.js            Enrutador por hash, navegación, hoja inferior, campos de formulario,
@@ -77,7 +80,11 @@ cd nido
 npm test
 ```
 
-Cubren el plan semanal de BLW (un nuevo al día, un alérgeno cada vez, nada con reacción, hierro), el importador de Napper (noches partidas por despertares, duplicados, CSV con comillas), hierro, volver a ofrecer, avisos, la edad en meses de calendario, la edad corregida, los percentiles OMS (contrastados con valores publicados de la tabla de puntuaciones z), el reparto del sueño entre días, el plan de siestas, el estado de alimentos y alérgenos y la coherencia de la demo.
+Cubren la sincronización (dos dispositivos contra el servidor real: unirse, cambios, borrados, conflictos, cronómetros, cambio de clave y que el servidor no guarde nada legible), el plan semanal de BLW (un nuevo al día, un alérgeno cada vez, nada con reacción, hierro), el importador de Napper (noches partidas por despertares, duplicados, CSV con comillas), hierro, volver a ofrecer, avisos, la edad en meses de calendario, la edad corregida, los percentiles OMS (contrastados con valores publicados de la tabla de puntuaciones z), el reparto del sueño entre días, el plan de siestas, el estado de alimentos y alérgenos y la coherencia de la demo.
+
+## Publicarlo
+
+Para usarlo en los móviles basta con servir la carpeta `nido/` por HTTPS, por ejemplo con GitHub Pages (Ajustes del repositorio → Pages). Para compartir entre cuidadores, despliega también el servidor de `server/`.
 
 ## Aviso
 
