@@ -4,6 +4,7 @@
   const SECTIONS = window.PD1_SECTIONS;
   const EXAM = window.PD1_EXAM;
   const LIMITS = window.PD1_LIMITS;
+  const COMP = window.PD1_COMPONENTS;
   const SEC = Object.fromEntries(SECTIONS.map(s => [s.id, s]));
   const PASS_PCT = 68;
   const STORE_KEY = 'pd1-study-v1';
@@ -386,6 +387,30 @@
             </div>
           </details>
         </section>`).join('')}
+      ${COMP ? `<section class="card sec-guide" style="--sc:${SEC.ui.color}">
+        <div class="sec-head">
+          <span class="pill">UI</span>
+          <h2>Componentes base (Lightning Component Reference)</h2>
+          <button class="btn small right" data-practice-topic="Componentes base">Practicar</button>
+        </div>
+        <ul class="keynotes">${COMP.intro.map(n => `<li>${n}</li>`).join('')}</ul>
+        <details open>
+          <summary>Sintaxis LWC vs Aura</summary>
+          <table class="tbl">
+            <thead><tr><th></th><th>Ejemplo</th><th>Regla</th></tr></thead>
+            <tbody>${COMP.syntax.map(([k, ex, rule]) => `<tr><td><b>${esc(k)}</b></td><td><code>${esc(ex)}</code></td><td>${esc(rule)}</td></tr>`).join('')}</tbody>
+          </table>
+        </details>
+        ${COMP.groups.map(g => `<details>
+          <summary>${esc(g.name)} (${g.items.length})</summary>
+          <dl class="comp-list">${g.items.map(([n, d]) => `<dt><code>${esc(n)}</code></dt><dd>${esc(d)}</dd>`).join('')}</dl>
+        </details>`).join('')}
+        <details open>
+          <summary>Consejos para el examen</summary>
+          <ul class="keynotes">${COMP.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+        </details>
+        <p class="small muted">Fuente: <a href="${esc(COMP.url)}" target="_blank" rel="noopener">Lightning Component Reference</a></p>
+      </section>` : ''}
       <section class="card">
         <h2>Governor limits principales</h2>
         <table class="tbl">

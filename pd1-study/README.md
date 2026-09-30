@@ -16,6 +16,7 @@ cd pd1-study && python3 build.py
 
 - **Inicio**: datos del examen, pesos, porcentaje de acierto por sección y accesos rápidos.
 - **Guía**: objetivos oficiales resumidos, apuntes clave por sección, temas del banco, tabla de governor limits y enlaces oficiales.
+- **Componentes base**: resumen de la [Lightning Component Reference](https://developer.salesforce.com/docs/platform/lightning-component-reference/guide/get-started.html) (sintaxis LWC frente a Aura, componentes por categoría, módulos y consejos para el examen) con preguntas propias.
 - **Práctica**: por secciones o temas, con corrección y explicación inmediatas. Puedes filtrar por preguntas *no vistas* o *falladas*.
 - **Examen simulado**: 60, 30 o 15 preguntas repartidas según los pesos oficiales, con cronómetro (105 min para 60 preguntas) y la opción de marcar preguntas para revisarlas. Da un resultado de aprobado o suspenso (68 %), un desglose por sección y la revisión con explicaciones.
 - **Selección inteligente**: se priorizan las preguntas que aún no has visto y las que fallaste.
@@ -91,7 +92,8 @@ pd1-study/
         ├── questions-fund.js   # Developer Fundamentals
         ├── questions-auto.js   # Process Automation and Logic
         ├── questions-ui.js     # User Interface
-        └── questions-test.js   # Testing, Debugging, and Deployment
+        ├── questions-test.js   # Testing, Debugging, and Deployment
+        └── questions-components.js  # componentes base (sección User Interface)
 ```
 
 Para añadir preguntas al banco, agrega objetos al archivo de la sección que corresponda en `src/data/` y ejecuta `python3 build.py`.

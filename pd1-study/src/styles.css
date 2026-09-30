@@ -303,3 +303,13 @@ legend { font-weight: 700; margin-bottom: 6px; }
 }
 .modal-box p { margin: 0 0 16px; }
 .right-row { justify-content: flex-end; }
+
+/* Referencia de componentes */
+.comp-list { display: grid; grid-template-columns: minmax(180px, 300px) 1fr; gap: 8px 16px; margin: 8px 0 0; }
+.comp-list dt code { color: var(--sc); font-weight: 600; }
+.comp-list dd { margin: 0; }
+.tbl code { word-break: break-word; }
+@media (max-width: 640px) {
+  .comp-list { grid-template-columns: 1fr; gap: 2px; }
+  .comp-list dd { margin-bottom: 8px; }
+}
