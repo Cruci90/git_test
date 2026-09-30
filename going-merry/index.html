@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Going Merry 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Pirata+One&display=swap">
+<style>
+/* Layout: escenario 3D a sangre completa + un único panel de bitácora flotante (izquierda en escritorio, hoja inferior en móvil) */
+:root {
+  --sea: #0c1d2e;
+  --panel: rgba(11, 24, 38, 0.9);
+  --panel-solid: #0f2236;
+  --fg: #eef3f6;
+  --muted: #a3b6c6;
+  --line: rgba(214, 230, 240, 0.14);
+  --straw: #f2b632;
+  --straw-ink: #1d1604;
+  --band: #cf3a2e;
+  --display: "Pirata One", Georgia, "Times New Roman", serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--sea);
+  color: var(--fg);
+  font: 14px/1.5 var(--body);
+  overflow: hidden;
+}
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+#labels { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.tag {
+  position: absolute; left: 0; top: 0;
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 10px 5px 8px;
+  font: 600 12px/1 var(--body);
+  color: var(--fg);
+  background: rgba(11, 24, 38, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background .15s, color .15s;
+}
+.tag::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--straw); flex: none; }
+.tag:hover { background: var(--panel-solid); }
+.tag.active { background: var(--straw); color: var(--straw-ink); border-color: transparent; }
+.tag.active::before { background: var(--band); }
+
+.panel {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+  left: 16px;
+  width: 310px;
+  max-height: calc(100% - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .35);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.eyebrow {
+  margin: 0;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
+}
+h1 {
+  margin: 2px 0 0;
+  font: 400 40px/1 var(--display);
+  color: var(--straw);
+  text-wrap: balance;
+}
+.icon-btn {
+  flex: none;
+  width: 32px; height: 32px;
+  display: grid; place-items: center;
+  background: transparent; color: var(--fg);
+  border: 1px solid var(--line); border-radius: 8px;
+  font: 600 16px/1 var(--body);
+  cursor: pointer;
+}
+.panel-body {
+  display: flex; flex-direction: column; gap: 18px;
+  padding: 14px 16px 16px;
+  overflow-y: auto;
+  min-height: 0;
+}
+h2 {
+  margin: 0 0 8px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted);
+}
+.seg {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  padding: 3px; gap: 3px;
+  background: rgba(255, 255, 255, .06);
+  border-radius: 10px;
+}
+.seg button {
+  padding: 8px 4px;
+  font: 600 13px/1.1 var(--body);
+  color: var(--muted);
+  background: transparent;
+  border: 0; border-radius: 8px;
+  cursor: pointer;
+}
+.seg button[aria-pressed="true"] { background: var(--straw); color: var(--straw-ink); }
+.range { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; font-size: 13px; color: var(--muted); }
+.range[hidden] { display: none !important; }
+.range input { width: 100%; accent-color: var(--straw); }
+.toggles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 12px; }
+.toggles label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.toggles input { accent-color: var(--straw); width: 16px; height: 16px; margin: 0; }
+
+.group + .group { margin-top: 10px; }
+.group h3 { margin: 0 0 4px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.rooms { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.rooms button {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 10px;
+  font: 500 14px/1.2 var(--body);
+  color: var(--fg); text-align: left;
+  background: transparent;
+  border: 0; border-radius: 8px;
+  cursor: pointer;
+}
+.rooms button:hover { background: rgba(255, 255, 255, .06); }
+.rooms button.active { background: rgba(242, 182, 50, .16); color: var(--straw); }
+.chip {
+  flex: none;
+  font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 2px 6px;
+}
+.info {
+  padding: 12px;
+  background: rgba(255, 255, 255, .05);
+  border-radius: 10px;
+}
+.info h3 { margin: 0 0 4px; font: 400 24px/1.1 var(--display); color: var(--fg); }
+.info p { margin: 0; color: var(--muted); max-width: 65ch; }
+.hint { margin: 0; font-size: 12px; color: var(--muted); }
+
+button:focus-visible, input:focus-visible, .tag:focus-visible {
+  outline: 2px solid var(--straw); outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .panel {
+    top: auto; right: 16px; width: auto;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+    max-height: 50%;
+  }
+  h1 { font-size: 32px; }
+  .tag { font-size: 11px; padding: 4px 8px 4px 6px; }
+}
+</style>
+</head>
+<body>
+
+<div id="stage" aria-label="Modelo 3D del Going Merry"></div>
+<div id="labels"></div>
+
+<aside class="panel" id="panel">
+  <div class="panel-head">
+    <div>
+      <p class="eyebrow">Carabela de los Sombrero de Paja</p>
+      <h1>Going Merry</h1>
+    </div>
+    <button class="icon-btn" id="collapse" aria-expanded="true" aria-controls="panelBody" aria-label="Plegar panel">–</button>
+  </div>
+  <div class="panel-body" id="panelBody">
+    <section>
+      <h2>Vista</h2>
+      <div class="seg" role="group" aria-label="Modo de vista">
+        <button type="button" id="mExt" data-mode="ext" aria-pressed="true">Exterior</button>
+        <button type="button" id="mCut" data-mode="cut" aria-pressed="false">Corte</button>
+        <button type="button" id="mXray" data-mode="xray" aria-pressed="false">Rayos X</button>
+      </div>
+      <label class="range" id="cutRow" hidden>
+        Profundidad del corte
+        <input type="range" id="cut" min="0" max="100" value="90">
+      </label>
+      <div class="toggles">
+        <label><input type="checkbox" id="tRoof" checked> Cubierta</label>
+        <label><input type="checkbox" id="tSea" checked> Mar</label>
+        <label><input type="checkbox" id="tLabels" checked> Etiquetas</label>
+        <label><input type="checkbox" id="tSpin" checked> Girar solo</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Recorrido</h2>
+      <div class="group">
+        <h3>En cubierta</h3>
+        <ul class="rooms" id="roomsTop"></ul>
+      </div>
+      <div class="group">
+        <h3>Bajo cubierta</h3>
+        <ul class="rooms" id="roomsBelow"></ul>
+      </div>
+    </section>
+
+    <section class="info" id="info" aria-live="polite">
+      <h3 id="infoTitle">Going Merry</h3>
+      <p id="infoText"></p>
+    </section>
+
+    <p class="hint">Arrastra para girar · rueda o pellizco para acercar · clic derecho o dos dedos para desplazar.</p>
+  </div>
+</aside>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Generador pseudoaleatorio con semilla: el barco sale igual en cada carga
+  let seed = 7;
+  const rand = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+  /* ---------- Escena ---------- */
+  const stage = document.getElementById("stage");
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(stage.clientWidth, stage.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.localClippingEnabled = true;
+  stage.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = (() => {
+    const c = document.createElement("canvas"); c.width = 4; c.height = 256;
+    const g = c.getContext("2d");
+    const grad = g.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0, "#4f8fc4"); grad.addColorStop(0.6, "#a9d0e8"); grad.addColorStop(1, "#d8ecf5");
+    g.fillStyle = grad; g.fillRect(0, 0, 4, 256);
+    return new THREE.CanvasTexture(c);
+  })();
+  scene.fog = new THREE.Fog(0xcfe6f2, 70, 190);
+
+  const camera = new THREE.PerspectiveCamera(45, stage.clientWidth / stage.clientHeight, 0.1, 600);
+  camera.position.set(24, 10, 22);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 3, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 2;
+  controls.maxDistance = 80;
+  controls.maxPolarAngle = Math.PI * 0.95;
+  controls.autoRotate = !reduceMotion;
+  controls.autoRotateSpeed = 0.6;
+
+  scene.add(new THREE.HemisphereLight(0xe4f2ff, 0x5a4630, 0.7));
+  const sun = new THREE.DirectionalLight(0xfff0d4, 0.95);
+  sun.position.set(18, 32, 14);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  Object.assign(sun.shadow.camera, { left: -18, right: 18, top: 18, bottom: -18, near: 1, far: 90 });
+  sun.shadow.bias = -0.0006;
+  scene.add(sun);
+
+  /* ---------- Materiales y texturas ---------- */
+  const cutPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 1000);
+  const shellMats = [];
+  function shell(params) {
+    const m = new THREE.MeshStandardMaterial(Object.assign({
+      side: THREE.DoubleSide, clippingPlanes: [cutPlane], clipShadows: true, roughness: 0.82
+    }, params));
+    shellMats.push(m);
+    return m;
+  }
+  const mat = (color, extra) => new THREE.MeshStandardMaterial(Object.assign({ color, roughness: 0.75 }, extra));
+
+  function plankTex(base, line, rows, cols) {
+    const c = document.createElement("canvas"); c.width = c.height = 512;
+    const g = c.getContext("2d");
+    g.fillStyle = base; g.fillRect(0, 0, 512, 512);
+    const rh = 512 / rows;
+    for (let r = 0; r < rows; r++) {
+      g.fillStyle = rand() < 0.5 ? `rgba(255,255,255,${rand() * 0.08})` : `rgba(0,0,0,${rand() * 0.08})`;
+      g.fillRect(0, r * rh, 512, rh);
+      g.strokeStyle = "rgba(0,0,0,0.05)"; g.lineWidth = 1;
+      for (let k = 0; k < 5; k++) {
+        const y = r * rh + rand() * rh;
+        g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(170, y + rand() * 4 - 2, 340, y + rand() * 4 - 2, 512, y); g.stroke();
+      }
+      g.fillStyle = line;
+      g.fillRect(0, r * rh, 512, 2);
+      const off = (r % 3) * 512 / cols / 3;
+      for (let k = 0; k < cols; k++) g.fillRect((off + k * 512 / cols) % 512, r * rh, 2, rh);
+    }
+    const t = new THREE.CanvasTexture(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return t;
+  }
+
+  function jollyTex(fg, bg, w, h) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext("2d");
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h * 0.56, s = Math.min(w, h) * 0.26;
+    // Tibias cruzadas
+    g.strokeStyle = fg; g.fillStyle = fg; g.lineCap = "round"; g.lineWidth = s * 0.22;
+    for (const d of [1, -1]) {
+      const ax = cx - s * 1.25, ay = cy + d * s * 1.0, bx = cx + s * 1.25, by = cy - d * s * 1.0;
+      g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke();
+      for (const [ex, ey] of [[ax, ay], [bx, by]]) {
+        g.beginPath(); g.arc(ex - s * 0.08, ey - s * 0.12, s * 0.16, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(ex + s * 0.08, ey + s * 0.12, s * 0.16, 0, Math.PI * 2); g.fill();
+      }
+    }
+    // Calavera
+    g.beginPath(); g.arc(cx, cy - s * 0.1, s * 0.74, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.roundRect ? g.roundRect(cx - s * 0.44, cy + s * 0.3, s * 0.88, s * 0.52, s * 0.12) : g.rect(cx - s * 0.44, cy + s * 0.3, s * 0.88, s * 0.52); g.fill();
+    g.fillStyle = bg;
+    for (const e of [-1, 1]) { g.beginPath(); g.ellipse(cx + e * s * 0.28, cy + s * 0.02, s * 0.2, s * 0.24, 0, 0, Math.PI * 2); g.fill(); }
+    g.beginPath(); g.moveTo(cx, cy + s * 0.22); g.lineTo(cx - s * 0.09, cy + s * 0.38); g.lineTo(cx + s * 0.09, cy + s * 0.38); g.fill();
+    g.fillRect(cx - s * 0.36, cy + s * 0.56, s * 0.72, s * 0.05);
+    for (let k = -2; k <= 2; k++) g.fillRect(cx + k * s * 0.15 - s * 0.02, cy + s * 0.46, s * 0.04, s * 0.3);
+    // Sombrero de paja
+    g.fillStyle = "#e9b52b";
+    g.beginPath(); g.ellipse(cx, cy - s * 0.52, s * 1.08, s * 0.2, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(cx, cy - s * 0.6, s * 0.6, s * 0.52, 0, Math.PI, Math.PI * 2); g.fill();
+    g.fillStyle = "#c8322a";
+    g.fillRect(cx - s * 0.6, cy - s * 0.78, s * 1.2, s * 0.17);
+    const t = new THREE.CanvasTexture(c);
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return t;
+  }
+
+  function mapTex() {
+    const c = document.createElement("canvas"); c.width = 256; c.height = 192;
+    const g = c.getContext("2d");
+    g.fillStyle = "#e9d7a8"; g.fillRect(0, 0, 256, 192);
+    g.strokeStyle = "#3b5f7a"; g.lineWidth = 2;
+    for (let k = 0; k < 4; k++) {
+      g.beginPath();
+      let x = 30 + rand() * 190, y = 30 + rand() * 130;
+      g.moveTo(x, y);
+      for (let i = 0; i < 9; i++) { x += rand() * 40 - 20; y += rand() * 40 - 20; g.lineTo(x, y); }
+      g.closePath(); g.stroke();
+    }
+    g.strokeStyle = "#b0413a"; g.setLineDash([5, 5]);
+    g.beginPath(); g.moveTo(20, 170); g.bezierCurveTo(90, 120, 150, 150, 236, 30); g.stroke();
+    return new THREE.CanvasTexture(c);
+  }
+
+  const hullTex = plankTex("#dcb57d", "#7d5a2e", 16, 3);
+  const deckTex = plankTex("#c89b5f", "#6f4c26", 8, 2);
+  const floorTex = plankTex("#a8794a", "#5c3d1d", 8, 2);
+  const wallTex = plankTex("#e3c794", "#8a6534", 6, 1);
+  wallTex.repeat.set(0.35, 0.35);
+
+  const hullMat = shell({ map: hullTex });
+  const deckMat = shell({ map: deckTex });
+  const wallMat = shell({ map: wallTex });
+  const trimMat = shell({ color: 0x5b3a1e });
+  const floorMat = mat(0xffffff, { map: floorTex, side: THREE.DoubleSide });
+  const darkWood = mat(0x5e3d20);
+  const midWood = mat(0x8c5f33);
+  const lightWood = mat(0xc49a62);
+  const iron = mat(0x2a2c30, { metalness: 0.6, roughness: 0.45 });
+  const cloth = mat(0xece4d2, { side: THREE.DoubleSide, roughness: 0.95 });
+  const rope = new THREE.LineBasicMaterial({ color: 0x3a2a1a });
+
+  /* ---------- Forma del casco ---------- */
+  const X0 = -9, X1 = 10.4, W = 3.5, SIDE_EXP = 0.6;
+  const top = x => 0.8 + 0.7 * (x / 10) * (x / 10);
+  const half = x => {
+    if (x >= 0) { const t = Math.min(x / X1, 1); return W * Math.pow(Math.max(1 - Math.pow(t, 2.2), 0), 0.55); }
+    const t = x / X0; return W * (1 - 0.32 * t * t * t);
+  };
+  const bottom = x => {
+    if (x >= 0) { const t = Math.min(x / X1, 1); return -3.2 * Math.sqrt(Math.max(1 - t * t * t, 0)); }
+    const t = x / X0; return -3.2 + 0.9 * t * t;
+  };
+  // Semiancho del casco a una altura dada (inversa exacta de la sección)
+  const halfAt = (x, y) => {
+    const T = top(x), B = bottom(x);
+    if (y > T || y < B || T - B < 1e-4) return 0;
+    const s = Math.min(Math.pow((T - y) / (T - B), 1 / SIDE_EXP), 1);
+    return half(x) * Math.sqrt(1 - s * s);
+  };
+
+  const ship = new THREE.Group();
+  scene.add(ship);
+  const topside = new THREE.Group(); // lo que se retira con "Cubierta"
+  ship.add(topside);
+
+  function addMesh(geo, m, parent = ship, cast = true) {
+    const o = new THREE.Mesh(geo, m);
+    o.castShadow = cast; o.receiveShadow = true;
+    parent.add(o);
+    return o;
+  }
+  function box(w, h, d, m, x, y, z, parent = ship) {
+    const o = addMesh(new THREE.BoxGeometry(w, h, d), m, parent);
+    o.position.set(x, y, z);
+    return o;
+  }
+  function cyl(rt, rb, h, m, x, y, z, parent = ship, seg = 18) {
+    const o = addMesh(new THREE.CylinderGeometry(rt, rb, h, seg), m, parent);
+    o.position.set(x, y, z);
+    return o;
+  }
+  function sphere(r, m, x, y, z, parent = ship, seg = 16) {
+    const o = addMesh(new THREE.SphereGeometry(r, seg, Math.max(8, seg * 0.75 | 0)), m, parent);
+    o.position.set(x, y, z);
+    return o;
+  }
+
+  // Casco
+  (() => {
+    const N = 80, M = 30, pos = [], uv = [], idx = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N;
+      const x = X0 + (X1 - X0) * (0.5 - 0.5 * Math.cos(Math.PI * t));
+      const T = top(x), B = bottom(x), w = half(x);
+      for (let j = 0; j <= M; j++) {
+        const th = Math.PI * j / M, s = Math.sin(th);
+        pos.push(x, T - (T - B) * Math.pow(s, SIDE_EXP), -w * Math.cos(th));
+        uv.push((x - X0) / 4, j / M * 2.5);
+      }
+    }
+    for (let i = 0; i < N; i++) for (let j = 0; j < M; j++) {
+      const a = i * (M + 1) + j, b = a + M + 1;
+      idx.push(a, b, a + 1, b, b + 1, a + 1);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(idx); g.computeVertexNormals();
+    addMesh(g, hullMat);
+
+    // Espejo de popa
+    const tp = [X0, (top(X0) + bottom(X0)) / 2, 0], tuv = [0.5, 0.5], tidx = [];
+    for (let j = 0; j <= M; j++) {
+      const th = Math.PI * j / M, T = top(X0), B = bottom(X0);
+      tp.push(X0, T - (T - B) * Math.pow(Math.sin(th), SIDE_EXP), -half(X0) * Math.cos(th));
+      tuv.push(j / M, Math.sin(th));
+    }
+    for (let j = 1; j <= M; j++) tidx.push(0, j, j + 1);
+    tidx.push(0, M + 1, 1);
+    const tg = new THREE.BufferGeometry();
+    tg.setAttribute("position", new THREE.Float32BufferAttribute(tp, 3));
+    tg.setAttribute("uv", new THREE.Float32BufferAttribute(tuv, 2));
+    tg.setIndex(tidx); tg.computeVertexNormals();
+    addMesh(tg, hullMat);
+  })();
+
+  // Regala y cintones
+  function tubeAlong(fn, x0, x1, r, m, parent = ship) {
+    const pts = [];
+    for (let k = 0; k <= 30; k++) { const x = x0 + (x1 - x0) * k / 30; pts.push(fn(x)); }
+    return addMesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 160, r, 6), m, parent);
+  }
+  for (const side of [-1, 1]) {
+    tubeAlong(x => new THREE.Vector3(x, top(x) + 0.05, side * (half(x) + 0.03)), X0, X1 - 0.05, 0.09, trimMat);
+    tubeAlong(x => { const y = top(x) - 0.45; return new THREE.Vector3(x, y, side * (halfAt(x, y) + 0.04)); }, X0 + 0.02, X1 - 0.35, 0.07, trimMat);
+    tubeAlong(x => { const y = top(x) - 1.35; return new THREE.Vector3(x, y, side * (halfAt(x, y) + 0.04)); }, X0 + 0.02, X1 - 0.9, 0.06, trimMat);
+  }
+  box(0.14, 0.12, half(X0) * 2 + 0.1, trimMat, X0, top(X0) + 0.05, 0);
+
+  // Cubiertas (tira siguiendo el ancho del casco a esa altura)
+  function strip(y, xa, xb, m, parent, uvScale) {
+    const n = 60, pos = [], uv = [], idx = [];
+    for (let i = 0; i <= n; i++) {
+      const x = xa + (xb - xa) * i / n, z = Math.max(halfAt(x, y) - 0.01, 0);
+      pos.push(x, y, -z, x, y, z);
+      uv.push(x / uvScale, -z / 2.4, x / uvScale, z / 2.4);
+    }
+    for (let i = 0; i < n; i++) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(idx); g.computeVertexNormals();
+    return addMesh(g, m, parent);
+  }
+  const FLOOR = -2;
+  strip(0, -4.5, X1 - 0.02, deckMat, topside, 4);     // cubierta principal
+  strip(0, X0 + 0.01, -4.5, deckMat, ship, 4);        // suelo de la cocina
+  strip(FLOOR, X0 + 0.01, 8.0, floorMat, ship, 4);    // sollado
+
+  // Mamparos con puerta
+  function bulkhead(x, y0, y1, door) {
+    const n = 12, pts = [];
+    for (let k = 0; k <= n; k++) { const y = y0 + (y1 - y0) * k / n; pts.push([Math.max(halfAt(x, y) - 0.03, 0.05), y]); }
+    const sh = new THREE.Shape();
+    sh.moveTo(-pts[0][0], y0);
+    for (let k = 0; k <= n; k++) sh.lineTo(pts[k][0], pts[k][1]);
+    for (let k = n; k >= 0; k--) sh.lineTo(-pts[k][0], pts[k][1]);
+    if (door) {
+      const h = new THREE.Path();
+      h.moveTo(-0.45, y0 + 0.04); h.lineTo(0.45, y0 + 0.04); h.lineTo(0.45, y0 + 1.6);
+      h.absarc(0, y0 + 1.6, 0.45, 0, Math.PI, false); h.lineTo(-0.45, y0 + 0.04);
+      sh.holes.push(h);
+    }
+    const o = addMesh(new THREE.ExtrudeGeometry(sh, { depth: 0.08, bevelEnabled: false }), wallMat);
+    o.rotation.y = Math.PI / 2;
+    o.position.x = x - 0.04;
+    return o;
+  }
+  bulkhead(-4.5, FLOOR, -0.02, true);
+  bulkhead(3.5, FLOOR, -0.02, true);
+  bulkhead(8.0, FLOOR, -0.02, false);
+
+  /* ---------- Castillo de popa (cocina) ---------- */
+  const CAB_X0 = -8.75, CAB_X1 = -4.5, CAB_Z = 2.1, CAB_H = 2.2;
+  function wallShape(w0, w1, h, holes) {
+    const sh = new THREE.Shape();
+    sh.moveTo(w0, 0); sh.lineTo(w1, 0); sh.lineTo(w1, h); sh.lineTo(w0, h); sh.lineTo(w0, 0);
+    holes.forEach(hp => sh.holes.push(hp));
+    return sh;
+  }
+  const circleHole = (x, y, r) => { const p = new THREE.Path(); p.absarc(x, y, r, 0, Math.PI * 2, true); return p; };
+  const rectHole = (x0, y0, x1, y1) => { const p = new THREE.Path(); p.moveTo(x0, y0); p.lineTo(x0, y1); p.lineTo(x1, y1); p.lineTo(x1, y0); p.lineTo(x0, y0); return p; };
+  {
+    // Frente con puerta y dos ojos de buey
+    const door = new THREE.Path();
+    door.moveTo(-0.45, 0.03); door.lineTo(0.45, 0.03); door.lineTo(0.45, 1.5);
+    door.absarc(0, 1.5, 0.45, 0, Math.PI, false); door.lineTo(-0.45, 0.03);
+    const front = addMesh(new THREE.ExtrudeGeometry(wallShape(-CAB_Z, CAB_Z, CAB_H, [door, circleHole(-1.3, 1.35, 0.26), circleHole(1.3, 1.35, 0.26)]), { depth: 0.1, bevelEnabled: false }), wallMat);
+    front.rotation.y = Math.PI / 2; front.position.x = CAB_X1 - 0.05;
+    // Popa con tres ventanales
+    const back = addMesh(new THREE.ExtrudeGeometry(wallShape(-CAB_Z, CAB_Z, CAB_H, [rectHole(-1.5, 1.15, -0.75, 1.8), rectHole(-0.35, 1.15, 0.35, 1.8), rectHole(0.75, 1.15, 1.5, 1.8)]), { depth: 0.1, bevelEnabled: false }), wallMat);
+    back.rotation.y = Math.PI / 2; back.position.x = CAB_X0 - 0.05;
+    // Laterales con ojos de buey
+    for (const side of [-1, 1]) {
+      const w = addMesh(new THREE.ExtrudeGeometry(wallShape(CAB_X0, CAB_X1, CAB_H, [circleHole(-7.7, 1.35, 0.28), circleHole(-5.8, 1.35, 0.28)]), { depth: 0.1, bevelEnabled: false }), wallMat);
+      w.position.z = side > 0 ? CAB_Z - 0.05 : -CAB_Z - 0.05;
+    }
+    // Marcos de las ventanas de popa
+    for (const zc of [-1.125, 0, 1.125]) box(0.14, 0.08, 0.8, trimMat, CAB_X0 - 0.06, 1.13, zc);
+  }
+  // Toldilla (techo del castillo) con barandilla
+  box(4.8, 0.14, 4.8, deckMat, -6.7, CAB_H + 0.07, 0, topside);
+  {
+    const y0 = CAB_H + 0.14, railH = 0.7;
+    const post = (x, z) => cyl(0.04, 0.04, railH, trimMat, x, y0 + railH / 2, z, topside, 8);
+    for (let x = -9.05; x <= -4.3; x += 0.475) { post(x, -2.35); post(x, 2.35); }
+    for (let z = -2.35; z <= 2.35; z += 0.47) { post(-9.05, z); if (Math.abs(Math.abs(z) - 1.75) > 0.35) post(-4.35, z); }
+    box(4.8, 0.08, 0.1, trimMat, -6.7, y0 + railH, -2.35, topside);
+    box(4.8, 0.08, 0.1, trimMat, -6.7, y0 + railH, 2.35, topside);
+    box(0.1, 0.08, 4.8, trimMat, -9.05, y0 + railH, 0, topside);
+    box(0.1, 0.08, 2.9, trimMat, -4.35, y0 + railH, 0, topside);
+  }
+  // Escaleras a la toldilla
+  for (const side of [-1, 1]) {
+    for (let k = 0; k < 8; k++) box(0.26, 0.07, 0.55, lightWood, -3.05 - k * 0.19, (k + 1) * 0.275, side * 1.75, topside);
+    const stringer = box(2.9, 0.1, 0.06, trimMat, -3.72, 1.1, side * 2.05, topside);
+    stringer.rotation.z = -0.97;
+  }
+
+  // Mandarinos de Nami
+  function mikan(x, z) {
+    const g = new THREE.Group();
+    box(0.9, 0.45, 0.9, midWood, 0, 0.225, 0, g);
+    cyl(0.06, 0.1, 0.8, darkWood, 0, 0.8, 0, g, 8);
+    const leaf = mat(0x2f7d3a, { flatShading: true });
+    const orange = mat(0xff8a1c, { roughness: 0.5 });
+    const blobs = [[0, 1.45, 0, 0.5], [0.3, 1.3, 0.15, 0.36], [-0.28, 1.32, -0.1, 0.36], [0.05, 1.3, -0.32, 0.34], [-0.05, 1.7, 0.1, 0.34]];
+    blobs.forEach(([bx, by, bz, r]) => { const o = addMesh(new THREE.IcosahedronGeometry(r, 1), leaf, g); o.position.set(bx, by, bz); });
+    for (let k = 0; k < 11; k++) {
+      const a = rand() * Math.PI * 2, b = rand() * 0.9 - 0.2, r = 0.5;
+      sphere(0.075, orange, Math.cos(a) * Math.cos(b) * r, 1.45 + Math.sin(b) * r, Math.sin(a) * Math.cos(b) * r, g, 10);
+    }
+    g.position.set(x, CAB_H + 0.14, z);
+    topside.add(g);
+  }
+  mikan(-5.2, -1.3); mikan(-5.2, 1.3); mikan(-8.2, -1.4);
+
+  // Timón (caña) y pala del timón
+  box(0.2, 3.3, 0.12, darkWood, X0 - 0.14, -0.7, 0);
+
+  /* ---------- Interiores ---------- */
+  const lamps = [];
+  function lamp(x, y, z, intensity = 1) {
+    sphere(0.1, new THREE.MeshStandardMaterial({ color: 0xffd79a, emissive: 0xffb54d, emissiveIntensity: 1.2 }), x, y, z, ship, 12);
+    cyl(0.12, 0.08, 0.06, iron, x, y + 0.12, z, ship, 10);
+    const l = new THREE.PointLight(0xffc27a, intensity, 6.5, 1.6);
+    l.position.set(x, y - 0.05, z);
+    ship.add(l);
+    lamps.push(l);
+  }
+
+  // Cocina y comedor de Sanji
+  box(0.85, 0.9, 0.95, iron, -8.25, 0.45, -1.3);                  // fogón
+  cyl(0.24, 0.24, 0.25, mat(0x9aa0a6, { metalness: 0.7, roughness: 0.3 }), -8.3, 1.02, -1.45, ship, 14);
+  cyl(0.18, 0.16, 0.18, mat(0x7b3f2a), -8.1, 0.99, -1.05, ship, 14);
+  cyl(0.09, 0.09, 2.5, iron, -8.45, 2.1, -1.55, ship, 10);        // chimenea
+  box(0.7, 0.9, 1.8, lightWood, -8.3, 0.45, 0.65);                // encimera
+  box(0.5, 0.04, 0.6, mat(0x9aa0a6, { metalness: 0.6, roughness: 0.3 }), -8.3, 0.91, 0.5);
+  for (const y of [1.3, 1.75]) {
+    box(2.4, 0.05, 0.3, midWood, -6.6, y, -1.9);
+    for (let k = 0; k < 5; k++) cyl(0.12, 0.12, 0.03, mat(0xf2f2ee), -7.5 + k * 0.45, y + 0.05, -1.9, ship, 12);
+  }
+  cyl(0.8, 0.8, 0.07, lightWood, -6.4, 0.78, 0.3, ship, 28);          // mesa
+  cyl(0.08, 0.14, 0.75, darkWood, -6.4, 0.38, 0.3, ship, 10);
+  for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; cyl(0.2, 0.2, 0.45, midWood, -6.4 + Math.cos(a) * 1.1, 0.23, 0.3 + Math.sin(a) * 1.1, ship, 12); }
+  cyl(0.28, 0.28, 0.7, midWood, -5.1, 0.35, 1.6, ship, 14);          // barril de agua
+  lamp(-6.4, 1.95, 0.3, 1.1);
+
+  // Camarote de las chicas (bajo la cocina)
+  const blanket = mat(0x3f7cc2);
+  box(2.0, 0.35, 1.0, midWood, -6.2, FLOOR + 0.18, -1.0);
+  box(1.95, 0.12, 0.95, blanket, -6.1, FLOOR + 0.41, -1.0);
+  box(0.4, 0.12, 0.7, mat(0xf4f1ea), -7.0, FLOOR + 0.43, -1.0);
+  box(0.75, 0.06, 1.1, lightWood, -5.3, FLOOR + 0.8, 1.15);            // escritorio de cartografía
+  for (const [dx, dz] of [[-0.3, -0.48], [0.3, -0.48], [-0.3, 0.48], [0.3, 0.48]]) box(0.06, 0.77, 0.06, darkWood, -5.3 + dx, FLOOR + 0.39, 1.15 + dz);
+  const mapPlane = addMesh(new THREE.PlaneGeometry(0.6, 0.8), mat(0xffffff, { map: mapTex() }), ship, false);
+  mapPlane.rotation.x = -Math.PI / 2; mapPlane.rotation.z = Math.PI / 2;
+  mapPlane.position.set(-5.3, FLOOR + 0.84, 1.15);
+  cyl(0.02, 0.02, 0.2, mat(0x222222), -5.1, FLOOR + 0.9, 1.5, ship, 6);
+  box(0.4, 0.45, 0.4, midWood, -5.95, FLOOR + 0.23, 1.15);             // silla
+  box(0.6, 1.6, 0.95, midWood, -7.8, FLOOR + 0.8, 0.95);               // armario
+  box(0.02, 1.4, 0.02, darkWood, -7.49, FLOOR + 0.8, 0.95);
+  lamp(-6.3, -0.3, 0.1, 0.9);
+
+  // Dormitorio de los chicos
+  function hammock(x, z, len) {
+    const nu = 16, nv = 6, pos = [], idx = [];
+    for (let i = 0; i <= nu; i++) for (let j = 0; j <= nv; j++) {
+      const u = i / nu, v = j / nv;
+      pos.push((u - 0.5) * len, -0.35 * Math.sin(Math.PI * u) - 0.14 * Math.sin(Math.PI * v) * Math.sin(Math.PI * u), (v - 0.5) * 0.8);
+    }
+    for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const a = i * (nv + 1) + j, b = a + nv + 1; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setIndex(idx); g.computeVertexNormals();
+    const o = addMesh(g, cloth);
+    const y = -0.75;
+    o.position.set(x, y, z);
+    const pts = [];
+    for (const e of [-1, 1]) {
+      const ex = x + e * len / 2;
+      pts.push(new THREE.Vector3(ex, y, z - 0.4), new THREE.Vector3(ex + e * 0.35, y + 0.4, z));
+      pts.push(new THREE.Vector3(ex, y, z + 0.4), new THREE.Vector3(ex + e * 0.35, y + 0.4, z));
+      pts.push(new THREE.Vector3(ex + e * 0.35, y + 0.4, z), new THREE.Vector3(ex + e * 0.35, -0.02, z));
+    }
+    ship.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), rope));
+  }
+  hammock(-2.8, 2.0, 1.8); hammock(-2.8, -2.0, 1.8); hammock(2.35, 2.05, 1.6); hammock(2.35, -2.05, 1.6);
+  box(1.3, 0.06, 0.8, lightWood, -1.0, FLOOR + 0.72, 0);               // mesa
+  box(0.1, 0.7, 0.1, darkWood, -1.0, FLOOR + 0.36, 0);
+  box(1.6, 0.4, 0.55, mat(0x9b3b32), -1.0, FLOOR + 0.2, -1.1);         // sofá
+  box(1.6, 0.55, 0.15, mat(0x9b3b32), -1.0, FLOOR + 0.55, -1.35);
+  box(0.4, 0.45, 0.4, midWood, -1.0, FLOOR + 0.23, 0.8);
+  for (let k = 0; k < 3; k++) box(0.5, 1.5, 0.45, mat(0x6b7f5b), 3.1, FLOOR + 0.75, -1.2 + k * 0.52); // taquillas
+  // Escala al escotillón
+  for (const dz of [-0.25, 0.25]) box(0.06, 2.05, 0.06, darkWood, -3.4, FLOOR + 1.0, 0.6 + dz);
+  for (let k = 0; k < 6; k++) box(0.05, 0.05, 0.5, darkWood, -3.4, FLOOR + 0.3 + k * 0.3, 0.6);
+  box(0.9, 0.1, 0.9, darkWood, -3.4, 0.05, 0.6, topside);              // escotillón
+  box(0.7, 0.04, 0.7, midWood, -3.4, 0.12, 0.6, topside);
+  lamp(-1.0, -0.3, 0.6, 0.9);
+  lamp(2.3, -0.3, 0, 0.7);
+
+  // Bodega
+  function barrel(x, y, z, r = 0.3, h = 0.8) {
+    cyl(r, r * 0.9, h, midWood, x, y + h / 2, z, ship, 16);
+    for (const dy of [0.15, h - 0.15]) {
+      const band = addMesh(new THREE.TorusGeometry(r * 0.97, 0.025, 6, 18), iron);
+      band.rotation.x = Math.PI / 2; band.position.set(x, y + dy, z);
+    }
+  }
+  barrel(4.3, FLOOR, -1.3); barrel(4.95, FLOOR, -1.3); barrel(4.62, FLOOR + 0.8, -1.3);
+  barrel(6.2, FLOOR, -1.1); barrel(6.8, FLOOR, -0.8, 0.26, 0.7);
+  box(0.7, 0.6, 0.7, lightWood, 6.4, FLOOR + 0.3, 1.0);
+  box(0.6, 0.5, 0.6, lightWood, 5.7, FLOOR + 0.25, 1.3);
+  box(0.5, 0.45, 0.5, lightWood, 6.4, FLOOR + 0.83, 1.0);
+  for (let k = 0; k < 4; k++) {
+    const t = addMesh(new THREE.TorusGeometry(0.3 - k * 0.02, 0.05, 6, 20), mat(0xb89b62));
+    t.rotation.x = Math.PI / 2; t.position.set(4.4, FLOOR + 0.05 + k * 0.09, 1.2);
+  }
+  const ballMat = iron;
+  [[0, 0, 0], [0.24, 0, 0], [0.12, 0, 0.21], [0.12, 0.2, 0.07]].forEach(([dx, dy, dz]) => sphere(0.12, ballMat, 5.6 + dx, FLOOR + 0.12 + dy, -0.1 + dz, ship, 12));
+  box(0.5, 0.3, 0.4, mat(0xcbb58a), 7.2, FLOOR + 0.15, 0.3);            // saco
+  lamp(5.7, -0.3, 0, 0.9);
+
+  /* ---------- Mástil, cofa y velas ---------- */
+  const MAST_X = 1.0;
+  cyl(0.16, 0.26, 15.6, darkWood, MAST_X, FLOOR + 7.8, 0, ship, 20);
+  addMesh(new THREE.CylinderGeometry(0.85, 0.68, 0.8, 24, 1, true), mat(0x8c5f33, { side: THREE.DoubleSide })).position.set(MAST_X, 10.6, 0);
+  cyl(0.85, 0.85, 0.08, midWood, MAST_X, 10.22, 0, ship, 24);
+  const yardUp = cyl(0.1, 0.1, 8.8, darkWood, MAST_X + 0.2, 9.3, 0); yardUp.rotation.x = Math.PI / 2;
+  const yardLow = cyl(0.1, 0.1, 8.8, darkWood, MAST_X + 0.2, 3.45, 0); yardLow.rotation.x = Math.PI / 2;
+
+  const sail = (() => {
+    const nu = 24, nv = 16, pos = [], uv = [], idx = [];
+    for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) {
+      const u = i / nu, v = j / nv;
+      pos.push(MAST_X + 0.3 + 1.15 * Math.sin(Math.PI * v) * Math.cos((u - 0.5) * Math.PI * 0.85), 3.5 + v * 5.75, (0.5 - u) * 8.4);
+      uv.push(u, v);
+    }
+    for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const a = j * (nu + 1) + i, b = a + nu + 1; idx.push(a, a + 1, b, a + 1, b + 1, b); }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    g.setIndex(idx); g.computeVertexNormals();
+    return addMesh(g, new THREE.MeshStandardMaterial({ map: jollyTex("#16181b", "#f3eee2", 1024, 700), side: THREE.DoubleSide, roughness: 0.95 }));
+  })();
+
+  // Bandera en el tope
+  const flag = (() => {
+    const g = new THREE.PlaneGeometry(1.8, 1.2, 16, 8);
+    g.translate(0.9, 0, 0);
+    const o = addMesh(g, new THREE.MeshStandardMaterial({ map: jollyTex("#f4f1ea", "#121315", 384, 256), side: THREE.DoubleSide, roughness: 0.9 }));
+    o.position.set(MAST_X, 12.7, 0);
+    o.userData.base = g.attributes.position.array.slice();
+    return o;
+  })();
+
+  // Jarcia
+  {
+    const pts = [];
+    for (const side of [-1, 1]) for (const x of [-0.6, 0.3, 1.2, 2.1]) {
+      pts.push(new THREE.Vector3(MAST_X, 10.25, side * 0.6), new THREE.Vector3(x, top(x) + 0.05, side * half(x)));
+    }
+    pts.push(new THREE.Vector3(MAST_X, 13.2, 0), new THREE.Vector3(10.1, 1.5, 0));
+    pts.push(new THREE.Vector3(MAST_X, 13.2, 0), new THREE.Vector3(-8.9, CAB_H + 0.9, 0));
+    for (const side of [-1, 1]) {
+      pts.push(new THREE.Vector3(MAST_X + 0.2, 9.3, side * 4.3), new THREE.Vector3(MAST_X, 12.2, 0));
+      pts.push(new THREE.Vector3(MAST_X + 0.2, 3.45, side * 4.3), new THREE.Vector3(-1.2, top(-1.2), side * half(-1.2)));
+    }
+    ship.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), rope));
+  }
+
+  /* ---------- Cañones y mascarón ---------- */
+  function cannon(x, z, dir) {
+    const g = new THREE.Group();
+    box(0.7, 0.28, 0.8, midWood, 0, 0.24, 0, g);
+    for (const dx of [-0.3, 0.3]) for (const dz of [-0.28, 0.28]) {
+      const w = cyl(0.14, 0.14, 0.08, darkWood, dx, 0.14, dz, g, 12); w.rotation.z = Math.PI / 2;
+    }
+    const b = cyl(0.12, 0.18, 1.3, iron, 0, 0.52, 0.25, g, 16); b.rotation.x = Math.PI / 2;
+    g.position.set(x, 0, z);
+    g.rotation.y = dir > 0 ? 0 : Math.PI;
+    topside.add(g);
+  }
+  cannon(4.6, 1.5, 1); cannon(4.6, -1.5, -1);
+  barrel(-2.0, 0, -1.9, 0.28, 0.75); barrel(-1.4, 0, -2.05, 0.28, 0.75);
+
+  {
+    const wool = mat(0xf5f2ea, { roughness: 0.9 });
+    const horn = mat(0xe2b94c, { roughness: 0.55 });
+    const black = mat(0x111111, { roughness: 0.3 });
+    const neck = new THREE.CatmullRomCurve3([new THREE.Vector3(10.1, 0.1, 0), new THREE.Vector3(10.55, 0.9, 0), new THREE.Vector3(10.85, 1.6, 0)]);
+    addMesh(new THREE.TubeGeometry(neck, 20, 0.24, 10), wool);
+    sphere(0.62, wool, 11.0, 1.95, 0, ship, 24);
+    const snout = sphere(0.4, wool, 11.5, 1.8, 0, ship, 20); snout.scale.set(1.35, 0.85, 0.85);
+    for (const e of [-1, 1]) {
+      sphere(0.09, black, 11.35, 2.1, e * 0.38, ship, 10);
+      sphere(0.04, black, 12.02, 1.82, e * 0.12, ship, 8);
+      const h = addMesh(new THREE.TorusGeometry(0.3, 0.12, 10, 24, Math.PI * 1.6), horn);
+      h.position.set(10.85, 2.0, e * 0.62);
+      h.rotation.z = -0.6;
+      const h2 = sphere(0.12, horn, 10.85 + 0.3 * Math.cos(-0.6), 2.0 + 0.3 * Math.sin(-0.6), e * 0.62, ship, 10);
+      h2.visible = true;
+    }
+    for (let k = 0; k < 10; k++) {
+      const a = (k / 10) * Math.PI * 1.6 - 0.2;
+      sphere(0.26, wool, 10.72 - Math.cos(a) * 0.35, 2.05 + Math.sin(a) * 0.5, (k % 2 ? 1 : -1) * 0.25, ship, 14);
+    }
+  }
+
+  /* ---------- Mar ---------- */
+  const water = (() => {
+    const g = new THREE.PlaneGeometry(260, 260, 90, 90);
+    g.rotateX(-Math.PI / 2);
+    const m = new THREE.MeshStandardMaterial({ color: 0x1d6f9c, roughness: 0.3, metalness: 0.15, flatShading: true, transparent: true, opacity: 0.93 });
+    const o = new THREE.Mesh(g, m);
+    o.position.y = -1.5;
+    o.receiveShadow = true;
+    o.userData.base = g.attributes.position.array.slice();
+    scene.add(o);
+    return o;
+  })();
+
+  /* ---------- Estancias y recorrido ---------- */
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  const rooms = [
+    { id: "overview", name: "Vista general", group: "top", mode: "ext", anchor: null,
+      cam: [V(24, 10, 22), V(0, 3, 0)],
+      text: "Carabela regalada a Luffy por Kaya en el pueblo de Syrup. La diseñó y construyó Merry, su mayordomo. Llevó a la tripulación desde el East Blue hasta Water 7." },
+    { id: "figurehead", name: "Mascarón de carnero", group: "top", mode: "ext", anchor: V(11.1, 2.8, 0),
+      cam: [V(17, 4, 6), V(11, 1.8, 0)],
+      text: "La cabeza de carnero con cuernos en espiral. Es el asiento favorito de Luffy para mirar al horizonte." },
+    { id: "sail", name: "Vela mayor", group: "top", mode: "ext", anchor: V(2.4, 6.4, 0),
+      cam: [V(18, 7, 3), V(1, 6.3, 0)],
+      text: "Vela cuadra con la Jolly Roger del sombrero de paja. Luffy la dibujó primero y Usopp la repintó para que se entendiera." },
+    { id: "nest", name: "Cofa", group: "top", mode: "ext", anchor: V(MAST_X, 11.4, 0),
+      cam: [V(7, 13.5, 6), V(MAST_X, 10.5, 0)],
+      text: "Puesto de vigía en lo alto del mástil. Desde aquí se avistan islas, barcos de la Marina y tormentas." },
+    { id: "mikan", name: "Mandarinos de Nami", group: "top", mode: "ext", anchor: V(-6.6, 4.4, 0),
+      cam: [V(-1, 7.5, 7), V(-6.6, 2.8, 0)],
+      text: "Los árboles de Bell-mère, traídos desde Cocoyashi. Crecen en la toldilla, sobre la cocina, y nadie toca una mandarina sin permiso." },
+    { id: "galley", name: "Cocina y comedor", group: "top", mode: "cut", anchor: V(-6.4, 1.6, 0.3),
+      cam: [V(-6.4, 1.8, 8), V(-6.4, 1.0, 0)],
+      text: "El dominio de Sanji: fogón, encimera y la mesa donde come toda la tripulación, bajo la toldilla." },
+    { id: "women", name: "Camarote de las chicas", group: "below", mode: "cut", anchor: V(-6.3, -0.8, 0),
+      cam: [V(-6.3, -0.6, 8), V(-6.3, -1.3, 0)],
+      text: "Habitación de Nami (y más tarde de Robin), bajo la cocina. Aquí Nami dibuja sus cartas de navegación." },
+    { id: "men", name: "Dormitorio de los chicos", group: "below", mode: "cut", anchor: V(-0.6, -0.8, 0),
+      cam: [V(-0.4, -0.5, 10), V(-0.4, -1.3, 0)],
+      text: "Hamacas colgadas, un sofá y una mesa. Se baja por la escala del escotillón de la cubierta principal." },
+    { id: "hold", name: "Bodega", group: "below", mode: "cut", anchor: V(5.8, -0.8, 0),
+      cam: [V(5.8, -0.5, 8.5), V(5.8, -1.3, 0)],
+      text: "Provisiones, barriles de agua, cabos de repuesto y balas de cañón, en el tramo de proa bajo cubierta." }
+  ];
+
+  /* ---------- UI ---------- */
+  const $ = id => document.getElementById(id);
+  const labelsEl = $("labels");
+  const tags = new Map();
+  const listBtns = new Map();
+
+  rooms.forEach(r => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = `<span>${r.name}</span>` + (r.mode === "cut" ? `<span class="chip">Interior</span>` : "");
+    b.addEventListener("click", () => select(r.id, true));
+    li.appendChild(b);
+    $(r.group === "top" ? "roomsTop" : "roomsBelow").appendChild(li);
+    listBtns.set(r.id, b);
+    if (r.anchor) {
+      const t = document.createElement("button");
+      t.type = "button"; t.className = "tag"; t.textContent = r.name;
+      t.addEventListener("click", () => select(r.id, true));
+      labelsEl.appendChild(t);
+      tags.set(r.id, t);
+    }
+  });
+
+  let mode = "ext";
+  const cutInput = $("cut");
+  const cutZ = () => 3.8 - (cutInput.value / 100) * 4.0;
+
+  function setMode(m) {
+    mode = m;
+    ["mExt", "mCut", "mXray"].forEach(id => { const b = $(id); b.setAttribute("aria-pressed", String(b.dataset.mode === m)); });
+    $("cutRow").hidden = m !== "cut";
+    cutPlane.constant = m === "cut" ? cutZ() : 1000;
+    const xr = m === "xray";
+    shellMats.forEach(sm => { sm.transparent = xr; sm.opacity = xr ? 0.16 : 1; sm.depthWrite = !xr; sm.needsUpdate = true; });
+    syncSea();
+  }
+  // Las lámparas interiores se apagan con el mar visible: si no, iluminan el agua bajo el casco
+  function syncSea() {
+    water.visible = mode === "ext" && $("tSea").checked;
+    lamps.forEach(l => { l.visible = !water.visible; });
+  }
+
+  let flight = null;
+  function flyTo([pos, target]) {
+    if (reduceMotion) { camera.position.copy(pos); controls.target.copy(target); return; }
+    flight = { p0: camera.position.clone(), t0: controls.target.clone(), p1: pos.clone(), t1: target.clone(), start: performance.now(), dur: 1300 };
+  }
+
+  function select(id, fly) {
+    const r = rooms.find(q => q.id === id);
+    listBtns.forEach((b, k) => b.classList.toggle("active", k === id));
+    tags.forEach((t, k) => t.classList.toggle("active", k === id));
+    $("infoTitle").textContent = r.name;
+    $("infoText").textContent = r.text;
+    if (r.mode === "cut") { if (mode !== "cut") { cutInput.value = 90; setMode("cut"); } }
+    else if (mode === "cut") setMode("ext");
+    if (fly) {
+      controls.autoRotate = false; $("tSpin").checked = false;
+      flyTo(r.cam);
+    }
+  }
+
+  document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+  cutInput.addEventListener("input", () => { if (mode === "cut") cutPlane.constant = cutZ(); });
+  $("tRoof").addEventListener("change", e => { topside.visible = e.target.checked; });
+  $("tSea").addEventListener("change", syncSea);
+  $("tLabels").addEventListener("change", e => { labelsEl.hidden = !e.target.checked; });
+  $("tSpin").addEventListener("change", e => { controls.autoRotate = e.target.checked; });
+  $("tSpin").checked = controls.autoRotate;
+  controls.addEventListener("start", () => { flight = null; if (controls.autoRotate) { controls.autoRotate = false; $("tSpin").checked = false; } });
+
+  $("collapse").addEventListener("click", () => {
+    const body = $("panelBody");
+    body.hidden = !body.hidden;
+    $("collapse").textContent = body.hidden ? "+" : "–";
+    $("collapse").setAttribute("aria-expanded", String(!body.hidden));
+    $("collapse").setAttribute("aria-label", body.hidden ? "Desplegar panel" : "Plegar panel");
+  });
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+
+  syncSea();
+  select("overview", false);
+
+  /* ---------- Bucle ---------- */
+  const tmp = new THREE.Vector3();
+  const clock = new THREE.Clock();
+  function tick() {
+    const t = clock.getElapsedTime();
+
+    if (flight) {
+      const k = Math.min(1, (performance.now() - flight.start) / flight.dur);
+      const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+      camera.position.lerpVectors(flight.p0, flight.p1, e);
+      controls.target.lerpVectors(flight.t0, flight.t1, e);
+      if (k >= 1) flight = null;
+    }
+    controls.update();
+
+    const bob = mode === "ext" && !reduceMotion;
+    const targetRz = bob ? Math.sin(t * 0.6) * 0.018 : 0;
+    const targetRx = bob ? Math.sin(t * 0.8) * 0.025 : 0;
+    const targetY = bob ? Math.sin(t * 0.9) * 0.08 : 0;
+    ship.rotation.z += (targetRz - ship.rotation.z) * 0.1;
+    ship.rotation.x += (targetRx - ship.rotation.x) * 0.1;
+    ship.position.y += (targetY - ship.position.y) * 0.1;
+
+    if (water.visible) {
+      const p = water.geometry.attributes.position, base = water.userData.base;
+      for (let i = 0; i < p.count; i++) {
+        const x = base[i * 3], z = base[i * 3 + 2];
+        p.array[i * 3 + 1] = Math.sin(x * 0.15 + t * 1.1) * 0.22 + Math.cos(z * 0.2 + t * 0.8) * 0.18;
+      }
+      p.needsUpdate = true;
+    }
+
+    {
+      const p = flag.geometry.attributes.position, base = flag.userData.base;
+      for (let i = 0; i < p.count; i++) {
+        const u = base[i * 3];
+        p.array[i * 3 + 2] = Math.sin(u * 3.2 - t * 5) * 0.14 * u;
+      }
+      p.needsUpdate = true;
+    }
+
+    renderer.render(scene, camera);
+
+    if (!labelsEl.hidden) {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      rooms.forEach(r => {
+        const tag = tags.get(r.id);
+        if (!tag) return;
+        tmp.copy(r.anchor);
+        ship.localToWorld(tmp);
+        tmp.project(camera);
+        const visible = tmp.z < 1 && Math.abs(tmp.x) < 1.1 && Math.abs(tmp.y) < 1.1;
+        tag.style.display = visible ? "" : "none";
+        if (visible) tag.style.transform = `translate(${(tmp.x * 0.5 + 0.5) * w}px, ${(-tmp.y * 0.5 + 0.5) * h}px) translate(-50%, -100%)`;
+      });
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
