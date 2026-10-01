@@ -746,7 +746,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
 
   /* ---------- Generar texturas ---------- */
   const TX = {
-    hull: woodTex({ size: 1024, rows: 16, cols: 2, dark: "#94693a", light: "#dcb67c", seam: "#3a2814", seamW: 2.2, nails: true, tint: 0.24, weather: 0.35, weatherColor: "#948d7c", rough: 0.72, bump: 4 }),
+    hull: woodTex({ size: 1024, rows: 16, cols: 2, dark: "#8a5226", light: "#d39050", seam: "#3a2210", seamW: 2.2, nails: true, tint: 0.24, weather: 0.3, weatherColor: "#8c7a66", rough: 0.72, bump: 4 }),
     deck: woodTex({ size: 1024, rows: 8, cols: 2, dark: "#8a6640", light: "#d2b384", seam: "#1b140e", seamW: 3, nails: true, tint: 0.2, weather: 0.45, weatherColor: "#aaa391", rough: 0.8, bump: 4 }),
     floor: woodTex({ size: 512, rows: 8, cols: 2, dark: "#654527", light: "#a47a4c", seam: "#1f140b", seamW: 2, nails: true, tint: 0.25, rough: 0.8 }),
     wall: woodTex({ size: 512, rows: 10, cols: 1, dark: "#b08a58", light: "#e8cf9f", seam: "#5a4024", seamW: 1.6, butts: false, tint: 0.12, rough: 0.62 }),
@@ -776,7 +776,12 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
   };
   const leafT = leafCanvas(), cloudT = cloudCanvas(), weaveN = weaveNormal(), waterN = waterNormalTex(), foamT = foamTex();
   const sailT = clothCanvas(1024, 704, "#efe6d2", true, "#15171a");
-  const mizzenT = clothCanvas(512, 400, "#efe6d2", false);
+  const lateenT = (() => {
+    const t = clothCanvas(512, 512, "#efe6d2", false), g = t.image.getContext("2d");
+    g.globalCompositeOperation = "multiply"; g.fillStyle = "#c8382c";
+    for (let k = 1; k < 9; k += 2) g.fillRect(k * 512 / 9, 0, 512 / 9, 512);
+    g.globalCompositeOperation = "source-over"; t.needsUpdate = true; return t;
+  })();
   const flagT = clothCanvas(384, 256, "#121315", true, "#f2efe6");
   const parchT = parchmentCanvas(), rugT = rugCanvas(), moonT = moonCanvas();
 
@@ -809,6 +814,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
   const wallMat = shell(TX.wall);
   const bulkMat = shell(TX.bulk, { envMapIntensity: IN });
   const trimMat = shell(TX.dark);
+  const whiteRail = shell(TX.paintW);
   const ribMat = shell(TX.dark, { envMapIntensity: IN });
   const floorMat = texMat(TX.floor, { side: THREE.DoubleSide, envMapIntensity: IN });
   xrayOnly.push(floorMat);
@@ -832,7 +838,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
   const brickIn = texMat(TX.brick, { roughness: 0.9, envMapIntensity: IN });
   const stoneMat = texMat(TX.stone, { roughness: 0.9, envMapIntensity: 0.25 });
   const sailMat = std({ map: sailT, normalMap: weaveN, normalScale: new THREE.Vector2(0.6, 0.6), roughness: 0.95, side: THREE.DoubleSide });
-  const mizzenMat = std({ map: mizzenT, normalMap: weaveN, normalScale: new THREE.Vector2(0.6, 0.6), roughness: 0.95, side: THREE.DoubleSide });
+  const mizzenMat = std({ map: lateenT, normalMap: weaveN, normalScale: new THREE.Vector2(0.6, 0.6), roughness: 0.95, side: THREE.DoubleSide });
   const flagMat = std({ map: flagT, roughness: 0.9, side: THREE.DoubleSide });
   const canvasIn = texMat(TX.canvasF, { side: THREE.DoubleSide, envMapIntensity: IN });
   const leafMat = std({ map: leafT, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.55 });
@@ -1042,6 +1048,16 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     const pts = []; for (let k = 0; k <= turns * 16; k++) { const a = k / 16 * Math.PI * 2, rr = r * (0.35 + 0.65 * k / (turns * 16)); pts.push(V(x + Math.cos(a) * rr, y + 0.022, z + Math.sin(a) * rr)); }
     return mk(sweep(pts, 0.022, 6, { step: 0.03, uvLen: 0.12 }), ropeMat, parent);
   }
+  const flags = [];
+  function makeFlag(parent, x, y, z, w = 1.8, h = 1.2) {
+    const g = new THREE.PlaneGeometry(w, h, 18, 10);
+    g.translate(w / 2, 0, 0);
+    const o = mk(g, flagMat, parent, x, y, z);
+    o.userData.keep = true;
+    o.userData.base = g.attributes.position.array.slice();
+    flags.push(o);
+    return o;
+  }
   function stool(x, y, z, seatM, legM, parent = P) {
     const sg = grp(parent, x, y, z);
     mk(cylGeo(0.2, 0.2, 0.05, 18), seatM, sg, 0, 0.44, 0);
@@ -1111,13 +1127,39 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
   // Regala, cintones, quilla y roda
   for (const side of [-1, 1]) {
     const cap = []; for (let k = 0; k <= 40; k++) { const x = X0 + (X1 - 0.06 - X0) * k / 40; cap.push(V(x, top(x) + 0.05, side * (half(x) + 0.02))); }
-    mk(sweep(cap, 0.085, 8, { step: 0.08 }), trimMat);
+    mk(sweep(cap, 0.085, 8, { step: 0.08 }), whiteRail);
     for (const [dy, r, x1] of [[0.45, 0.07, X1 - 0.35], [1.35, 0.06, X1 - 0.9]]) {
       const pts = []; for (let k = 0; k <= 40; k++) { const x = X0 + 0.02 + (x1 - X0) * k / 40, y = top(x) - dy; pts.push(V(x, y, side * (halfAt(x, y) + 0.035))); }
       mk(sweep(pts, r, 6, { step: 0.08 }), trimMat);
     }
   }
-  box(0.14, 0.12, half(X0) * 2 + 0.1, trimMat, X0, top(X0) + 0.05, 0);
+  box(0.14, 0.12, half(X0) * 2 + 0.1, whiteRail, X0, top(X0) + 0.05, 0);
+  // Barandilla blanca sobre la borda de la cubierta principal
+  {
+    const balG = lathe([[0.001, 0], [0.03, 0], [0.022, 0.05], [0.032, 0.14], [0.02, 0.25], [0.028, 0.3], [0.001, 0.31]], 8);
+    for (const side of [-1, 1]) {
+      for (let x = -4.25; x <= 8.0; x += 0.3) { if (Math.abs(x - 4.6) < 0.4) continue; mk(balG, whiteRail, P, x, top(x) + 0.1, side * (half(x) + 0.02)); }
+      const pts = []; for (let k = 0; k <= 30; k++) { const x = -4.3 + 12.4 * k / 30; pts.push(V(x, top(x) + 0.42, side * (half(x) + 0.02))); }
+      mk(sweep(pts, 0.035, 6, { step: 0.08 }), whiteRail);
+    }
+  }
+  // Volutas blancas talladas en el casco, como rizos de lana, a proa y a popa
+  {
+    const surf = (x, y, s) => V(x, y, s * (halfAt(x, y) + 0.015));
+    const curl = (x, y, s, size, dir) => {
+      const e = 0.05, p = surf(x, y, s);
+      const dx = surf(x + e, y, s).sub(surf(x - e, y, s)), dy = surf(x, y + e, s).sub(surf(x, y - e, s));
+      const n = new THREE.Vector3().crossVectors(dx, dy).normalize(); if (n.z * s < 0) n.negate();
+      const t1 = dx.normalize(), t2 = new THREE.Vector3().crossVectors(n, t1).normalize();
+      const pts = [];
+      for (let k = 0; k <= 40; k++) { const u = k / 40, a = dir * u * Math.PI * 2 * 1.4, r = size * (1 - u * 0.8); pts.push(p.clone().addScaledVector(t1, r * Math.cos(a)).addScaledVector(t2, r * Math.sin(a)).addScaledVector(n, 0.03 + 0.03 * u)); }
+      mk(sweep(pts, t => size * 0.2 * (1 - t * 0.5), 6, { step: 0.015, caps: true }), whiteRail);
+    };
+    for (const s of [-1, 1]) {
+      [[9.75, 0.6, 0.22], [9.25, 0.2, 0.3], [8.7, -0.25, 0.3], [8.05, -0.62, 0.26], [7.35, -0.9, 0.2]].forEach(([x, y, r], k) => curl(x, y, s, r, k % 2 ? 1 : -1));
+      [[-8.6, 0.85, 0.24], [-8.3, 0.3, 0.26], [-7.85, -0.18, 0.22], [-7.25, -0.5, 0.18]].forEach(([x, y, r], k) => curl(x, y, s, r, k % 2 ? -1 : 1));
+    }
+  }
   {
     const pts = [];
     for (let k = 0; k <= 24; k++) { const x = X0 + 0.1 + (9.9 - X0) * k / 24; pts.push(V(x, bottom(x) - 0.06, 0)); }
@@ -1267,11 +1309,14 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     // Brazola y enjaretado: el sol entra por los huecos al dormitorio
     box(1.16, 0.2, 0.08, woodDark, HATCH.x, 0.1, hz0 - 0.04); box(1.16, 0.2, 0.08, woodDark, HATCH.x, 0.1, hz1 + 0.04);
     box(0.08, 0.2, 1.0, woodDark, hx0 - 0.04, 0.1, HATCH.z); box(0.08, 0.2, 1.0, woodDark, hx1 + 0.04, 0.1, HATCH.z);
+    // Tapa de enjaretado abierta, apoyada hacia estribor
+    const lid = grp(P, HATCH.x, 0.2, hz1 + 0.04);
     for (let k = 0; k < 6; k++) {
       const o = -0.42 + k * 0.168;
-      box(1.0, 0.04, 0.045, woodMid, HATCH.x, 0.2, HATCH.z + o);
-      box(0.045, 0.04, 1.0, woodMid, HATCH.x + o, 0.215, HATCH.z);
+      box(1.0, 0.04, 0.045, woodMid, 0, 0, 0.5 + o, lid);
+      box(0.045, 0.04, 1.0, woodMid, o, 0.015, 0.5, lid);
     }
+    lid.rotation.x = -1.85;
   }
   // Baos con curvas bajo la cubierta
   for (let x = -8.2; x <= 8.8; x += 1.1) {
@@ -1294,9 +1339,9 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
       ropePath([V(x, 0.9, -0.6), V(x - 0.02, 0.5, -0.64), V(x + 0.02, 0.15, -0.67), V(x, 0.03, -0.75)], 0.012);
     }
   }
-  function cannon(x, z, dir) {
-    const g = grp(P, x, 0, z);
-    g.rotation.y = dir > 0 ? 0 : Math.PI;
+  function cannon(x, z, ry, y = 0, parent = P) {
+    const g = grp(parent, x, y, z);
+    g.rotation.y = ry;
     const barrelG = lathe([[0.001, -0.17], [0.045, -0.165], [0.05, -0.13], [0.028, -0.1], [0.1, -0.06], [0.16, 0], [0.166, 0.05], [0.166, 0.3], [0.178, 0.32], [0.178, 0.36], [0.156, 0.38], [0.15, 0.7], [0.16, 0.72], [0.16, 0.76], [0.14, 0.78], [0.12, 1.3], [0.14, 1.35], [0.145, 1.42], [0.12, 1.45], [0.07, 1.45], [0.07, 1.3], [0.001, 1.3]], 22);
     const b = mk(barrelG, iron, g, 0, 0.5, -0.5); b.rotation.x = Math.PI / 2;
     const tr = cyl(0.05, 0.05, 0.44, iron, 0, 0.5, 0.1, g, 10); tr.rotation.z = Math.PI / 2;
@@ -1314,7 +1359,12 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     for (let k = 0; k < 5; k++) sphere(0.075, iron, -0.55 + k * 0.16, 0.075, -0.7, g, 10);
     box(0.9, 0.05, 0.1, woodDark, -0.23, 0.02, -0.7, g);
   }
-  cannon(4.6, 2.3, 1); cannon(4.6, -2.3, -1);
+  cannon(4.6, 2.3, 0); cannon(4.6, -2.3, Math.PI);
+  // Cañón de proa sobre su plataforma, apuntando al frente
+  box(1.25, 0.95, 1.3, woodMid, 7.95, 0.475, 0);
+  for (const s of [-1, 1]) box(1.29, 0.06, 0.06, woodDark, 7.95, 0.95, s * 0.66);
+  for (let k = 0; k < 3; k++) { const h = 0.3 + k * 0.3; box(0.24, h, 0.8, woodMid, 6.72 + k * 0.24, h / 2, 0); }
+  cannon(7.85, 0, Math.PI / 2, 0.95);
   barrel(-2.0, 0.04, -1.9, 0.28, 0.75); barrel(-1.35, 0.04, -2.05, 0.28, 0.75);
   box(0.9, 0.04, 0.1, woodDark, -1.7, 0.02, -1.75); box(0.9, 0.04, 0.1, woodDark, -1.7, 0.02, -2.2);
   coil(2.6, 0, 1.9); coil(-0.4, 0, -2.4, 0.26, 4);
@@ -1324,24 +1374,20 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     mk(sweep([V(6.18, 0.3, -1.3), V(6.3, 0.45, -1.3), V(6.42, 0.3, -1.3)], 0.006, 4), iron);
     mk(sweep([V(6.1, 0.03, -1.9), V(6.25, 1.35, -1.6)], 0.022, 6), woodMid);
     for (let k = 0; k < 12; k++) ropePath([V(6.1, 0.1, -1.9), V(6.02 + rand() * 0.16, 0.02, -2.0 + rand() * 0.2)], 0.01);
-    const rodBase = V(6.8, 0.1, 2.6), rodTip = V(7.6, 2.6, 3.6);
-    mk(sweep([rodBase, rodTip], t => 0.022 - t * 0.016, 6), woodMid);
-    rope(rodTip, V(7.9, -1.3, 4.3), 0.003, 0.2);
   }
   mk(rbox(0.6, 0.5, 0.6, 0.02), crateMat, P, -2.6, 0.25, 2.3);
   // Molinete del ancla con sus bitas
   {
-    const w = mk(cylGeo(0.2, 0.2, 1.4, 8), woodDark, P, 8.1, 0.45, 0); w.rotation.x = Math.PI / 2;
-    for (const s of [-1, 1]) { box(0.25, 0.75, 0.14, woodDark, 8.1, 0.37, s * 0.78); const c = cyl(0.21, 0.21, 0.05, iron, 8.1, 0.45, s * 0.35); c.rotation.x = Math.PI / 2; }
-    for (let k = 0; k < 3; k++) { const h = cyl(0.025, 0.025, 0.8, woodMid, 8.1, 0.45, 0.1 - k * 0.1, P, 6); h.rotation.x = k * 0.9; }
-    ropePath([V(8.1, 0.64, 0.0), V(8.5, 0.62, -0.4), V(9.1, 0.6, -halfAt(9.3, 0.6) + 0.3), V(9.3, top(9.3) - 0.5, -halfAt(9.3, top(9.3) - 0.5) + 0.05)], 0.035);
+    for (const s of [-1, 1]) mk(lathe([[0.001, 0], [0.1, 0], [0.09, 0.5], [0.11, 0.56], [0.001, 0.6]], 10), woodDark, P, 8.95, 0, s * 0.5);
+    ropePath([V(8.95, 0.45, -0.5), V(9.1, 0.5, -0.9), V(9.25, 0.75, -halfAt(9.3, 0.75) + 0.12), V(9.3, top(9.3) - 0.5, -halfAt(9.3, top(9.3) - 0.5) + 0.05)], 0.035);
+    for (let k = 0; k < 3; k++) { const t = mk(new THREE.TorusGeometry(0.11, 0.035, 6, 14), ropeMat, P, 8.95, 0.12 + k * 0.08, -0.5); t.rotation.x = Math.PI / 2; }
   }
   // Escaleras a la toldilla
   for (const side of [-1, 1]) {
     for (let k = 0; k < 8; k++) box(0.27, 0.06, 0.55, woodMid, -3.05 - k * 0.19, (k + 1) * 0.275, side * 1.75);
     for (const s2 of [-1, 1]) { const st = box(2.9, 0.12, 0.05, woodDark, -3.72, 1.1, side * 1.75 + s2 * 0.3); st.rotation.z = -0.97; }
-    mk(sweep([V(-2.95, 0, side * 2.08), V(-2.95, 0.95, side * 2.08)], 0.03, 6), woodDark);
-    mk(sweep([V(-2.95, 0.95, side * 2.08), V(-4.35, 2.95, side * 2.08)], 0.028, 6), woodDark);
+    mk(sweep([V(-2.95, 0, side * 2.08), V(-2.95, 0.95, side * 2.08)], 0.03, 6), whiteRail);
+    mk(sweep([V(-2.95, 0.95, side * 2.08), V(-4.35, 2.95, side * 2.08)], 0.028, 6), whiteRail);
   }
 
   /* ---------- Castillo de popa: cocina y comedor ---------- */
@@ -1367,7 +1413,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     mk(boxGeo(0.06, 1.8, 0.9), crateMat, dg, 0, 0.9, 0.45);
     for (const y of [0.3, 1.4]) box(0.07, 0.05, 0.55, iron, 0, y, 0.25, dg);
     mk(new THREE.TorusGeometry(0.05, 0.01, 6, 12), iron, dg, 0.05, 0.95, 0.8);
-    dg.rotation.y = 1.1;
+    dg.rotation.y = 1.5;
     const bg = new THREE.ExtrudeGeometry(wallShape(-CAB_Z, CAB_Z, CAB_H, [rectHole(-1.5, 1.15, -0.75, 1.8), rectHole(-0.35, 1.15, 0.35, 1.8), rectHole(0.75, 1.15, 1.5, 1.8)]), { depth: 0.1, bevelEnabled: false });
     scaleUV(bg, 0.2, 0.5);
     const back = mk(bg, wallMat); back.rotation.y = Math.PI / 2; back.position.x = CAB_X0 - 0.05;
@@ -1464,15 +1510,15 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     const railY = RY + 0.08, capY = RY + 0.66;
     const run = (ax, az, bx, bz, skip) => {
       const L = Math.hypot(bx - ax, bz - az), n = Math.round(L / 0.2);
-      for (let k = 0; k <= n; k++) { const t = k / n, x = ax + (bx - ax) * t, z = az + (bz - az) * t; if (skip && skip(x, z)) continue; mk(balG, woodMid, P, x, railY, z); }
+      for (let k = 0; k <= n; k++) { const t = k / n, x = ax + (bx - ax) * t, z = az + (bz - az) * t; if (skip && skip(x, z)) continue; mk(balG, whiteRail, P, x, railY, z); }
     };
     const gap = (x, z) => Math.abs(x + 4.35) < 0.05 && Math.abs(Math.abs(z) - 1.75) < 0.36;
-    run(-9.05, -2.35, -4.35, -2.35); run(-9.05, 2.35, -4.35, 2.35); run(-9.05, -2.35, -9.05, 2.35); run(-4.35, -2.35, -4.35, 2.35, gap);
-    for (const [a, b] of [[V(-9.05, 0, -2.35), V(-4.35, 0, -2.35)], [V(-9.05, 0, 2.35), V(-4.35, 0, 2.35)], [V(-9.05, 0, -2.35), V(-9.05, 0, 2.35)]]) {
-      for (const [y, h, w] of [[railY, 0.06, 0.1], [capY, 0.07, 0.13]]) { const L = a.distanceTo(b); const o = box(L + 0.1, h, w, woodDark, (a.x + b.x) / 2, y, (a.z + b.z) / 2); if (Math.abs(a.x - b.x) < 0.01) o.rotation.y = Math.PI / 2; }
+    run(-9.05, -2.35, -4.35, -2.35); run(-9.05, 2.35, -4.35, 2.35); run(-9.05, -2.35, -9.05, 2.35, (x, z) => z > -1.3 && z < -0.5); run(-4.35, -2.35, -4.35, 2.35, gap);
+    for (const [a, b] of [[V(-9.05, 0, -2.35), V(-4.35, 0, -2.35)], [V(-9.05, 0, 2.35), V(-4.35, 0, 2.35)], [V(-9.05, 0, -2.35), V(-9.05, 0, -1.3)], [V(-9.05, 0, -0.5), V(-9.05, 0, 2.35)]]) {
+      for (const [y, h, w] of [[railY, 0.06, 0.1], [capY, 0.07, 0.13]]) { const L = a.distanceTo(b); const o = box(L + 0.1, h, w, whiteRail, (a.x + b.x) / 2, y, (a.z + b.z) / 2); if (Math.abs(a.x - b.x) < 0.01) o.rotation.y = Math.PI / 2; }
     }
-    for (const [z0, z1] of [[-2.35, -2.12], [-1.38, 1.38], [2.12, 2.35]]) for (const [y, h, w] of [[railY, 0.06, 0.1], [capY, 0.07, 0.13]]) { const o = box(z1 - z0 + 0.1, h, w, woodDark, -4.35, y, (z0 + z1) / 2); o.rotation.y = Math.PI / 2; }
-    for (const [x, z] of [[-9.05, -2.35], [-9.05, 2.35], [-4.35, -2.35], [-4.35, 2.35], [-4.35, -1.38], [-4.35, 1.38], [-4.35, -2.12], [-4.35, 2.12]]) mk(lathe([[0.001, 0], [0.07, 0], [0.07, 0.62], [0.08, 0.66], [0.05, 0.72], [0.02, 0.78], [0.001, 0.8]], 10), woodDark, P, x, RY, z);
+    for (const [z0, z1] of [[-2.35, -2.12], [-1.38, 1.38], [2.12, 2.35]]) for (const [y, h, w] of [[railY, 0.06, 0.1], [capY, 0.07, 0.13]]) { const o = box(z1 - z0 + 0.1, h, w, whiteRail, -4.35, y, (z0 + z1) / 2); o.rotation.y = Math.PI / 2; }
+    for (const [x, z] of [[-9.05, -2.35], [-9.05, 2.35], [-4.35, -2.35], [-4.35, 2.35], [-4.35, -1.38], [-4.35, 1.38], [-4.35, -2.12], [-4.35, 2.12], [-9.05, -1.3], [-9.05, -0.5]]) mk(lathe([[0.001, 0], [0.07, 0], [0.07, 0.62], [0.08, 0.66], [0.05, 0.72], [0.02, 0.78], [0.001, 0.8]], 10), whiteRail, P, x, RY, z);
     // Faroles de popa sobre pescantes de hierro
     for (const s of [-1, 1]) {
       mk(sweep([V(-9.05, RY + 0.66, s * 2.35), V(-9.25, RY + 0.95, s * 2.45), V(-9.3, RY + 1.2, s * 2.45)], 0.022, 6), iron);
@@ -1509,47 +1555,60 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
       const o = sphere(0.068, orangeMats[k % 3], Math.cos(a) * r * 0.6, 1.5 + u * 0.42, Math.sin(a) * r * 0.6, g, 12); o.scale.y = 0.92;
     }
   }
-  mikanTree(-5.2, -1.3); mikanTree(-5.2, 1.3); mikanTree(-8.4, -1.5);
+  mikanTree(-5.2, -1.3); mikanTree(-5.2, 1.3); mikanTree(-7.55, -1.62);
   sphere(0.068, orangeMats[1], -7.6, RY + 0.07, 0.3, P, 12);
-  // Timón
+  // Caña del timón con cabeza de oveja: el Merry no lleva rueda
+  let tiller;
   {
-    mk(lathe([[0.001, 0], [0.16, 0], [0.14, 0.08], [0.1, 0.12], [0.08, 0.5], [0.1, 0.7], [0.12, 0.85], [0.001, 0.9]], 12), woodDark, P, -5.9, RY, 0);
-    const wheel = grp(P, -5.75, RY + 0.98, 0);
-    mk(new THREE.TorusGeometry(0.45, 0.035, 8, 32), woodMid, wheel);
-    mk(new THREE.TorusGeometry(0.3, 0.02, 6, 24), woodMid, wheel);
-    const spokeG = lathe([[0.001, 0], [0.025, 0], [0.03, 0.1], [0.02, 0.2], [0.03, 0.3], [0.022, 0.42], [0.026, 0.5], [0.02, 0.56], [0.03, 0.62], [0.025, 0.66], [0.001, 0.68]], 8);
-    for (let k = 0; k < 8; k++) { const sp = mk(spokeG, woodMid, wheel); sp.rotation.z = k * Math.PI / 4; }
-    mk(cylGeo(0.08, 0.08, 0.12, 14), brass, wheel).rotation.x = Math.PI / 2;
-    wheel.rotation.y = Math.PI / 2;
+    mk(lathe([[0.001, 0], [0.14, 0], [0.12, 0.06], [0.09, 0.1], [0.08, 0.5], [0.1, 0.55], [0.001, 0.56]], 12), woodDark, P, -8.85, RY, 0);
+    tiller = grp(P, -8.85, RY + 0.52, 0);
+    tiller.userData.keep = true;
+    mk(sweep([V(0, 0, 0), V(0.4, 0.12, 0), V(0.85, 0.24, 0)], t => 0.05 - t * 0.015, 8), woodMid, tiller);
+    const sh = grp(tiller, 0.93, 0.29, 0);
+    mk(sphGeo(0.11, 16, 12), paintW, sh).scale.set(1.25, 0.95, 0.9);
+    mk(sphGeo(0.06, 12, 8), paintW, sh, 0.11, -0.03, 0).scale.set(1.3, 0.9, 0.9);
+    for (const s2 of [-1, 1]) { mk(new THREE.TorusGeometry(0.05, 0.022, 6, 12, Math.PI * 1.5), paintG, sh, -0.03, 0.03, s2 * 0.09); sphere(0.016, paintBlack, 0.08, 0.04, s2 * 0.075, sh, 6); }
+    for (let k = 0; k < 6; k++) sphere(0.04, paintW, -0.1 + Math.cos(k) * 0.03, 0.06 + Math.sin(k * 2) * 0.03, (k % 2 ? 1 : -1) * 0.04, sh, 8);
   }
+  // Cañón de popa asomado entre la balaustrada
+  cannon(-8.55, -0.9, -Math.PI / 2, RY, G.roof);
   // Tumbona de lectura
   {
-    const c = grp(P, -7.1, RY, 0.9);
+    const c = grp(P, -7.1, RY, 1.45);
     for (let k = 0; k < 5; k++) box(0.1, 0.03, 0.55, woodMid, -0.2 + k * 0.1, 0.4, 0, c);
     for (let k = 0; k < 6; k++) box(0.03, 0.1, 0.55, woodMid, -0.33 - k * 0.025, 0.47 + k * 0.1, 0, c);
     for (const [dx, dz] of [[-0.25, -0.24], [0.25, -0.24], [-0.25, 0.24], [0.25, 0.24]]) box(0.05, 0.4, 0.05, woodDark, dx, 0.2, dz, c);
     for (const s of [-1, 1]) { const b = box(0.05, 0.75, 0.05, woodDark, -0.38, 0.72, s * 0.26, c); b.rotation.z = -0.25; }
   }
-  // Palo de mesana con su vela
+  // Palo de mesana con vela latina triangular a rayas rojas y blancas
+  const MX = -6.9;
   {
-    const MX = -7.9;
-    mk(lathe([[0.001, 0], [0.15, 0], [0.13, 1.5], [0.11, 4], [0.08, 6.2], [0.001, 6.25]], 14), woodDark, P, MX, RY, 0);
-    for (const y of [1.0, 2.4]) { const t = mk(new THREE.TorusGeometry(0.135 - y * 0.008, 0.012, 5, 16), iron, P, MX, RY + y, 0); t.rotation.x = Math.PI / 2; }
-    const yardG = lathe([[0.001, -1.95], [0.035, -1.95], [0.06, -1], [0.07, 0], [0.06, 1], [0.035, 1.95], [0.001, 1.95]], 10);
-    for (const y of [5.3, 2.1]) { const yd = mk(yardG, woodDark, P, MX + 0.14, RY + y, 0); yd.rotation.x = Math.PI / 2; }
-    const nu = 14, nv = 10, pos = [], uv = [], idx = [];
+    mk(lathe([[0.001, 0], [0.15, 0], [0.13, 1.5], [0.11, 4], [0.08, 6.6], [0.001, 6.65]], 14), woodDark, P, MX, RY, 0);
+    for (const y of [1.0, 2.4, 5.0]) { const t = mk(new THREE.TorusGeometry(0.135 - y * 0.008, 0.012, 5, 16), iron, P, MX, RY + y, 0); t.rotation.x = Math.PI / 2; }
+    const A = V(MX + 1.7, RY + 2.4, 0.2), B = V(MX - 1.2, RY + 6.9, 0.2), C = V(MX - 1.6, RY + 2.35, 0.2);
+    mk(sweep([A.clone().lerp(B, -0.06), B.clone().lerp(A, -0.04)], t => 0.075 - Math.abs(t - 0.5) * 0.07, 8), woodDark);
+    const nu = 16, nv = 10, pos = [], uv = [], idx = [];
+    const xmin = MX - 1.7, xw = 3.5, ymin = RY + 2.3, yh = 4.7;
     for (let j = 0; j <= nv; j++) for (let i = 0; i <= nu; i++) {
-      const u = i / nu, v = j / nv;
-      pos.push(MX + 0.2 + 0.45 * Math.sin(Math.PI * v) * Math.cos((u - 0.5) * Math.PI * 0.85), RY + 2.15 + v * 3.1, (0.5 - u) * 3.6);
-      uv.push(u, v);
+      const u = i / nu, v = j / nv, p = A.clone().lerp(B, u).lerp(C, v);
+      p.z += 0.42 * Math.sin(Math.PI * v) * Math.sin(Math.PI * u) * (1 - v * 0.4);
+      pos.push(p.x, p.y, p.z); uv.push((p.x - xmin) / xw, (p.y - ymin) / yh);
     }
     for (let j = 0; j < nv; j++) for (let i = 0; i < nu; i++) { const a = j * (nu + 1) + i, b = a + nu + 1; idx.push(a, a + 1, b, a + 1, b + 1, b); }
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
     g.setIndex(idx); g.computeVertexNormals();
-    const ms = mk(g, mizzenMat); ms.userData.keep = true; ms.userData.sail = { y0: RY + 2.15, h: 3.1, w: 3.6, amp: 0.04 };
-    for (const s of [-1, 1]) { rope(V(MX, RY + 5.9, s * 0.1), V(-9.05, RY + 0.66, s * 1.9), 0.012); rope(V(MX, RY + 5.9, s * 0.1), V(-6.6, RY + 0.66, s * 2.35), 0.012); }
-    rope(V(MX, RY + 6.1, 0), V(MAST_X, 9.6, 0), 0.014, 0.25);
+    const ms = mk(g, mizzenMat); ms.userData.keep = true; ms.userData.sail = { axis: "z", y0: ymin, h: yh, c: MX, w: xw, amp: 0.06 };
+    ropePath([B, C.clone().lerp(B, 0.5).add(V(0, 0, 0.1)), C], 0.02); ropePath([C, A.clone().lerp(C, 0.5).add(V(0, -0.05, 0.12)), A], 0.02);
+    const pivot = A.clone().lerp(B, (MX - A.x) / (B.x - A.x));
+    rope(pivot, V(MX, RY + 6.45, 0.05), 0.016);
+    const pr = mk(new THREE.TorusGeometry(0.16, 0.03, 6, 14), woodMid, P, MX, pivot.y, 0); pr.rotation.x = Math.PI / 2;
+    rope(C, V(-9.05, RY + 0.66, 0.6), 0.014, 0.1);
+    rope(A, V(-4.35, RY + 0.66, 0.4), 0.014, 0.05);
+    for (const s2 of [-1, 1]) { rope(V(MX, RY + 6.2, s2 * 0.1), V(-6.3, RY + 0.66, s2 * 2.35), 0.012); rope(V(MX, RY + 6.2, s2 * 0.1), V(-7.7, RY + 0.66, s2 * 2.35), 0.012); }
+    rope(V(MX, RY + 6.5, 0), V(MAST_X, 9.6, 0), 0.014, 0.25);
+    sphere(0.07, brass, MX, RY + 6.68, 0);
+    makeFlag(P, MX, RY + 6.45, 0, 1.2, 0.8);
   }
 
   /* ---------- Mástil mayor, cofa, vergas, velas y jarcia ---------- */
@@ -1600,14 +1659,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
       rope(p.clone().add(V(-0.02, 0, 0)), p.clone().add(V(-0.07, -0.13, 0)), 0.006);
     }
   }
-  const flag = (() => {
-    const g = new THREE.PlaneGeometry(1.8, 1.2, 18, 10);
-    g.translate(0.9, 0, 0);
-    const o = mk(g, flagMat, P, MAST_X, 12.95, 0);
-    o.userData.keep = true;
-    o.userData.base = g.attributes.position.array.slice();
-    return o;
-  })();
+  makeFlag(P, MAST_X, 12.95, 0);
   // Obenques, flechastes, estays, brazas, amantillos y driza
   {
     for (const s of [-1, 1]) {
@@ -1806,7 +1858,6 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     for (let k = 0; k < 3; k++) { mk(rbox(0.52, 0.16, 0.55, 0.06, 3), sofaM, sofa, -0.54 + k * 0.54, 0.27, 0.02); mk(rbox(0.52, 0.42, 0.14, 0.06, 3), sofaM, sofa, -0.54 + k * 0.54, 0.54, -0.24).rotation.x = -0.12; }
     for (const s of [-1, 1]) mk(rbox(0.14, 0.34, 0.6, 0.06, 3), sofaM, sofa, s * 0.86, 0.36, 0);
   }
-  stool(-1.0, FLOOR, 0.82, woodMidIn, woodDarkIn);
   const lockerCols = [0x5a6e4c, 0x4c5e6e, 0x6e5a4c];
   for (let k = 0; k < 3; k++) {
     const lk = grp(P, 3.12, FLOOR, -1.2 + k * 0.52);
@@ -1882,21 +1933,44 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
   lantern(5.7, -0.62, 0, P, true, 1.4, -0.14);
 
   /* =========================================================
-     TRIPULACIÓN (maniquíes articulados)
+     TRIPULACIÓN: figuras articuladas que viven y se mueven por el barco
      ========================================================= */
   const skinMat = std({ color: 0xe9bf9a, roughness: 0.55 });
   const eyeWhite = std({ color: 0xf2f0ea, roughness: 0.2 }), eyeDark = std({ color: 0x1a120c, roughness: 0.1 }), lipMat = std({ color: 0xa8645a, roughness: 0.5 });
   const hairM = c => std({ color: c, roughness: 0.45 });
   const leather = std({ color: 0x3a2618, roughness: 0.5 }), sandal = std({ color: 0x7a5234, roughness: 0.6 });
   const strawMat = std({ map: TX.straw.map, normalMap: TX.straw.normalMap, roughness: 0.8 });
+  const crewLayer = grp(ship);
   const crew = [];
+
+  // Fusiona las piezas de cada articulación por material sin aplanar la jerarquía (las articulaciones siguen moviéndose)
+  function bakeShallow(node) {
+    const meshes = node.children.filter(c => c.isMesh && !c.userData.keep);
+    if (meshes.length > 1) {
+      const buckets = new Map();
+      for (const o of meshes) {
+        o.updateMatrix();
+        const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+        if (!g.attributes.normal) g.computeVertexNormals();
+        g.applyMatrix4(o.matrix);
+        if (o.matrix.determinant() < 0) flipWinding(g);
+        if (!buckets.has(o.material.uuid)) buckets.set(o.material.uuid, { m: o.material, list: [] });
+        buckets.get(o.material.uuid).list.push(g);
+        node.remove(o);
+      }
+      buckets.forEach(b => { const mesh = new THREE.Mesh(mergeList(b.list, b.m), b.m); mesh.castShadow = mesh.receiveShadow = true; node.add(mesh); });
+    }
+    node.children.filter(c => !c.isMesh).forEach(bakeShallow);
+  }
+
   function person(spec) {
-    const root = new THREE.Group(); root.userData.keep = true;
-    const m = spec.m, J = { arm: {}, leg: {} };
+    const root = new THREE.Group();
+    const m = spec.m, J = { arm: {}, leg: {} }, props = {};
     const pelvis = grp(root, 0, 0.95, 0); J.pelvis = pelvis;
     mk(sphGeo(1, 18, 12), m.pants, pelvis).scale.set(0.12, 0.1, 0.165);
+    mk(cylGeo(0.155, 0.15, 0.05, 18), m.belt || leather, pelvis, 0, 0.06, 0).scale.set(0.78, 1, 1);
     const spine = grp(pelvis, 0, 0.04, 0); J.spine = spine;
-    mk(lathe([[0.001, 0], [0.14, 0], [0.132, 0.1], [0.148, 0.24], [0.16, 0.34], [0.13, 0.42], [0.07, 0.46], [0.001, 0.47]], 20), m.top, spine).scale.set(0.7, 1, 1);
+    mk(lathe([[0.001, 0], [0.14, 0], [0.132, 0.1], [0.148, 0.24], [0.162, 0.34], [0.13, 0.42], [0.07, 0.46], [0.001, 0.47]], 22), m.top, spine).scale.set(0.68, 1, 1);
     mk(cylGeo(0.045, 0.05, 0.12, 12), m.skin, spine, 0.005, 0.5, 0);
     const head = grp(spine, 0.01, 0.6, 0); J.head = head;
     mk(sphGeo(0.105, 24, 18), m.skin, head, 0, 0.02, 0).scale.set(1.05, 1.18, 0.92);
@@ -1906,7 +1980,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
       mk(sphGeo(0.017, 10, 8), eyeWhite, head, 0.088, 0.032, s * 0.036);
       mk(sphGeo(0.009, 8, 6), eyeDark, head, 0.102, 0.032, s * 0.036);
       mk(sphGeo(1, 10, 8), m.skin, head, 0.0, 0.01, s * 0.1).scale.set(0.028, 0.045, 0.014);
-      box(0.01, 0.008, 0.035, m.hair, 0.1, 0.062, s * 0.036, head);
+      box(0.012, 0.008, 0.035, m.hair, 0.1, 0.062, s * 0.036, head);
     }
     box(0.006, 0.006, 0.04, lipMat, 0.1, -0.045, 0, head);
     for (const s of [-1, 1]) {
@@ -1917,8 +1991,9 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
       mk(sphGeo(0.043, 10, 8), m.fore, el);
       mk(cylGeo(0.041, 0.032, 0.25, 12), m.fore, el, 0, -0.125, 0);
       const wr = grp(el, 0, -0.25, 0);
-      mk(rbox(0.04, 0.1, 0.085, 0.017), m.skin, wr, 0, -0.05, 0);
-      const th = mk(cylGeo(0.013, 0.012, 0.05, 6), m.skin, wr, 0.02, -0.03, s * 0.04); th.rotation.x = s * 0.6;
+      mk(rbox(0.04, 0.075, 0.085, 0.017), m.skin, wr, 0, -0.035, 0);
+      for (let f = 0; f < 4; f++) mk(new THREE.CapsuleGeometry(0.01, 0.04, 2, 6), m.skin, wr, 0.004, -0.09, -0.03 + f * 0.02);
+      const th = mk(new THREE.CapsuleGeometry(0.011, 0.035, 2, 6), m.skin, wr, 0.022, -0.04, s * 0.042); th.rotation.x = s * 0.6;
       J.arm[s] = { sh, el, wr };
       const hp = grp(pelvis, 0, -0.03, s * 0.095);
       mk(cylGeo(0.078, 0.058, 0.44, 12), m.pants, hp, 0, -0.22, 0);
@@ -1929,96 +2004,314 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
       mk(rbox(0.25, 0.075, 0.1, 0.03), m.shoe, an, 0.055, -0.015, 0);
       J.leg[s] = { hp, kn, an };
     }
-    for (const s of [-1, 1]) J.arm[s].sh.rotation.x = -s * 0.1;
     if (spec.hair) spec.hair(head, m.hair);
-    if (spec.extra) spec.extra(J, root);
-    return { root, J };
+    if (spec.extra) spec.extra(J, props);
+    for (const k in props) props[k].visible = false;
+    bakeShallow(root);
+    return { root, J, props };
   }
-  function sit(J, seatY) { J.pelvis.position.y = seatY + 0.07; for (const s of [-1, 1]) { J.leg[s].hp.rotation.z = Math.PI / 2; J.leg[s].kn.rotation.z = -Math.PI / 2; J.leg[s].hp.rotation.x = -s * 0.06; } }
   const capHair = (head, hm, sc = [1.08, 1.02, 1.04], y = 0.045) => mk(sphGeo(0.112, 20, 14), hm, head, -0.012, y, 0).scale.set(...sc);
-  function place(obj, parent, x, y, z, ry, name, room) { obj.root.position.set(x, y, z); obj.root.rotation.y = ry; parent.add(obj.root); bake(obj.root); crew.push({ name, room, obj: obj.root }); }
+  const prop = (parent, x, y, z) => { const g = grp(parent, x, y, z); g.userData.keep = false; return g; };
 
-  // Luffy, a horcajadas sobre el mascarón
+  // Objetos que llevan en las manos
+  const makeRod = wr => { const g = prop(wr, 0, -0.06, 0); mk(sweep([V(0, 0, 0), V(1.55, -1.25, 0)], t => 0.02 - t * 0.014, 6), woodMid, g); mk(cylGeo(0.035, 0.035, 0.03, 12), steelIn, g, 0.12, -0.1, 0.03).rotation.x = Math.PI / 2; const tip = new THREE.Object3D(); tip.position.set(1.55, -1.25, 0); g.add(tip); g.userData.tip = tip; return g; };
+  const makeWeight = wr => { const g = prop(wr, 0, -0.07, 0); const b = cyl(0.018, 0.018, 0.62, iron, 0, 0, 0, g, 8); b.rotation.x = Math.PI / 2; for (const s of [-1, 1]) { const d = cyl(0.12, 0.12, 0.06, iron, 0, 0, s * 0.24, g, 16); d.rotation.x = Math.PI / 2; } return g; };
+  const makeCan = wr => { const g = prop(wr, 0.0, -0.1, 0); mk(lathe([[0.001, -0.17], [0.08, -0.17], [0.085, -0.02], [0.05, 0.0], [0.001, 0.0]], 14), copperIn, g); mk(sweep([V(0.06, -0.12, 0), V(0.16, -0.06, 0), V(0.24, 0.0, 0)], 0.012, 6), copperIn, g); return g; };
+  const makeHammer = wr => { const g = prop(wr, 0, -0.06, 0); mk(sweep([V(0, 0, 0), V(0.26, 0, 0)], 0.014, 6), woodMid, g); box(0.05, 0.05, 0.12, ironIn, 0.27, 0, 0, g); return g; };
+  const makeMeat = wr => { const g = prop(wr, 0.02, -0.09, 0); const b = cyl(0.018, 0.018, 0.34, boneMat, 0, 0, 0, g, 8); b.rotation.x = Math.PI / 2; sphere(0.09, meatMat, 0, 0, 0.08, g, 12).scale.set(0.9, 0.9, 1.3); return g; };
+
+  // Luffy
   {
-    const p = person({ m: { skin: skinMat, top: fab(TX.luffyTop, 1), sleeve: skinMat, fore: skinMat, pants: fab(TX.luffyShorts, 1), shin: skinMat, shoe: sandal, hair: hairM(0x121212) },
+    const p = person({ m: { skin: skinMat, top: fab(TX.luffyTop, 1), sleeve: skinMat, fore: skinMat, pants: fab(TX.luffyShorts, 1), shin: skinMat, shoe: sandal, hair: hairM(0x121212), belt: std({ color: 0xd8c08a, roughness: 0.8 }) },
       hair: (h, hm) => { capHair(h, hm); for (let k = 0; k < 9; k++) { const a = k / 9 * Math.PI * 2; const c = mk(new THREE.ConeGeometry(0.025, 0.07, 6), hm, h, -0.01 + Math.cos(a) * 0.09, 0.07, Math.sin(a) * 0.1); c.rotation.set(Math.sin(a) * 1.2, 0, -Math.cos(a) * 1.2); }
         mk(lathe([[0.001, 0.0], [0.3, 0.0], [0.315, 0.012], [0.3, 0.018], [0.13, 0.02], [0.128, 0.1], [0.11, 0.135], [0.001, 0.14]], 32), strawMat, h, 0, 0.1, 0).rotation.z = -0.08;
-        mk(cylGeo(0.131, 0.13, 0.035, 28, true), std({ color: 0xb8262a, roughness: 0.6, side: THREE.DoubleSide }), h, 0, 0.14, 0); },
-      extra: J => { J.pelvis.position.y = 0.52; for (const s of [-1, 1]) { J.leg[s].hp.rotation.z = 0.75; J.leg[s].hp.rotation.x = -s * 0.55; J.leg[s].kn.rotation.z = -1.05; J.arm[s].sh.rotation.z = 0.35; J.arm[s].sh.rotation.x = -s * 0.4; J.arm[s].el.rotation.z = 0.25; } } });
-    place(p, G.hull, 10.92, 2.12, 0, 0, "Luffy", "figurehead");
+        mk(cylGeo(0.131, 0.13, 0.035, 28, true), std({ color: 0xb8262a, roughness: 0.6, side: THREE.DoubleSide }), h, 0, 0.14, 0);
+        mk(new THREE.CapsuleGeometry(0.004, 0.03, 2, 4), std({ color: 0x8a4a3a, roughness: 0.6 }), h, 0.09, -0.005, -0.06).rotation.x = 0.4; },
+      extra: (J, props) => { props.meat = makeMeat(J.arm[1].wr); } });
+    crew.push({ name: "Luffy", ...p, start: "headSeat", spots: ["headSeat", "headSeat", "headSeat", "eat", "bowLook", "railS", "fish"] });
   }
-  // Zoro, echando la siesta contra la borda
+  // Zoro
   {
-    const p = person({ m: { skin: skinMat, top: fab(TX.white, 1), sleeve: fab(TX.white, 1), fore: skinMat, pants: fab(TX.black, 1), shin: fab(TX.black, 1), shoe: leather, hair: hairM(0x3f9a4a) },
-      hair: (h, hm) => capHair(h, hm, [1.05, 0.9, 1.02], 0.05),
-      extra: J => {
-        J.pelvis.position.y = 0.14; J.spine.rotation.z = 0.32; J.head.rotation.z = -0.4;
-        for (const s of [-1, 1]) { J.leg[s].hp.rotation.z = Math.PI / 2 - 0.2; J.leg[s].hp.rotation.x = -s * 0.12; J.leg[s].kn.rotation.z = -0.3; J.arm[s].sh.rotation.z = 0.55; J.arm[s].sh.rotation.x = s * 0.55; J.arm[s].el.rotation.z = 1.7; }
-        mk(cylGeo(0.17, 0.17, 0.12, 18), fab(TX.zoroBand, 1), J.pelvis, 0, 0.06, 0).scale.set(0.75, 1, 1);
-        const sw = grp(J.pelvis, 0.05, 0.02, -0.2); sw.rotation.z = 1.3;
+    const p = person({ m: { skin: skinMat, top: fab(TX.white, 1), sleeve: fab(TX.white, 1), fore: skinMat, pants: fab(TX.black, 1), shin: fab(TX.black, 1), shoe: leather, hair: hairM(0x3f9a4a), belt: fab(TX.zoroBand, 1) },
+      hair: (h, hm) => { capHair(h, hm, [1.05, 0.9, 1.02], 0.05); for (let k = 0; k < 3; k++) mk(new THREE.TorusGeometry(0.008, 0.003, 4, 8), brass, h, -0.005, -0.03 - k * 0.012, -0.108); },
+      extra: (J, props) => {
+        mk(cylGeo(0.17, 0.17, 0.12, 18), fab(TX.zoroBand, 1), J.pelvis, 0, 0.1, 0).scale.set(0.75, 1, 1);
+        const sw = grp(J.pelvis, 0.02, 0.0, -0.19); sw.rotation.z = 1.15; sw.rotation.x = -0.2;
         [[0xf2f2ee, 0x1a1a1a], [0xa8282a, 0x111111], [0x151515, 0x6a4ab0]].forEach(([sheath, hilt], k) => {
-          const s = grp(sw, 0, 0, -k * 0.04);
+          const s = grp(sw, 0, 0, -k * 0.045);
           mk(lathe([[0.001, -0.75], [0.02, -0.75], [0.022, 0], [0.001, 0]], 8), std({ color: sheath, roughness: 0.3 }), s);
           mk(cylGeo(0.045, 0.045, 0.01, 10), brass, s, 0, 0.01, 0);
           mk(cylGeo(0.017, 0.018, 0.24, 8), std({ color: hilt, roughness: 0.6 }), s, 0, 0.13, 0);
         });
+        props.weight = makeWeight(J.arm[1].wr);
       } });
-    place(p, G.deck, -1.3, 0, 2.35, Math.PI / 2, "Zoro", "deck");
+    crew.push({ name: "Zoro", ...p, start: "nap", spots: ["nap", "nap", "lift", "lift", "aftLook", "railP"] });
   }
-  // Nami, dibujando cartas
+  // Nami
   {
-    const p = person({ m: { skin: skinMat, top: fab(TX.namiTop), sleeve: fab(TX.namiTop), fore: skinMat, pants: fab(TX.namiSkirt), shin: skinMat, shoe: sandal, hair: hairM(0xe0702a) },
-      hair: (h, hm) => { capHair(h, hm, [1.1, 1.05, 1.1]); mk(new THREE.CapsuleGeometry(0.085, 0.16, 4, 10), hm, h, -0.07, -0.1, 0).scale.set(1, 1, 1.45); },
-      extra: J => { sit(J, 0.45); J.head.rotation.z = -0.3; for (const s of [-1, 1]) { J.arm[s].sh.rotation.z = 1.0; J.arm[s].sh.rotation.x = s * 0.2; J.arm[s].el.rotation.z = 0.7; } } });
-    place(p, G.hull, -5.98, FLOOR, 1.15, 0, "Nami", "women");
+    const p = person({ m: { skin: skinMat, top: fab(TX.namiTop, 1), sleeve: fab(TX.namiTop, 1), fore: skinMat, pants: fab(TX.namiSkirt, 1), shin: skinMat, shoe: sandal, hair: hairM(0xe0702a) },
+      hair: (h, hm) => { capHair(h, hm, [1.1, 1.05, 1.1]); mk(new THREE.CapsuleGeometry(0.085, 0.16, 4, 10), hm, h, -0.07, -0.1, 0).scale.set(1, 1, 1.45); for (const s of [-1, 1]) mk(new THREE.CapsuleGeometry(0.03, 0.12, 3, 8), hm, h, 0.04, -0.05, s * 0.1); },
+      extra: (J, props) => { props.can = makeCan(J.arm[1].wr); const lp = grp(J.arm[-1].wr, 0, -0.01, 0); mk(cylGeo(0.03, 0.03, 0.015, 12), std({ color: 0x3a6fc4, roughness: 0.3 }), lp).rotation.z = Math.PI / 2; } });
+    crew.push({ name: "Nami", ...p, start: "tend", spots: ["tend", "tend", "steer", "steer", "roofLook", "railP", "eat2"] });
   }
-  // Usopp, de vigía en la cofa con el catalejo
+  // Usopp
   {
     const uSkin = std({ color: 0xa8704a, roughness: 0.55 });
     const p = person({ m: { skin: uSkin, top: fab(TX.beige, 1), sleeve: fab(TX.beige, 1), fore: uSkin, pants: fab(TX.overalls, 1), shin: fab(TX.overalls, 1), shoe: leather, hair: hairM(0x121212) },
       hair: (h, hm) => { capHair(h, hm); for (let k = 0; k < 14; k++) { const a = rand() * Math.PI * 2, b = rand() * 1.2; sphere(0.045, hm, -0.03 - Math.cos(a) * Math.cos(b) * 0.09, 0.05 + Math.sin(b) * 0.09, Math.sin(a) * 0.1, h, 8); }
         const n = mk(new THREE.ConeGeometry(0.018, 0.16, 8), uSkin, h, 0.18, 0.005, 0); n.rotation.z = -Math.PI / 2;
-        const band = mk(new THREE.TorusGeometry(0.108, 0.015, 6, 20), std({ color: 0xd8a830, roughness: 0.5 }), h, -0.005, 0.07, 0); band.rotation.x = Math.PI / 2;
-        mk(lathe([[0.001, 0], [0.028, 0], [0.028, 0.12], [0.034, 0.13], [0.034, 0.25], [0.04, 0.26], [0.04, 0.36], [0.001, 0.36]], 10), brass, h, 0.13, 0.035, -0.036).rotation.z = -Math.PI / 2; },
-      extra: J => { J.arm[-1].sh.rotation.z = 1.9; J.arm[-1].sh.rotation.x = -0.3; J.arm[-1].el.rotation.z = 1.35; } });
-    place(p, G.deck, MAST_X + 0.25, 10.25, 0.25, 0, "Usopp", "nest");
+        const band = mk(new THREE.TorusGeometry(0.108, 0.015, 6, 20), std({ color: 0xd8a830, roughness: 0.5 }), h, -0.005, 0.07, 0); band.rotation.x = Math.PI / 2; },
+      extra: (J, props) => {
+        props.scope = prop(J.head, 0.13, 0.035, -0.036); mk(lathe([[0.001, 0], [0.028, 0], [0.028, 0.12], [0.034, 0.13], [0.034, 0.25], [0.04, 0.26], [0.04, 0.36], [0.001, 0.36]], 10), brass, props.scope).rotation.z = -Math.PI / 2;
+        props.rod = makeRod(J.arm[1].wr); props.hammer = makeHammer(J.arm[1].wr);
+        const bag = grp(J.spine, -0.17, 0.15, 0); mk(rbox(0.08, 0.22, 0.24, 0.03), std({ color: 0x6a4a2a, roughness: 0.7 }), bag);
+      } });
+    crew.push({ name: "Usopp", ...p, start: "nest", spots: ["nest", "nest", "fish", "fish", "bench"] });
   }
-  // Sanji, cocinando
+  // Sanji
   {
-    const suit = fab(TX.black, IN);
+    const suit = fab(TX.black, 1);
     const p = person({ m: { skin: skinMat, top: suit, sleeve: suit, fore: suit, pants: suit, shin: suit, shoe: std({ color: 0x0c0c0c, roughness: 0.3 }), hair: hairM(0xe8c86a) },
-      hair: (h, hm) => { capHair(h, hm); mk(sphGeo(0.06, 12, 10), hm, h, 0.085, 0.03, -0.04).scale.set(0.5, 1.2, 1); mk(cylGeo(0.005, 0.005, 0.07, 6), std({ color: 0xf2f2ee, roughness: 0.6 }), h, 0.13, -0.05, 0.02).rotation.z = Math.PI / 2; },
-      extra: J => { box(0.02, 0.2, 0.04, std({ color: 0x2a4a7a, roughness: 0.5 }), 0.105, 0.28, 0, J.spine); J.arm[1].sh.rotation.z = 0.9; J.arm[1].el.rotation.z = 0.7; } });
-    place(p, G.deck, -7.5, 0, -1.3, Math.PI, "Sanji", "galley");
+      hair: (h, hm) => { capHair(h, hm); mk(sphGeo(0.06, 12, 10), hm, h, 0.085, 0.03, -0.04).scale.set(0.5, 1.2, 1); mk(cylGeo(0.005, 0.005, 0.07, 6), std({ color: 0xf2f2ee, roughness: 0.6 }), h, 0.13, -0.05, 0.02).rotation.z = Math.PI / 2; mk(sphGeo(0.006, 6, 4), std({ color: 0xff6a2a, emissive: 0xff4a10, emissiveIntensity: 2 }), h, 0.165, -0.05, 0.02); },
+      extra: (J, props) => {
+        box(0.02, 0.2, 0.04, std({ color: 0x2a4a7a, roughness: 0.5 }), 0.105, 0.28, 0, J.spine);
+        props.pan = prop(J.spine, 0.45, 0.02, 0.1); mk(lathe([[0.001, 0], [0.13, 0], [0.14, 0.04], [0.135, 0.045], [0.001, 0.012]], 18), ironIn, props.pan); mk(sweep([V(-0.12, 0.03, -0.04), V(-0.32, 0.06, -0.12)], 0.012, 6), woodDarkIn, props.pan);
+        props.tray = prop(J.spine, 0.34, 0.1, 0.24); mk(cylGeo(0.17, 0.17, 0.015, 20), steelIn, props.tray); for (const [x, z] of [[0.05, 0.05], [-0.06, -0.03]]) mk(lathe([[0.001, 0], [0.03, 0], [0.035, 0.12], [0.031, 0.12], [0.026, 0.01], [0.001, 0.01]], 12), glassBottle[3], props.tray, x, 0.01, z);
+      } });
+    crew.push({ name: "Sanji", ...p, start: "stove", spots: ["stove", "stove", "stove", "serve", "smoke"] });
   }
-  // Robin, leyendo en la toldilla
+  // Robin
   {
     const p = person({ m: { skin: skinMat, top: fab(TX.purple, 1), sleeve: fab(TX.purple, 1), fore: skinMat, pants: fab(TX.black, 1), shin: fab(TX.black, 1), shoe: leather, hair: hairM(0x121218) },
       hair: (h, hm) => { capHair(h, hm, [1.1, 1.04, 1.08]); mk(new THREE.CapsuleGeometry(0.09, 0.22, 4, 10), hm, h, -0.075, -0.12, 0).scale.set(1, 1, 1.4); },
-      extra: J => { sit(J, 0.43); J.spine.rotation.z = 0.35; J.head.rotation.z = -0.25; for (const s of [-1, 1]) { J.arm[s].sh.rotation.z = 0.85; J.arm[s].sh.rotation.x = s * 0.35; J.arm[s].el.rotation.z = 1.25; }
-        const b = mk(rbox(0.18, 0.03, 0.26, 0.005), std({ color: 0x6a2a2a, roughness: 0.5 }), J.spine, 0.28, 0.2, 0); b.rotation.z = 0.9; } });
-    place(p, G.roof, -7.18, RY, 0.9, 0, "Robin", "mikan");
+      extra: (J, props) => { props.book = prop(J.spine, 0.28, 0.2, 0); mk(rbox(0.18, 0.03, 0.26, 0.005), std({ color: 0x6a2a2a, roughness: 0.5 }), props.book).rotation.z = 0.9; } });
+    crew.push({ name: "Robin", ...p, start: "chair", spots: ["chair", "chair", "chair", "roofLook", "railP", "bowLook"] });
   }
-  // Chopper, en el dormitorio
+  // Chopper
   {
-    const root = new THREE.Group(); root.userData.keep = true;
+    const root = new THREE.Group();
     const fur = fab(TX.fur), pink = std({ color: 0xe0689a, roughness: 0.6 }), hoof = std({ color: 0x3a2a1e, roughness: 0.5 }), antler = std({ color: 0x6a4426, roughness: 0.6 });
-    mk(lathe([[0.001, 0], [0.12, 0.01], [0.17, 0.1], [0.16, 0.22], [0.1, 0.3], [0.001, 0.32]], 18), fur, root, 0, 0.14, 0);
-    mk(cylGeo(0.165, 0.17, 0.1, 18), fab(TX.chopperShorts), root, 0, 0.2, 0);
-    for (const s of [-1, 1]) { cyl(0.05, 0.05, 0.14, fur, 0, 0.07, s * 0.07, root, 10); cyl(0.052, 0.052, 0.03, hoof, 0.01, 0.015, s * 0.07, root, 10); const a = cyl(0.035, 0.04, 0.16, fur, 0.03, 0.34, s * 0.17, root, 8); a.rotation.x = -s * 0.5; sphere(0.035, hoof, 0.03, 0.27, s * 0.21, root, 8); }
-    sphere(0.15, fur, 0.01, 0.6, 0, root, 18);
-    sphere(0.07, std({ color: 0xb0835a, roughness: 0.9 }), 0.12, 0.56, 0, root, 12);
-    sphere(0.034, std({ color: 0x3a64c8, roughness: 0.25 }), 0.19, 0.58, 0, root, 10);
-    for (const s of [-1, 1]) { sphere(0.022, eyeDark, 0.13, 0.64, s * 0.06, root, 8); mk(sphGeo(1, 8, 6), fur, root, -0.02, 0.66, s * 0.15).scale.set(0.03, 0.05, 0.02); }
-    mk(lathe([[0.001, 0], [0.2, 0], [0.2, 0.02], [0.13, 0.03], [0.13, 0.2], [0.12, 0.22], [0.001, 0.23]], 24), pink, root, 0, 0.72, 0);
-    for (const r of [0.8, -0.8]) { const x = box(0.012, 0.13, 0.03, std({ color: 0xf2f2ee, roughness: 0.5 }), 0.13, 0.84, 0, root); x.rotation.x = r; }
+    const body = grp(root);
+    mk(lathe([[0.001, 0], [0.12, 0.01], [0.17, 0.1], [0.16, 0.22], [0.1, 0.3], [0.001, 0.32]], 18), fur, body, 0, 0.14, 0);
+    mk(cylGeo(0.165, 0.17, 0.1, 18), fab(TX.chopperShorts), body, 0, 0.2, 0);
+    for (const s of [-1, 1]) { cyl(0.05, 0.05, 0.14, fur, 0, 0.07, s * 0.07, body, 10); cyl(0.052, 0.052, 0.03, hoof, 0.01, 0.015, s * 0.07, body, 10); const a = cyl(0.035, 0.04, 0.16, fur, 0.03, 0.34, s * 0.17, body, 8); a.rotation.x = -s * 0.5; sphere(0.035, hoof, 0.03, 0.27, s * 0.21, body, 8); }
+    sphere(0.15, fur, 0.01, 0.6, 0, body, 18);
+    sphere(0.07, std({ color: 0xb0835a, roughness: 0.9 }), 0.12, 0.56, 0, body, 12);
+    sphere(0.034, std({ color: 0x3a64c8, roughness: 0.25 }), 0.19, 0.58, 0, body, 10);
+    for (const s of [-1, 1]) { sphere(0.022, eyeDark, 0.13, 0.64, s * 0.06, body, 8); mk(sphGeo(1, 8, 6), fur, body, -0.02, 0.66, s * 0.15).scale.set(0.03, 0.05, 0.02); }
+    mk(lathe([[0.001, 0], [0.2, 0], [0.2, 0.02], [0.13, 0.03], [0.13, 0.2], [0.12, 0.22], [0.001, 0.23]], 24), pink, body, 0, 0.72, 0);
+    for (const r of [0.8, -0.8]) { const x = box(0.012, 0.13, 0.03, std({ color: 0xf2f2ee, roughness: 0.5 }), 0.13, 0.84, 0, body); x.rotation.x = r; }
     for (const s of [-1, 1]) {
-      mk(sweep([V(-0.02, 0.8, s * 0.12), V(-0.03, 0.95, s * 0.22), V(-0.05, 1.05, s * 0.26)], 0.015, 5), antler, root);
-      mk(sweep([V(-0.03, 0.93, s * 0.2), V(0.03, 1.0, s * 0.24)], 0.011, 5), antler, root);
+      mk(sweep([V(-0.02, 0.8, s * 0.12), V(-0.03, 0.95, s * 0.22), V(-0.05, 1.05, s * 0.26)], 0.015, 5), antler, body);
+      mk(sweep([V(-0.03, 0.93, s * 0.2), V(0.03, 1.0, s * 0.24)], 0.011, 5), antler, body);
     }
-    root.position.set(-0.15, FLOOR, 0.55); root.rotation.y = Math.PI * 0.8;
-    G.hull.add(root); bake(root);
-    crew.push({ name: "Chopper", room: "men", obj: root });
+    bakeShallow(root);
+    crew.push({ name: "Chopper", root, J: null, body, props: {}, start: "cab", spots: ["cab", "cab", "sofa", "bMid", "bench2", "fwdLook"] });
+  }
+
+  /* ---------- Red de paso: dónde se puede andar, subir y bajar ---------- */
+  const NODES = {
+    seatHead: [10.92, 2.12, 0, "hull", "figurehead"],
+    bow: [6.45, 0, 0.75, "deck", "deck"], fwdP: [5.7, 0, -1.15, "deck", "deck"], fwdS: [5.7, 0, 1.15, "deck", "deck"], fish: [6.6, 0, 2.05, "deck", "deck"],
+    midP: [3.0, 0, -1.3, "deck", "deck"], midS: [3.0, 0, 1.3, "deck", "deck"], mastP: [1.0, 0, -1.35, "deck", "deck"], mastS: [1.0, 0, 1.35, "deck", "deck"],
+    aftP: [-0.6, 0, -1.25, "deck", "deck"], aftS: [-0.6, 0, 1.3, "deck", "deck"], nap: [-1.3, 0, 2.35, "deck", "deck"], center: [-1.8, 0, -0.35, "deck", "deck"],
+    door: [-4.05, 0, -0.15, "deck", "deck"], hatchE: [-2.62, 0, 0.6, "deck", "deck"], ladTop: [-3.3, -0.05, 0.6, "deck", "men"],
+    stairBP: [-2.8, 0, -1.75, "deck", "deck"], stairBS: [-2.8, 0, 1.75, "deck", "deck"],
+    stairTP: [-4.62, RY, -1.75, "roof", "mikan"], stairTS: [-4.62, RY, 1.75, "roof", "mikan"], roofF: [-4.62, RY, 0, "roof", "mikan"], roofC: [-6.0, RY, 0, "roof", "mikan"],
+    tend: [-5.85, RY, 0.72, "roof", "mikan"], serve: [-5.9, RY, -0.66, "roof", "mikan"], roofS: [-7.0, RY, 0.62, "roof", "mikan"], chair: [-7.18, RY, 1.45, "roof", "mikan"], steer: [-8.05, RY, 0.42, "roof", "mikan"],
+    galIn: [-5.0, 0, -0.1, "deck", "galley"], galSide: [-5.4, 0, -1.4, "deck", "galley"], stove: [-7.45, 0, -1.25, "deck", "galley"], eat: [-5.67, 0, -0.54, "deck", "galley"], eat2: [-5.37, 0, 0.74, "deck", "galley"],
+    ladBot: [-2.45, FLOOR, 0.6, "hull", "men"], bMid: [-0.2, FLOOR, 0.65, "hull", "men"], bench: [0.9, FLOOR, 1.2, "hull", "men"], bSide: [0.2, FLOOR, -0.7, "hull", "men"], sofa: [-1.0, FLOOR, -1.08, "hull", "men"], cab: [-3.95, FLOOR, 1.5, "hull", "men"],
+    railStep: [1.2, 0.95, 3.38, "deck", "deck"], nestTop: [1.05, 10.28, 0.5, "deck", "nest"], nestSpot: [1.25, 10.26, 0.2, "deck", "nest"]
+  };
+  for (const k in NODES) { const [x, y, z, lvl, room] = NODES[k]; NODES[k] = { id: k, p: V(x, y, z), lvl, room }; }
+  const ADJ = {}; for (const k in NODES) ADJ[k] = [];
+  [["seatHead", "bow", "jump"], ["bow", "fwdP"], ["bow", "fwdS"], ["fwdS", "fish"], ["fwdP", "midP"], ["fwdS", "midS"], ["midP", "mastP"], ["midS", "mastS"], ["mastP", "aftP"], ["mastS", "aftS"],
+   ["aftS", "nap"], ["aftP", "center"], ["aftS", "center"], ["aftS", "hatchE"], ["center", "hatchE"], ["center", "door"], ["aftP", "stairBP"], ["aftS", "stairBS"],
+   ["stairBP", "stairTP", "stairs"], ["stairBS", "stairTS", "stairs"], ["stairTP", "roofF"], ["stairTS", "roofF"], ["roofF", "roofC"], ["roofC", "tend"], ["roofC", "serve"], ["roofC", "roofS"], ["roofS", "chair"], ["roofS", "steer"],
+   ["door", "galIn"], ["galIn", "galSide"], ["galSide", "stove"], ["galIn", "eat"], ["galIn", "eat2"], ["hatchE", "ladTop"], ["ladTop", "ladBot", "ladder"],
+   ["ladBot", "bMid"], ["bMid", "bench"], ["bMid", "bSide"], ["bSide", "sofa"], ["ladBot", "cab"], ["mastS", "railStep", "hop"], ["railStep", "nestTop", "climb"], ["nestTop", "nestSpot"]
+  ].forEach(([a, b, type = "walk"]) => { const len = NODES[a].p.distanceTo(NODES[b].p); ADJ[a].push({ to: b, type, len }); ADJ[b].push({ to: a, type, len }); });
+  function findPath(a, b) {
+    const dist = {}, prev = {}, Q = new Set(Object.keys(NODES));
+    for (const k of Q) dist[k] = Infinity; dist[a] = 0;
+    while (Q.size) {
+      let u = null; for (const k of Q) if (u === null || dist[k] < dist[u]) u = k;
+      if (dist[u] === Infinity || u === b) break;
+      Q.delete(u);
+      for (const e of ADJ[u]) { const alt = dist[u] + e.len; if (alt < dist[e.to]) { dist[e.to] = alt; prev[e.to] = u; } }
+    }
+    const path = [b]; while (path[0] !== a) { const q = prev[path[0]]; if (q === undefined) return null; path.unshift(q); }
+    return path;
+  }
+
+  /* ---------- Posturas ---------- */
+  // [pelvisY, torsoZ, torsoX, cabezaZ, cabezaY, brazoIzq z/x/codo, brazoDer z/x/codo, piernaIzq z/x/rodilla, piernaDer z/x/rodilla]
+  function pose(o = {}) {
+    const p = [0.95, 0, 0, 0, 0, 0, 0.1, 0.12, 0, -0.1, 0.12, 0, 0, -0.04, 0, 0, -0.04];
+    for (const [k, i] of [["py", 0], ["sz", 1], ["sx", 2], ["hz", 3], ["hy", 4]]) if (o[k] !== undefined) p[i] = o[k];
+    const set = (b, v) => { if (!v) return; if (v.z !== undefined) p[b] = v.z; if (v.x !== undefined) p[b + 1] = v.x; if (v.e !== undefined) p[b + 2] = v.e; };
+    set(5, o.L); set(8, o.R); set(11, o.LL); set(14, o.RL);
+    return p;
+  }
+  const seated = (h, o = {}) => pose(Object.assign({ py: h + 0.07, LL: { z: Math.PI / 2, x: 0.06, e: -Math.PI / 2 }, RL: { z: Math.PI / 2, x: -0.06, e: -Math.PI / 2 }, L: { z: 0.55, e: 0.7 }, R: { z: 0.55, e: 0.7 } }, o));
+  const pulse = (t, f) => smooth(0.2, 0.9, Math.sin(t * f));
+  const ACTS = {
+    stand: t => pose({ sz: 0.012 * Math.sin(t * 1.6), hy: 0.25 * Math.sin(t * 0.3) }),
+    look: t => pose({ L: { z: -0.45, x: 0.3, e: 1.2 }, R: { z: -0.45, x: -0.3, e: 1.2 }, hy: 0.4 * Math.sin(t * 0.25), sz: 0.01 * Math.sin(t * 1.5) }),
+    astride: t => pose({ py: 0.52, LL: { z: 0.75, x: 0.55, e: -1.05 }, RL: { z: 0.75, x: -0.55, e: -1.05 }, L: { z: 0.35, x: 0.4, e: 0.25 }, R: { z: 0.35, x: -0.4, e: 0.25 }, hy: 0.35 * Math.sin(t * 0.2), sz: 0.03 * Math.sin(t * 0.9) }),
+    nap: t => pose({ py: 0.14, sz: 0.32, hz: -0.4 + 0.02 * Math.sin(t * 0.8), LL: { z: Math.PI / 2 - 0.2, x: 0.12, e: -0.3 }, RL: { z: Math.PI / 2 - 0.2, x: -0.12, e: -0.3 }, L: { z: 0.55, x: -0.55, e: 1.7 }, R: { z: 0.55, x: 0.55, e: 1.7 } }),
+    lift: t => pose({ R: { z: 0.1, x: -0.15, e: 0.4 + 1.6 * (0.5 + 0.5 * Math.sin(t * 2.2)) }, L: { z: 0.05, x: 0.12, e: 0.15 }, sz: -0.03 }),
+    tend: t => pose({ R: { z: 1.25 + 0.12 * Math.sin(t * 1.2), x: -0.15, e: 0.3 }, L: { z: 0.9, x: 0.3, e: 1.2 + 0.2 * Math.sin(t * 2) }, hz: -0.15 }),
+    steer: t => pose({ R: { z: 0.75, x: 0.35, e: 0.55 }, L: { z: 0.1, x: 0.1, e: 0.2 }, hy: 0.9 + 0.3 * Math.sin(t * 0.2) }),
+    lookout: t => pose({ R: { z: 1.5, x: 0.15, e: 2.1 }, L: { z: 1.35, x: -0.25, e: 2.15 }, hy: 0.45 * Math.sin(t * 0.25) }),
+    fish: t => pose({ R: { z: 0.95 + 0.05 * Math.sin(t * 1.7), x: 0.25, e: 0.6 }, L: { z: 0.9, x: -0.25, e: 0.75 }, sz: -0.05 }),
+    work: t => pose({ sz: -0.22, L: { z: 0.7, x: -0.2, e: 0.9 }, R: { z: 0.9 + 0.35 * Math.max(0, Math.sin(t * 5)), e: 1.2 - 0.5 * Math.max(0, Math.sin(t * 5)) } }),
+    cook: t => pose({ sz: -0.1, R: { z: 0.85, e: 0.55 + 0.15 * Math.sin(t * 7) }, L: { z: 0.55, x: -0.2, e: 1.1 } }),
+    serve: t => pose({ R: { z: 0.35, x: -0.15, e: 1.45 }, L: { z: -0.1, e: 0.3 }, hy: 0.2 * Math.sin(t * 0.4) }),
+    smoke: t => { const k = pulse(t, 0.7); return pose({ R: { z: 0.6 + 0.5 * k, e: 0.5 + 1.5 * k }, L: { z: -0.15, x: 0.1, e: 0.4 }, hz: 0.08 * k }); },
+    eat: t => seated(0.46, { R: { z: 1.2, e: 1.6 + 0.35 * Math.sin(t * 3) }, L: { z: 0.6, e: 0.9 }, hz: -0.1 }),
+    read: t => seated(0.43, { sz: 0.35, hz: -0.25, L: { z: 0.85, x: -0.35, e: 1.25 }, R: { z: 0.85, x: 0.35, e: 1.25 } }),
+    sofa: t => seated(0.42, { sz: 0.25, L: { z: 0.3, e: 0.5 }, R: { z: 0.3, e: 0.5 } }),
+    work2: t => pose()
+  };
+  const walkPose = ph => {
+    const a = Math.sin(ph), b = Math.sin(ph + Math.PI);
+    return pose({ py: 0.935 + 0.02 * Math.abs(Math.cos(ph)), sz: -0.06,
+      LL: { z: 0.5 * a, e: -0.1 - 0.9 * Math.max(0, Math.cos(ph)) }, RL: { z: 0.5 * b, e: -0.1 - 0.9 * Math.max(0, Math.cos(ph + Math.PI)) },
+      L: { z: 0.4 * b, x: 0.08, e: 0.3 + 0.2 * Math.max(0, b) }, R: { z: 0.4 * a, x: -0.08, e: 0.3 + 0.2 * Math.max(0, a) } });
+  };
+  const climbPose = ph => {
+    const a = Math.sin(ph), b = Math.sin(ph + Math.PI);
+    return pose({ sz: -0.12, L: { z: 2.6 + 0.35 * a, x: 0.15, e: 0.5 - 0.3 * a }, R: { z: 2.6 + 0.35 * b, x: -0.15, e: 0.5 - 0.3 * b },
+      LL: { z: 0.7 + 0.5 * b, e: -1.0 - 0.4 * b }, RL: { z: 0.7 + 0.5 * a, e: -1.0 - 0.4 * a } });
+  };
+  function applyPose(J, p) {
+    J.pelvis.position.y = p[0]; J.spine.rotation.set(p[2], 0, p[1]); J.head.rotation.set(0, p[4], p[3]);
+    J.arm[-1].sh.rotation.set(p[6], 0, p[5]); J.arm[-1].el.rotation.z = p[7];
+    J.arm[1].sh.rotation.set(p[9], 0, p[8]); J.arm[1].el.rotation.z = p[10];
+    J.leg[-1].hp.rotation.set(p[12], 0, p[11]); J.leg[-1].kn.rotation.z = p[13];
+    J.leg[1].hp.rotation.set(p[15], 0, p[14]); J.leg[1].kn.rotation.z = p[16];
+  }
+
+  /* ---------- Actividades: dónde se para cada uno y qué hace ---------- */
+  const SPOTS = {
+    headSeat: { node: "seatHead", act: "astride", face: [1, 0], dur: [16, 26] },
+    bowLook: { node: "bow", act: "look", face: [1, 0], dur: [6, 10] },
+    fish: { node: "fish", act: "fish", face: [0, 1], dur: [16, 26], props: ["rod"] },
+    lift: { node: "mastS", act: "lift", face: [1, 0], dur: [10, 16], props: ["weight"] },
+    nap: { node: "nap", act: "nap", face: [0, -1], dur: [18, 30] },
+    railS: { node: "midS", act: "look", face: [0, 1], dur: [6, 10] },
+    railP: { node: "midP", act: "look", face: [0, -1], dur: [6, 10] },
+    aftLook: { node: "aftP", act: "stand", face: [1, 0], dur: [5, 8] },
+    fwdLook: { node: "fwdP", act: "stand", face: [0, -1], dur: [5, 8] },
+    smoke: { node: "door", act: "smoke", face: [1, 0], dur: [7, 11] },
+    stove: { node: "stove", act: "cook", face: [-1, 0], dur: [14, 22], props: ["pan"] },
+    eat: { node: "eat", act: "eat", to: [-6.4, 0.3], dur: [10, 16], props: ["meat"] },
+    eat2: { node: "eat2", act: "eat", to: [-6.4, 0.3], dur: [8, 12] },
+    tend: { node: "tend", act: "tend", to: [-5.2, 1.3], dur: [10, 16], props: ["can"] },
+    serve: { node: "serve", act: "serve", to: [-5.2, -1.3], dur: [5, 8], props: ["tray"] },
+    chair: { node: "chair", act: "read", face: [1, 0], dur: [20, 32], props: ["book"] },
+    steer: { node: "steer", act: "steer", face: [0, -1], dur: [12, 18] },
+    roofLook: { node: "roofC", act: "look", face: [1, 0], dur: [5, 8] },
+    nest: { node: "nestSpot", act: "lookout", face: [1, 0], dur: [16, 24], props: ["scope"] },
+    bench: { node: "bench", act: "work", face: [0, 1], dur: [12, 18], props: ["hammer"] },
+    bench2: { node: "bench", act: "stand", face: [0, 1], dur: [5, 8] },
+    sofa: { node: "sofa", act: "sofa", face: [0, 1], dur: [10, 16] },
+    cab: { node: "cab", act: "work2", face: [-1, 0], dur: [8, 12] },
+    bMid: { node: "bMid", act: "stand", face: [1, 0], dur: [4, 7] }
+  };
+  for (const k in SPOTS) SPOTS[k].occ = null;
+  const SPEED = { walk: 1.15, stairs: 0.7, ladder: 0.45, climb: 0.55, hop: 0.9, jump: 1.6 };
+  const yawOf = (dx, dz) => Math.atan2(-dz, dx);
+  const rr = (a, b) => a + rand() * (b - a);
+  function spotYaw(sp) { const n = NODES[sp.node].p; return sp.to ? yawOf(sp.to[0] - n.x, sp.to[1] - n.z) : yawOf(sp.face[0], sp.face[1]); }
+  function setProps(c, list) { for (const k in c.props) c.props[k].visible = !!(list && list.includes(k)); }
+  function arrive(c) {
+    const sp = SPOTS[c.spot];
+    c.state = "act"; c.act = sp.act; c.timer = rr(sp.dur[0], sp.dur[1]); c.yawT = spotYaw(sp);
+    c.pos.copy(NODES[sp.node].p); c.node = sp.node; c.room = NODES[sp.node].room; c.lvlA = c.lvlB = NODES[sp.node].lvl; c.u = 1;
+    setProps(c, sp.props);
+  }
+  function startTrip(c) {
+    const options = c.spots.filter(k => k !== c.spot && !SPOTS[k].occ);
+    if (!options.length) { c.timer = 3; return; }
+    const next = options[(rand() * options.length) | 0];
+    const path = findPath(c.node, SPOTS[next].node);
+    if (!path) { c.timer = 3; return; }
+    SPOTS[c.spot].occ = null; SPOTS[next].occ = c; c.spot = next;
+    setProps(c, null);
+    if (path.length < 2) { arrive(c); return; }
+    c.path = path; c.seg = 0; c.state = "walk"; beginSeg(c);
+  }
+  function beginSeg(c) {
+    const a = c.path[c.seg], b = c.path[c.seg + 1];
+    c.edge = ADJ[a].find(e => e.to === b); c.ea = NODES[a]; c.eb = NODES[b]; c.s = 0;
+    c.room = c.eb.room;
+  }
+  crew.forEach(c => {
+    c.obj = c.root; c.pos = V(); c.yaw = 0; c.yawT = 0; c.phase = rand() * 6; c.cur = pose(); c.t0 = rand() * 100;
+    c.spot = c.start; SPOTS[c.start].occ = c; arrive(c); c.yaw = c.yawT; c.timer *= 0.3 + rand() * 0.7;
+    if (c.J) { c.cur = ACTS[c.act](c.t0); applyPose(c.J, c.cur); }
+    crewLayer.add(c.root);
+  });
+  // Sedal de la caña de Usopp
+  const fishLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(), V()]), new THREE.LineBasicMaterial({ color: 0x2a2a2a, transparent: true, opacity: 0.7 }));
+  const bobber = new THREE.Mesh(sphGeo(0.035, 10, 8), std({ color: 0xd8302a, roughness: 0.4 }));
+  fishLine.frustumCulled = false; scene.add(fishLine, bobber);
+  const usopp = crew.find(c => c.name === "Usopp");
+  const tmpA = V(), tmpB = V();
+  function updateCrew(dt, t) {
+    const offs = { hull: 0, deck: G.deck.position.y, roof: G.deck.position.y + G.roof.position.y };
+    let steering = false;
+    for (const c of crew) {
+      const tt = t + c.t0;
+      let target;
+      if (c.state === "act") {
+        c.timer -= dt;
+        if (c.timer <= 0) startTrip(c);
+      }
+      if (c.state === "walk") {
+        const e = c.edge, sp = SPEED[e.type];
+        c.s += sp * dt;
+        const u = Math.min(c.s / e.len, 1);
+        c.pos.lerpVectors(c.ea.p, c.eb.p, u);
+        if (e.type === "jump") c.pos.y += 1.1 * Math.sin(Math.PI * u);
+        if (e.type === "hop") c.pos.y += 0.25 * Math.sin(Math.PI * u);
+        c.lvlA = c.ea.lvl; c.lvlB = c.eb.lvl; c.u = u;
+        const vertical = e.type === "ladder" || e.type === "climb";
+        const hi = c.ea.p.y > c.eb.p.y ? c.ea.p : c.eb.p, lo = hi === c.ea.p ? c.eb.p : c.ea.p;
+        const dx = vertical ? hi.x - lo.x : c.eb.p.x - c.ea.p.x, dz = vertical ? hi.z - lo.z : c.eb.p.z - c.ea.p.z;
+        if (Math.hypot(dx, dz) > 0.02) c.yawT = yawOf(dx, dz);
+        c.phase += dt * (vertical ? 3.4 : 7.2 * Math.min(sp / 1.15, 1.1));
+        target = vertical ? climbPose(c.phase) : walkPose(c.phase);
+        if (u >= 1) { c.node = c.eb.id; c.seg++; if (c.seg >= c.path.length - 1) arrive(c); else beginSeg(c); }
+      } else target = ACTS[c.act](tt);
+      if (c.state === "act" && c.act === "steer") steering = true;
+      // giro suave hacia donde mira
+      let d = c.yawT - c.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); c.yaw += d * Math.min(1, dt * 6);
+      const off = offs[c.lvlA] + (offs[c.lvlB] - offs[c.lvlA]) * c.u;
+      c.root.position.set(c.pos.x, c.pos.y + off, c.pos.z);
+      c.root.rotation.y = c.yaw;
+      if (c.J) {
+        const k = Math.min(1, dt * 9);
+        for (let i = 0; i < c.cur.length; i++) c.cur[i] += (target[i] - c.cur[i]) * k;
+        applyPose(c.J, c.cur);
+      } else {
+        const walking = c.state === "walk";
+        c.body.position.y = walking ? 0.06 * Math.abs(Math.sin(c.phase)) : 0.01 * Math.sin(tt * 2);
+        c.body.rotation.z = walking ? 0.08 * Math.sin(c.phase) : 0;
+        c.body.rotation.x = walking ? 0 : 0.05 * Math.sin(tt * 1.3);
+      }
+    }
+    tiller.rotation.y += ((steering ? 0.22 * Math.sin(t * 0.35) : 0) - tiller.rotation.y) * Math.min(1, dt * 2);
+    const fishing = usopp.props.rod.visible && usopp.root.visible && usopp.state === "act";
+    fishLine.visible = bobber.visible = fishing;
+    if (fishing) {
+      usopp.props.rod.userData.tip.getWorldPosition(tmpA);
+      tmpB.set(tmpA.x + 0.3, WATER_Y + waveHeight(tmpA.x, tmpA.z + 1.2, t) * 0.9 + ship.position.y * 0, tmpA.z + 1.2);
+      const pa = fishLine.geometry.attributes.position; pa.setXYZ(0, tmpA.x, tmpA.y, tmpA.z); pa.setXYZ(1, tmpB.x, tmpB.y, tmpB.z); pa.needsUpdate = true;
+      bobber.position.copy(tmpB);
+    }
   }
 
   /* ---------- Fusionar piezas estáticas ---------- */
@@ -2282,7 +2575,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     { id: "overview", name: "Vista general", group: "top", grp: G.hull, anchor: null,
       cam: stage.clientWidth < 720 ? [V(42, 9, 40), V(0, -3.5, 0)] : [V(26, 10, 24), V(0, 3.5, 0)],
       text: "Carabela que Kaya regaló a Luffy en el pueblo de Syrup. La diseñó y construyó Merry, su mayordomo. Llevó a la tripulación desde el East Blue, por la Grand Line, hasta Water 7 y Enies Lobby.",
-      spec: [["Tipo", "Carabela"], ["Diseño", "Merry, mayordomo de Kaya"], ["Entrega", "Pueblo de Syrup, East Blue"], ["Mástiles", "Mayor con cofa y mesana en popa"], ["Mascarón", "Cabeza de carnero"], ["Despedida", "Funeral vikingo tras Enies Lobby"]] },
+      spec: [["Tipo", "Carabela"], ["Diseño", "Merry, mayordomo de Kaya"], ["Entrega", "Pueblo de Syrup, East Blue"], ["Mástiles", "Mayor con vela cuadra y cofa; mesana con vela latina a rayas rojas y blancas"], ["Gobierno", "Caña con cabeza de oveja, sin rueda"], ["Armamento", "4 cañones: proa, popa y uno a cada banda"], ["Mascarón", "Cabeza de carnero"], ["Despedida", "Funeral vikingo tras Enies Lobby"]] },
     { id: "figurehead", name: "Mascarón de carnero", group: "top", grp: G.hull, anchor: V(11.1, 3.9, 0),
       cam: [V(16.5, 4.5, 6), V(11, 2.0, 0)], eye: V(10.2, 3.3, 0.3), look: V(22, 2.2, 0),
       text: "La cabeza de carnero tallada y pintada remata la roda. Es el asiento favorito de Luffy para mirar al horizonte.",
@@ -2290,7 +2583,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     { id: "deck", name: "Cubierta principal", group: "top", grp: G.deck, anchor: V(5.2, 1.6, 0),
       cam: [V(13.5, 5.5, 9.5), V(3, 0.8, 0)], eye: V(7.4, 1.65, 0.6), look: V(-4, 1.6, 0),
       text: "El espacio abierto entre el mástil y la proa: aquí se pesca, se entrena y se prepara la defensa del barco.",
-      items: ["Dos cañones en cureña asomados a sus portas", "Escotillón con enjaretado sobre el dormitorio", "Cabillero al pie del palo con cabos adujados", "Molinete, escobenes y ancla por babor", "Barriles, cubo, fregona y caña de pescar", "Escaleras a la toldilla"], crew: "Zoro" },
+      items: ["Cañón de proa en su plataforma", "Dos cañones laterales asomados a sus portas", "Barandillas pintadas de blanco y volutas de lana en el casco", "Escotillón abierto sobre el dormitorio", "Cabillero al pie del palo con cabos adujados", "Ancla junto al mascarón, amarrada a la borda", "Barriles, cubo y fregona", "Escaleras a la toldilla"], crew: "Zoro y Usopp" },
     { id: "sail", name: "Vela mayor y jarcia", group: "top", grp: G.deck, anchor: V(2.4, 6.4, 0),
       cam: [V(19, 7, 3), V(1, 6.3, 0)],
       text: "Vela cuadra de paños cosidos con la Jolly Roger del sombrero de paja. Luffy la dibujó primero y Usopp la repintó para que se entendiera.",
@@ -2302,7 +2595,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     { id: "mikan", name: "Toldilla y mandarinos", group: "top", grp: G.roof, anchor: V(-6.6, 4.8, 0),
       cam: [V(-1, 7.5, 7.5), V(-6.6, 3.0, 0)], eye: V(-8.6, 3.95, 0.9), look: V(4, 3.4, 0),
       text: "La cubierta alta sobre la cocina. Aquí crecen los mandarinos de Bell-mère que Nami trajo de Cocoyashi, y nadie toca una mandarina sin permiso.",
-      items: ["Tres mandarinos en jardineras con esquineras", "Balaustrada torneada", "Timón de ocho cabillas", "Palo de mesana con su vela", "Faroles de popa en pescantes", "Tumbona de lectura"], crew: "Robin" },
+      items: ["Tres mandarinos en jardineras con esquineras", "Balaustrada blanca torneada", "Caña del timón rematada con una cabeza de oveja", "Mesana con vela latina a rayas rojas y blancas y su bandera", "Cañón de popa", "Faroles de popa en pescantes", "Tumbona de lectura"], crew: "Nami y Robin" },
     { id: "galley", name: "Cocina y comedor", group: "top", grp: G.deck, anchor: V(-6.4, 1.8, 0.3), inner: true,
       cam: [V(-6.4, 1.8, 8), V(-6.4, 1.0, 0)], eye: V(-4.95, 1.55, 1.3), look: V(-8.2, 1.0, -0.9),
       text: "El dominio de Sanji, bajo la toldilla. Toda la tripulación come alrededor de la mesa redonda.",
@@ -2579,7 +2872,7 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     WU.uShipInv.value.copy(ship.matrixWorld).invert();
 
     // Bandera y velas con el viento
-    {
+    for (const flag of flags) {
       const p = flag.geometry.attributes.position, base = flag.userData.base;
       for (let i = 0; i < p.count; i++) { const u = base[i * 3]; p.array[i * 3 + 2] = Math.sin(u * 3.2 - t * 5.5) * 0.15 * u + Math.sin(u * 7 - t * 9 + base[i * 3 + 1] * 3) * 0.03 * u; p.array[i * 3 + 1] = base[i * 3 + 1] - u * u * 0.03; }
       p.needsUpdate = true;
@@ -2588,8 +2881,9 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
     if ((frame & 1) === 0) for (const s of sails) {
       const S = s.userData.sail, p = s.geometry.attributes.position, base = s.userData.base;
       for (let i = 0; i < p.count; i++) {
-        const y = base[i * 3 + 1], z = base[i * 3 + 2], v = (y - S.y0) / S.h, u = z / S.w;
-        p.array[i * 3] = base[i * 3] + (Math.sin(t * 1.3 + y * 0.8 + z * 0.35) * 0.6 + Math.sin(t * 2.7 + z * 1.1) * 0.4) * S.amp * Math.sin(Math.PI * v) * Math.cos(u * 2.6);
+        const x = base[i * 3], y = base[i * 3 + 1], z = base[i * 3 + 2], v = (y - S.y0) / S.h;
+        if (S.axis === "z") { const u = (x - S.c) / S.w; p.array[i * 3 + 2] = z + (Math.sin(t * 1.5 + y * 0.9 + x * 0.6) * 0.6 + Math.sin(t * 2.9 + x * 1.3) * 0.4) * S.amp * Math.sin(Math.PI * Math.min(Math.max(v, 0), 1)) * Math.cos(u * 2.6); }
+        else { const u = z / S.w; p.array[i * 3] = x + (Math.sin(t * 1.3 + y * 0.8 + z * 0.35) * 0.6 + Math.sin(t * 2.7 + z * 1.1) * 0.4) * S.amp * Math.sin(Math.PI * v) * Math.cos(u * 2.6); }
       }
       p.needsUpdate = true; s.geometry.computeVertexNormals();
     }
@@ -2607,6 +2901,9 @@ button:focus-visible, input:focus-visible, .tag:focus-visible {
       const f = Math.sin(t * d.fl + d.ph) * 0.55;
       d.L.rotation.x = f; d.R.rotation.x = -f;
     });
+
+    updateCrew(dt, clock.elapsedTime);
+    { const on = $("tCrew").checked; for (const c of crew) c.root.visible = on && !(mode === "cut" && c.root.position.z > cutPlane.constant + 0.25); }
 
     if (HQ) { finalPass.uniforms.uTime.value = t; composer.render(dt); }
     else renderer.render(scene, camera);
