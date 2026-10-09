@@ -108,7 +108,7 @@ test('importar all_events.json y CSV con comillas', () => {
 test('avisos: cita, dosis y marca de enviados', () => {
   withBaby(N, { birth: '2026-03-12' });
   const now = Date.now();
-  const tomorrow = U.dayKey(now + DAY);
+  const tomorrow = U.dayKey(now + 2 * DAY); // a dos días: la víspera (20:00) siempre queda en el futuro
   Store.state.appointments = [{ id: 'a1', babyId: 'b1', date: tomorrow, time: '10:00', title: 'Revisión', questions: [], done: false }];
   Store.state.reminders = [{ id: 'r1', babyId: 'b1', at: now - 60000, title: 'Próxima dosis: Paracetamol' }];
   const list = [...N.Reminders.list(now - U.HOUR, 3 * DAY)];

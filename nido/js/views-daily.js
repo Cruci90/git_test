@@ -94,10 +94,10 @@
   W.plan = () => {
     const p = S.dayPlan(), r = p.rhythm, now = Date.now();
     const napName = (x) => `Siesta ${x.idx + 1}`;
-    const adjTxt = (x) => (x.adj ? ` · ${x.adj < 0 ? 'adelantada' : 'retrasada'} ${U.dur(Math.abs(x.adj))} porque ${x.why}` : '');
+    const adjTxt = (x) => (x.adj ? ` · ${x.adj < 0 ? 'adelantada' : 'retrasada'} ${U.dur(Math.abs(x.adj))} porque ${x.why}` : '') + ((x.tweaks || []).length ? ` · ${x.tweaks.join(', ')}` : '');
     const row = (x) => {
       let t, title, sub, act = '';
-      if (x.kind === 'wake') { t = U.time(x.t); title = 'Despertar'; sub = x.state === 'done' ? 'registrado' : 'hora habitual'; }
+      if (x.kind === 'wake') { t = U.time(x.t); title = 'Despertar'; sub = x.state === 'done' ? 'registrado' : x.state === 'fixed' ? 'hora fijada por vosotros' : 'hora habitual'; }
       else if (x.kind === 'nap' && x.state === 'skipped') {
         t = U.time(x.start); title = 'Siesta saltada'; sub = 'el resto del día se ha recolocado';
         act = `<button type="button" class="link sm" data-act="nap-unskip" data-id="${x.id}">Deshacer</button>`;
@@ -112,13 +112,13 @@
         if (x.state === 'planned' || x.state === 'overdue') act = `<button type="button" class="link sm" data-act="nap-skip">Saltar</button>`;
       } else {
         t = `${x.state === 'done' ? '' : '~'}${U.time(x.t)}`; title = 'A la cama';
-        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'adjusted' ? 'ajustado a un horario razonable (18:30–21:00)' : `entre ${U.time(x.from)} y ${U.time(x.to)} · tras ${U.dur(x.window)} despierta${adjTxt(x)}`;
+        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'fixed' ? `hora fijada por vosotros${x.natural && Math.abs(x.natural - x.t) > 30 * U.MIN ? ` · por cómo va el día, lo natural sería ~${U.time(x.natural)}` : ''}` : x.state === 'adjusted' ? `ajustado a un horario razonable (${p.hard ? '18:00' : '18:30'}–21:00)` : `entre ${U.time(x.from)} y ${U.time(x.to)} · tras ${U.dur(x.window)} despierta${adjTxt(x)}`;
       }
       return `<li class="plan-it is-${x.state} k-${x.kind}"><time>${t}</time><i class="plan-dot" aria-hidden="true"></i><span><b>${title}</b><small>${sub}</small></span>${act}</li>`;
     };
     const ws = r.windows.map((w, i) => (i === r.expected ? `cama ${U.dur(w, true)}` : U.dur(w, true))).join(' · ');
-    return W.card('Plan de hoy', `<ol class="plan">${p.items.map(row).join('')}</ol>
-      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días; se ajusta según cómo vayan las siestas de hoy.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}</span></p>`, { cls: 'c-sleep' });
+    return W.card('Plan de hoy', `${W.planAlerts()}<ol class="plan">${p.items.map(row).join('')}</ol>
+      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días; se ajusta según cómo vayan las siestas de hoy.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}${r.transition ? ' En transición: ventanas del siguiente tramo de edad hasta que aprenda las nuevas.' : ''}</span></p>`, { cls: 'c-sleep', act: `<button type="button" class="link" data-act="plan-adjust">${icon('cog', 'sm')} Ajustar</button>` });
   };
 
   /* Sonidos para dormir con temporizador de apagado. */

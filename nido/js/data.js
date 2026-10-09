@@ -341,6 +341,13 @@
     { id: 'meciendo', name: 'Meciendo', emoji: '🪑' }, { id: 'acompanada', name: 'Acompañada en la cuna', emoji: '🤲' },
     { id: 'carrito', name: 'Carrito o coche', emoji: '🚗' }, { id: 'porteo', name: 'Porteo', emoji: '🧣' }
   ];
+  /* Días difíciles: el plan es más suave y no aprende de ellos. */
+  N.HARD_DAYS = [
+    { id: 'enfermedad', name: 'Está malita', emoji: '🤒' }, { id: 'dientes', name: 'Dientes', emoji: '🦷' },
+    { id: 'vacunas', name: 'Vacunas', emoji: '💉' }, { id: 'viaje', name: 'Viaje o cambio de rutina', emoji: '🧳' },
+    { id: 'regresion', name: 'Regresión o salto', emoji: '🌀' }
+  ];
+  N.HARD_DAY_LABEL = (id) => ((N.HARD_DAYS.find((x) => x.id === id) || {}).name || id || '').toLowerCase();
   /* Despertares nocturnos: por qué y cómo volvió a dormirse. */
   N.WAKE_REASONS = [
     { id: 'hambre', name: 'Hambre', emoji: '🍼' }, { id: 'panal', name: 'Pañal', emoji: '🧷' },

@@ -2,7 +2,7 @@
    Guarda la app en caché para que abra sin conexión. Los archivos propios se
    sirven desde caché y se actualizan en segundo plano; las fuentes de Google
    se guardan la primera vez que se descargan. Sube VERSION al publicar. */
-const VERSION = 'nido-v5';
+const VERSION = 'nido-v6';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',

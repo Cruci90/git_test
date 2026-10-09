@@ -19,7 +19,7 @@
   'use strict';
   const { U, Store } = N;
   const LS = 'nido.sync.v1';
-  const MAPS = ['milestones', 'teeth', 'blwPlans'];
+  const MAPS = ['milestones', 'teeth', 'blwPlans', 'sleepPrefs'];
   const enc = new TextEncoder(), dec = new TextDecoder();
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -225,7 +225,7 @@
       if (!probe.last) { this.cfg = null; throw new Error('Esa familia no existe o aún no tiene datos'); }
       if (mode === 'replace') {
         const keep = { settings: Store.state.settings, sent: Store.state.sent };
-        Store.state = Object.assign(Store.state, { babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, activeBabyId: null }, keep);
+        Store.state = Object.assign(Store.state, { babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sleepPrefs: {}, activeBabyId: null }, keep);
         Store.COLLECTIONS.forEach((c) => { Store.state[c] = []; });
         if (N.Media) await N.Media.clear();
       }

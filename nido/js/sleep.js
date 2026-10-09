@@ -221,3 +221,110 @@
       </div>`, { cls: 'c-sleep' });
   };
 })(window.Nido = window.Nido || {});
+
+/* ==========================================================================
+   Nido · Ajustes del plan de sueño
+   Ajuste manual de ventanas, horas fijas, transición de siestas, días
+   difíciles y cambio de hora. Todo se guarda en sleepPrefs del bebé.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, icon } = N;
+  const A = N.actions;
+  const save = (patch) => { Object.assign(S.prefs(), patch); Store.commit(); };
+
+  /* Avisos que se muestran encima del plan. */
+  N.W.planAlerts = () => {
+    const out = [], prefs = S.prefs(), today = U.today();
+    const hard = S.hardDay(today);
+    if (hard) {
+      out.push(`<div class="palert is-hard"><span>${(N.HARD_DAYS.find((x) => x.id === hard.reason) || {}).emoji || '🌀'}</span><div><b>Día difícil: ${N.HARD_DAY_LABEL(hard.reason)}${hard.from < today ? ` (desde el ${U.date(hard.from)})` : ''}</b>
+        <small>Ventanas un 15 % más cortas y la noche puede adelantarse a las 18:00. Estos días no se usan para aprender su ritmo.</small></div>
+        <button type="button" class="btn soft sm" data-act="hard-end">Ya está mejor</button></div>`);
+    }
+    const dst = S.dstUpcoming();
+    if (dst && !(prefs.dst && prefs.dst.date === dst.date && prefs.dst.dismissed)) {
+      const back = dst.dir === 'back', when = U.dateLong(dst.date);
+      const applied = prefs.dst && prefs.dst.date === dst.date && prefs.dst.mode === 'gradual';
+      if (dst.days > 0) {
+        out.push(`<div class="palert is-dst"><span>🕒</span><div><b>Cambio de hora el ${when} (${dst.days === 1 ? 'mañana' : `en ${dst.days} días`})</b>
+          <small>${back ? 'A las 3:00 serán las 2:00: por el reloj, querrá despertarse una hora antes.' : 'A las 2:00 serán las 3:00: por el reloj, tendrá sueño una hora más tarde.'}
+          ${applied ? 'Plan gradual activado: ' : 'Plan gradual: '}${dst.plan.map((p) => `${U.WEEKDAYS[new Date(U.parseDay(p.date)).getDay()]} ${p.shift > 0 ? '+' : '−'}${Math.abs(p.shift)}`).join(' · ')} min sobre su horario.</small></div>
+          ${applied ? `<button type="button" class="link sm" data-act="dst-off">Quitar</button>` : `<div class="palert-act"><button type="button" class="btn primary sm" data-act="dst-on" data-date="${dst.date}">Hacerlo gradual</button><button type="button" class="link sm" data-act="dst-dismiss" data-date="${dst.date}">De golpe</button></div>`}</div>`);
+      } else {
+        out.push(`<div class="palert is-dst"><span>🕒</span><div><b>${dst.days === 0 ? 'Hoy' : `Hace ${-dst.days} días`} ha cambiado la hora</b>
+          <small>Suele tardar entre 3 y 7 días en ajustarse. Mantén luz natural por la mañana, habitación a oscuras de noche y no adelantes${back ? ' el levantarse aunque se despierte antes' : ''}.</small></div>
+          <button type="button" class="link sm" data-act="dst-dismiss" data-date="${dst.date}">Entendido</button></div>`);
+      }
+    }
+    const tr = S.napTransition();
+    if (prefs.targetNaps && S.learnRhythm().transition) {
+      out.push(`<div class="palert is-tr"><span>🔁</span><div><b>Transición a ${prefs.targetNaps} siesta${prefs.targetNaps > 1 ? 's' : ''} en marcha${prefs.transitionFrom ? ` desde el ${U.date(prefs.transitionFrom)}` : ''}</b>
+        <small>Ventanas más largas. Algunos días necesitará la siesta de antes: sáltate el plan y vuelve a él al día siguiente. Tras una noche corta, acuéstala hasta 30 min antes.</small></div>
+        <button type="button" class="link sm" data-act="tr-cancel">Volver a ${prefs.targetNaps + 1}</button></div>`);
+    } else if (tr && tr.ready && !prefs.targetNaps && prefs.trDismissed !== `${tr.from}:${today.slice(0, 7)}`) {
+      out.push(`<div class="palert is-tr"><span>🔁</span><div><b>Puede estar lista para pasar de ${tr.from} a ${tr.to} siesta${tr.to > 1 ? 's' : ''}</b>
+        <small>Lo habitual es entre los ${tr.age[0]} y ${tr.age[1]} meses. Señales: ${tr.signals.join('; ')}.</small></div>
+        <div class="palert-act"><button type="button" class="btn primary sm" data-act="tr-start" data-n="${tr.to}">Empezar transición</button><button type="button" class="link sm" data-act="tr-dismiss" data-k="${tr.from}:${today.slice(0, 7)}">Aún no</button></div></div>`);
+    }
+    if (prefs.shift || prefs.wakeTarget || prefs.bedTarget) {
+      const bits = [prefs.shift ? `ventanas ${prefs.shift > 0 ? '+' : '−'}${Math.abs(prefs.shift)} min` : '', prefs.wakeTarget ? `despertar ${prefs.wakeTarget}` : '', prefs.bedTarget ? `a la cama ${prefs.bedTarget}` : ''].filter(Boolean);
+      out.push(`<p class="ptweaks">${icon('cog', 'sm')} Ajustes vuestros: ${bits.join(' · ')} <button type="button" class="link sm" data-act="plan-adjust">Cambiar</button></p>`);
+    }
+    return out.join('');
+  };
+
+  /* Hoja de ajustes del plan. */
+  A['plan-adjust'] = () => {
+    const p = S.prefs(), r = S.learnRhythm(), hard = S.hardDay(U.today());
+    const shift = p.shift || 0;
+    UI.sheet({
+      title: 'Ajustar el plan de sueño', submit: 'Guardar',
+      body: `<fieldset class="fld full"><legend>¿Qué tal le van las horas del plan?</legend>
+          <div class="shift-pick">
+            <button type="button" class="btn soft" data-x="shift" data-d="-10">Le entra el sueño antes<small>acortar ventanas 10 min</small></button>
+            <output id="shift-out">${shift ? `${shift > 0 ? '+' : '−'}${Math.abs(shift)} min` : 'Sin ajuste'}</output>
+            <button type="button" class="btn soft" data-x="shift" data-d="10">A esa hora aún no tiene sueño<small>alargar ventanas 10 min</small></button>
+          </div><input type="hidden" name="shift" value="${shift}">
+          <p class="hint">Se suma a lo que aprende de sus registros. Puedes repetirlo hasta ±45 min.</p></fieldset>` +
+        UI.f.row(`<label class="fld"><span>Hora de despertar fija <small>(opcional)</small></span><input type="time" name="wakeTarget" value="${p.wakeTarget || ''}"></label>`,
+          `<label class="fld"><span>Hora de dormir fija <small>(opcional)</small></span><input type="time" name="bedTarget" value="${p.bedTarget || ''}"></label>`) +
+        '<p class="hint">Útil si la guardería o el trabajo marcan el horario. El plan reparte las siestas para llegar a esa hora.</p>' +
+        UI.f.select('targetNaps', 'Siestas al día', [['', `Automático (ahora ${r.natural})`], ...[4, 3, 2, 1].map((n) => [n, `${n} siesta${n > 1 ? 's' : ''}`])], p.targetNaps || '') +
+        `<fieldset class="fld full"><legend>¿Hoy es un día difícil?</legend><div class="chips">
+          <label class="chip"><input type="radio" name="hard" value="" ${!hard ? 'checked' : ''}><span>No</span></label>
+          ${N.HARD_DAYS.map((h) => `<label class="chip"><input type="radio" name="hard" value="${h.id}" ${hard && hard.reason === h.id ? 'checked' : ''}><span>${h.emoji} ${h.name}</span></label>`).join('')}</div>
+          <p class="hint">Hace el plan más suave y no aprende de estos días. Sigue activo hasta que pulses «Ya está mejor».</p></fieldset>`,
+      onMount: (form) => form.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-x=shift]'); if (!b) return;
+        const inp = form.querySelector('[name=shift]'), v = U.clamp(Number(inp.value) + Number(b.dataset.d), -45, 45);
+        inp.value = v; form.querySelector('#shift-out').textContent = v ? `${v > 0 ? '+' : '−'}${Math.abs(v)} min` : 'Sin ajuste';
+      }),
+      onSubmit: (x) => {
+        const patch = { shift: Number(x.shift) || 0, wakeTarget: x.wakeTarget || null, bedTarget: x.bedTarget || null };
+        const tn = x.targetNaps ? Number(x.targetNaps) : null;
+        if (tn !== (p.targetNaps || null)) Object.assign(patch, { targetNaps: tn, transitionFrom: tn ? U.today() : null });
+        Object.assign(p, patch);
+        setHard(x.hard || null, true);
+        Store.commit(); UI.toast('Plan ajustado');
+      }
+    });
+  };
+
+  /* Abre o cierra el día difícil de hoy. Un día difícil sigue activo hasta que se cierra. */
+  const setHard = (reason, silent) => {
+    const p = S.prefs(), today = U.today(), list = (p.hard = p.hard || []);
+    const cur = S.hardDay(today);
+    if (cur && cur.reason === reason) return;
+    if (cur) { if (cur.from === today) list.splice(list.indexOf(cur), 1); else cur.to = U.dayKey(U.addDays(U.parseDay(today), -1)); }
+    if (reason) list.push({ from: today, to: null, reason });
+    if (!silent) Store.commit();
+  };
+  A['hard-end'] = () => { setHard(null); UI.toast('Vuelve el plan normal'); };
+  A['dst-on'] = (el) => save({ dst: { date: el.dataset.date, mode: 'gradual' } });
+  A['dst-off'] = () => save({ dst: null });
+  A['dst-dismiss'] = (el) => save({ dst: { date: el.dataset.date, mode: 'sudden', dismissed: true } });
+  A['tr-start'] = (el) => { save({ targetNaps: Number(el.dataset.n), transitionFrom: U.today() }); UI.toast(`Plan con ${el.dataset.n} siestas`); };
+  A['tr-cancel'] = () => save({ targetNaps: null, transitionFrom: null });
+  A['tr-dismiss'] = (el) => save({ trDismissed: el.dataset.k });
+})(window.Nido = window.Nido || {});

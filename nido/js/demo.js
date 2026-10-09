@@ -53,12 +53,13 @@
       // Mañana: despertar
       let wake = day0 + 7 * HOUR + jit(25);
       breast(wake + 5 * MIN);
-      const naps = [[120, 55, 20], [135, 85, 25], [140, 38, 10]];
+      // La tercera siesta se le empieza a resistir: corta y le cuesta dormirse (señales de pasar a 2 siestas).
+      const naps = [[120, 55, 20], [135, 85, 25], [140, 30, 10]];
       let cur = wake;
       naps.forEach(([ww, dur, dj], i) => {
         const s = cur + ww * MIN + jit(15), e = s + dur * MIN + jit(dj);
-        const how = i === 2 && r() < 0.5 ? 'carrito' : pick(['pecho', 'pecho', 'brazos', 'sola', 'meciendo', 'acompanada']);
-        const down = how === 'carrito' ? null : s - (3 + r() * 14) * MIN;
+        const how = i === 2 && r() < 0.2 ? 'carrito' : pick(['pecho', 'pecho', 'brazos', 'sola', 'meciendo', 'acompanada']);
+        const down = how === 'carrito' ? null : s - (i === 2 ? 16 + r() * 20 : 3 + r() * 14) * MIN;
         // De vez en cuando se despierta un rato a mitad de siesta.
         const pauses = i === 1 && r() < 0.25 ? [{ a: s + dur * 0.45 * MIN, b: s + dur * 0.45 * MIN + (4 + r() * 6) * MIN }] : undefined;
         if (s <= now && e > now) st.timers.sleep = { babyId, phase: 'asleep', start: s, type: 'nap', down, how, pauses: [] }; // siesta en curso

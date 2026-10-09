@@ -918,6 +918,25 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
 .pause-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 8px; }
 .fld small { font-weight: 400; color: var(--ink-3); }
 
+/* ---------- Plan: avisos y ajustes ---------- */
+.palert { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px 12px; border-radius: 14px; margin-bottom: 10px; background: var(--surface-2); }
+.palert > span { font-size: 20px; line-height: 1.2; }
+.palert div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.palert b { font-size: 14px; }
+.palert small { font-size: 12.5px; color: var(--ink-2); }
+.palert.is-hard { background: var(--warn-soft); }
+.palert.is-dst { background: color-mix(in srgb, var(--c-sleep) 12%, var(--surface)); }
+.palert.is-tr { background: color-mix(in srgb, var(--c-mile) 14%, var(--surface)); }
+.palert-act { display: flex; flex-direction: column !important; align-items: flex-end; gap: 4px !important; }
+@media (max-width: 520px) { .palert { grid-template-columns: 28px minmax(0, 1fr); } .palert > .btn, .palert > .link, .palert-act { grid-column: 2; justify-self: start; align-items: flex-start; } }
+.ptweaks { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink-3); margin: 0 0 10px; }
+.card-h .link { display: inline-flex; align-items: center; gap: 4px; }
+.shift-pick { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.shift-pick .btn { flex-direction: column; height: auto; padding: 10px; white-space: normal; text-align: center; gap: 2px; }
+.shift-pick .btn small { font-weight: 500; font-size: 11.5px; color: var(--ink-3); }
+.shift-pick output { font: 700 16px var(--f-display); min-width: 80px; text-align: center; }
+.plan-it.is-fixed time { color: var(--accent); }
+
 </style>
 </head>
 <body>
@@ -1278,6 +1297,13 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     { id: 'meciendo', name: 'Meciendo', emoji: '🪑' }, { id: 'acompanada', name: 'Acompañada en la cuna', emoji: '🤲' },
     { id: 'carrito', name: 'Carrito o coche', emoji: '🚗' }, { id: 'porteo', name: 'Porteo', emoji: '🧣' }
   ];
+  /* Días difíciles: el plan es más suave y no aprende de ellos. */
+  N.HARD_DAYS = [
+    { id: 'enfermedad', name: 'Está malita', emoji: '🤒' }, { id: 'dientes', name: 'Dientes', emoji: '🦷' },
+    { id: 'vacunas', name: 'Vacunas', emoji: '💉' }, { id: 'viaje', name: 'Viaje o cambio de rutina', emoji: '🧳' },
+    { id: 'regresion', name: 'Regresión o salto', emoji: '🌀' }
+  ];
+  N.HARD_DAY_LABEL = (id) => ((N.HARD_DAYS.find((x) => x.id === id) || {}).name || id || '').toLowerCase();
   /* Despertares nocturnos: por qué y cómo volvió a dormirse. */
   N.WAKE_REASONS = [
     { id: 'hambre', name: 'Hambre', emoji: '🍼' }, { id: 'panal', name: 'Pañal', emoji: '🧷' },
@@ -1431,7 +1457,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   const empty = () => ({
     version: 1, activeBabyId: null,
     settings: { theme: 'auto', caregiver: 'Mamá' },
-    babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sent: {},
+    babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sent: {}, sleepPrefs: {},
     ...Object.fromEntries(COLLECTIONS.map((c) => [c, []]))
   });
 
@@ -1584,41 +1610,116 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   };
 
   const stdev = (xs) => { if (xs.length < 2) return null; const m = U.avg(xs); return Math.sqrt(U.avg(xs, (x) => (x - m) * (x - m))); };
-  S.learnRhythm = (now = Date.now()) => {
-    const norm = S.sleepNorm(S.ageMonths(now));
+
+  /* ---- Preferencias del plan (por bebé; se sincronizan con la familia) ----
+     shift        · minutos que se suman a todas las ventanas (ajuste manual)
+     wakeTarget   · hora de despertar fija 'HH:MM' (si aún no se ha registrado)
+     bedTarget    · hora de dormir fija 'HH:MM'
+     targetNaps   · número de siestas elegido (transición)
+     hard         · [{ from, to|null, reason }] días difíciles (no se aprende de ellos)
+     dst          · { date, mode } plan elegido para el cambio de hora */
+  S.prefs = () => (Store.state.activeBabyId ? Store.babyMap('sleepPrefs') : {});
+  S.hardDay = (key) => (S.prefs().hard || []).find((h) => key >= h.from && (!h.to || key <= h.to)) || null;
+
+  /* ---- Cambio de hora (UE: último domingo de marzo y de octubre) ---- */
+  const lastSunday = (y, m) => { const d = new Date(y, m + 1, 0); d.setDate(d.getDate() - d.getDay()); return U.dayKey(d.getTime()); };
+  S.dstChanges = (year) => [{ date: lastSunday(year, 2), dir: 'forward' }, { date: lastSunday(year, 9), dir: 'back' }];
+  /* Próximo cambio relevante: desde 10 días antes hasta 5 días después. */
+  S.dstUpcoming = (now = Date.now()) => {
+    const y = new Date(now).getFullYear();
+    const today = U.dayStart(now);
+    for (const c of [...S.dstChanges(y), ...S.dstChanges(y + 1)]) {
+      const days = Math.round((U.parseDay(c.date) - today) / DAY);
+      if (days >= -5 && days <= 10) {
+        // Plan gradual: 15 min por día los 4 días anteriores. En otoño (se atrasa la hora) el día se
+        // retrasa; en primavera (se adelanta) se adelanta. El domingo ya cuadra con la hora nueva.
+        const sign = c.dir === 'back' ? 1 : -1;
+        const plan = [4, 3, 2, 1].map((k, i) => ({ date: U.dayKey(U.addDays(U.parseDay(c.date), -k)), shift: sign * 15 * (i + 1) }));
+        return Object.assign({ days, plan }, c);
+      }
+    }
+    return null;
+  };
+  /* Minutos que hay que desplazar el día `key` según el plan de cambio de hora elegido. */
+  S.dstShift = (key) => {
+    const p = S.prefs().dst; if (!p || p.mode !== 'gradual') return 0;
+    const up = S.dstUpcoming(U.parseDay(key));
+    if (!up || up.date !== p.date) return 0;
+    const d = up.plan.find((x) => x.date === key);
+    return d ? d.shift : 0;
+  };
+
+  const fallbackDur = (n) => (n === 1 ? [150] : n === 2 ? [80, 90] : [55, 85, 40, 30, 30]);
+  /* opts.natural: ignora el número de siestas elegido (para detectar transiciones). */
+  S.learnRhythm = (now = Date.now(), opts = {}) => {
+    const age = S.ageMonths(now), norm = S.sleepNorm(age);
+    const prefs = S.prefs();
     const days = [];
     for (let i = 1; i <= 7; i++) {
-      const sh = S.dayShape(U.dayKey(U.addDays(now, -i)));
+      const key = U.dayKey(U.addDays(now, -i));
+      if (S.hardDay(key)) continue; // los días difíciles no enseñan el ritmo habitual
+      const sh = S.dayShape(key);
       if (sh.wake && sh.bed && sh.naps.length) days.push(sh);
     }
     const counts = days.map((d) => d.naps.length).sort((a, b) => a - b);
-    const expected = counts.length >= 3 ? counts[Math.floor(counts.length / 2)] : Math.round((norm.naps[0] + norm.naps[1]) / 2);
+    const natural = counts.length >= 3 ? counts[Math.floor(counts.length / 2)] : Math.round((norm.naps[0] + norm.naps[1]) / 2);
+    const target = !opts.natural && prefs.targetNaps ? prefs.targetNaps : null;
+    const expected = target || natural;
     const same = days.filter((d) => d.naps.length === expected);
-    const lo = norm.ww[0] * 0.8, hi = norm.ww[1] * 1.25;
+    // En una transición a menos siestas aún no hay días que enseñen las ventanas nuevas: se usan las del siguiente tramo de edad.
+    const transition = !!(target && target < natural && same.length < 3);
+    const ref = transition ? (N.SLEEP_BY_AGE.find((r) => r.upTo > norm.upTo && r.naps[0] <= target) || norm) : norm;
+    const lo = norm.ww[0] * 0.8, hi = ref.ww[1] * 1.25;
     const windows = [], spread = [];
     for (let i = 0; i <= expected; i++) {
       // La vigilia se alarga a lo largo del día: la primera es la más corta y la de antes de dormir, la más larga.
-      const typical = norm.ww[0] + (norm.ww[1] - norm.ww[0]) * (expected ? i / expected : 0.5);
+      const typical = ref.ww[0] + (ref.ww[1] - ref.ww[0]) * (expected ? i / expected : 0.5);
       const samples = same.map((d) => ((i === expected ? d.bed : d.naps[i].start) - (i === 0 ? d.wake : d.naps[i - 1].end)) / MIN).filter((g) => g > 20 && g < 420);
       const learned = samples.length >= 2 ? U.avg(samples) : null;
       windows.push(Math.round(U.clamp(learned != null ? learned * 0.7 + typical * 0.3 : typical, lo, hi)));
       const sd = stdev(samples);
       spread.push(Math.round(U.clamp(sd != null && samples.length >= 3 ? sd : 20, 10, 30)));
     }
-    const fallback = expected <= 2 ? [80, 90] : [55, 85, 40, 30, 30];
     const durations = [];
     for (let i = 0; i < expected; i++) {
       const s = same.map((d) => S.sleepMin(d.naps[i]));
-      durations.push(Math.round(s.length >= 2 ? U.avg(s) : fallback[i] || 35));
+      durations.push(Math.round(s.length >= 2 ? U.avg(s) : fallbackDur(expected)[i] || 35));
     }
     const wakes = days.map((d) => hourOf(d.wake));
-    const nights = []; for (let i = 2; i <= 8; i++) { const n = S.nightOf(U.dayKey(U.addDays(now, -i))); if (n) nights.push(n); }
+    const nights = []; for (let i = 2; i <= 8; i++) { const k = U.dayKey(U.addDays(now, -i)); if (S.hardDay(k)) continue; const n = S.nightOf(k); if (n) nights.push(n); }
     const lat = S.sleeps().filter((s) => s.start > now - 14 * DAY).map(S.latency).filter((x) => x != null);
     return {
-      expected, windows, spread, durations, norm, days: days.length, learned: same.length >= 3,
+      expected, natural, transition, windows, spread, durations, norm, days: days.length, learned: same.length >= 3, shapes: days,
       wakeHour: wakes.length ? U.avg(wakes) : 7, nightAvg: nights.length ? U.avg(nights, (n) => n.total) : null,
       latency: lat.length >= 3 ? U.avg(lat) : null
     };
+  };
+
+  /* ---- Transiciones de siestas ----
+     Señales (últimos 7 días que no fueron difíciles) de que está lista para una siesta menos, si
+     además está en la edad habitual para ese paso. Hacen falta al menos dos. */
+  const TRANSITIONS = { 4: [3, 5.5], 3: [6, 9.5], 2: [12, 18.5] };
+  S.napTransition = (now = Date.now()) => {
+    const r = S.learnRhythm(now, { natural: true });
+    const n = r.natural, win = TRANSITIONS[n];
+    if (!win) return null;
+    const age = S.ageMonths(now);
+    if (age < win[0] - 0.5 || age > win[1] + 1) return null;
+    const days = r.shapes;
+    if (days.length < 4) return null;
+    const signals = [];
+    const fewer = days.filter((d) => d.naps.length < n).length + S.skips().filter((k) => k.time > now - 7 * DAY && k.time < U.dayStart(now)).length;
+    if (fewer >= 2) signals.push(`${fewer} de los últimos días ha hecho o aceptado solo ${n - 1} siestas`);
+    const last = days.filter((d) => d.naps.length === n).map((d) => d.naps[n - 1]);
+    const shortLast = last.filter((s) => S.sleepMin(s) < 30).length;
+    if (shortLast >= 3) signals.push(`la última siesta dura menos de 30 min (${shortLast} días)`);
+    const lastLat = last.map(S.latency).filter((x) => x != null);
+    if (lastLat.length >= 3 && U.avg(lastLat) >= 20) signals.push(`tarda de media ${Math.round(U.avg(lastLat))} min en dormirse en la última siesta`);
+    const lateBed = days.filter((d) => hourOf(d.bed) >= 20.5 || hourOf(d.bed) < 4).length;
+    if (lateBed >= 3) signals.push(`la hora de dormir se va más allá de las 20:30 (${lateBed} días)`);
+    const early = days.filter((d) => hourOf(d.wake) < 6).length;
+    if (early >= 3) signals.push(`se despierta antes de las 6:00 (${early} días)`);
+    return { from: n, to: n - 1, age: win, signals, ready: signals.length >= 2 };
   };
 
   /* Presión de sueño: tras una siesta más corta de lo habitual se acumula
@@ -1636,13 +1737,14 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   S.dayPlan = (now = Date.now()) => {
     const r = S.learnRhythm(now);
     const d0 = U.dayStart(now), todayKey = U.dayKey(now), today = S.dayShape(todayKey);
+    const prefs = S.prefs(), hard = S.hardDay(todayKey), dst = S.dstShift(todayKey);
     const active = S.activeSleep();
     const activeNap = active && S.timerType(active) === 'nap';
     const skips = S.skips().filter((x) => x.date === todayKey);
     const items = [];
-    // Sin despertar registrado (aún duerme o no se anotó la noche): se usa su hora habitual.
-    const realWake = today.wake || d0 + r.wakeHour * HOUR;
-    items.push({ kind: 'wake', t: realWake, state: today.wake ? 'done' : 'planned' });
+    // Sin despertar registrado: la hora fijada por la familia o, si no hay, su hora habitual.
+    const realWake = today.wake || (prefs.wakeTarget ? U.fromInputs(todayKey, prefs.wakeTarget) : d0 + r.wakeHour * HOUR);
+    items.push({ kind: 'wake', t: realWake, state: today.wake ? 'done' : prefs.wakeTarget ? 'fixed' : 'planned' });
     // Hoy se esperan las siestas habituales menos las que se han saltado.
     const expectedToday = Math.max(today.naps.length + (activeNap ? 1 : 0), r.expected - skips.length);
     const offset = r.expected - expectedToday; // las siestas que quedan usan las ventanas de posiciones más tardías
@@ -1659,6 +1761,17 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       const end = Math.max(st + (r.durations[pos(i)] || 40) * MIN, now + 5 * MIN);
       items.push({ kind: 'nap', idx: i, start: st, end, state: 'now' }); cursor = end; i++; prevNap = null;
     }
+    // Ajustes que se suman a cada ventana: manual, día difícil y cambio de hora (repartido entre las que quedan).
+    const remaining = Math.max(1, expectedToday - i + 1);
+    const extras = (base) => {
+      const parts = [];
+      let a = 0;
+      if (prefs.shift) { a += prefs.shift; parts.push(`ajuste manual ${prefs.shift > 0 ? '+' : '−'}${Math.abs(prefs.shift)} min`); }
+      if (hard) { const h = -Math.round(base * 0.15); a += h; parts.push(`día difícil (${N.HARD_DAY_LABEL ? N.HARD_DAY_LABEL(hard.reason) : hard.reason})`); }
+      if (dst) { const s = Math.round(dst / remaining); a += s; parts.push(`cambio de hora (${dst > 0 ? '+' : '−'}${Math.abs(dst)} min hoy)`); }
+      return { a, parts };
+    };
+    const wlo = r.norm.ww[0] * 0.6, whi = r.norm.ww[1] * 1.4;
     for (; i < expectedToday; i++) {
       const p = pos(i), base = r.windows[p];
       let adj = 0, why = '';
@@ -1667,37 +1780,42 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
         const night = S.nightOf(U.dayKey(U.addDays(now, -1)));
         if (night && (night.total < r.nightAvg - 60 || night.wakes >= 3)) { adj = -Math.round(base * 0.1); why = 'la noche fue movida'; }
       }
-      const w = base + adj;
+      const ex = extras(base);
+      const w = Math.round(U.clamp(base + adj + ex.a, wlo, whi));
       let start = cursor + w * MIN; const overdue = start < now;
       if (overdue) start = now;
       if (hourOf(start) > 18 || U.dayKey(start) !== todayKey) break;
       const sp = r.spread[p];
-      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[p] * MIN, state: overdue ? 'overdue' : 'planned', window: w, adj, why, from: start - sp * MIN, to: start + sp * MIN });
+      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[p] * MIN, state: overdue ? 'overdue' : 'planned', window: w, adj, why, tweaks: ex.parts, from: start - sp * MIN, to: start + sp * MIN });
       cursor = start + r.durations[p] * MIN; prevNap = null;
     }
     const bedBase = r.windows[r.expected];
     const bp = prevNap ? pressure(bedBase, prevNap, r.durations[pos(i - 1)]) : { adj: 0 };
     // Si hoy se ha saltado una siesta, la noche llega antes (más cansancio acumulado).
     const skipAdj = skips.length && !prevNap ? -Math.round(bedBase * 0.1) : 0;
-    const bedWindow = bedBase + bp.adj + skipAdj;
+    const bex = extras(bedBase);
+    const bedWindow = Math.round(U.clamp(bedBase + bp.adj + skipAdj + bex.a, wlo, whi));
     let bed = cursor + bedWindow * MIN;
     // Si la última siesta empujaría la noche más allá de las 21:00, se acorta a una siesta corta.
     const lastPlanned = items[items.length - 1];
     if (hourOf(bed) > 21 && lastPlanned.kind === 'nap' && lastPlanned.state === 'planned' && lastPlanned.end - lastPlanned.start > 30 * MIN) {
       lastPlanned.end = lastPlanned.start + 30 * MIN; lastPlanned.short = true; bed = lastPlanned.end + bedWindow * MIN;
     }
-    let bedState = 'planned';
+    let bedState = 'planned', natural = null;
+    const minBed = hard ? 18 : 18.5;
     if (today.bed) { bed = today.bed; bedState = 'done'; }
     else if (active && !activeNap) { bed = active.phase === 'down' ? active.down : active.start; bedState = 'done'; }
-    else {
+    else if (prefs.bedTarget) {
+      natural = bed; bed = U.fromInputs(todayKey, prefs.bedTarget) + dst * MIN; bedState = 'fixed';
+    } else {
       const h = hourOf(bed);
-      if (h < 18.5) { bed = d0 + 18.5 * HOUR; bedState = 'adjusted'; }
+      if (h < minBed) { bed = d0 + minBed * HOUR; bedState = 'adjusted'; }
       else if (h > 21 || U.dayKey(bed) !== todayKey) { bed = d0 + 21 * HOUR; bedState = 'adjusted'; }
     }
     const bsp = r.spread[r.expected];
-    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow, adj: bp.adj + skipAdj, why: bp.why || (skipAdj ? 'hoy se saltó una siesta' : ''), from: bed - bsp * MIN, to: bed + bsp * MIN });
+    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow, adj: bp.adj + skipAdj, why: bp.why || (skipAdj ? 'hoy se saltó una siesta' : ''), tweaks: bex.parts, natural, from: bed - bsp * MIN, to: bed + bsp * MIN });
     const next = items.find((x) => x.kind === 'nap' && (x.state === 'planned' || x.state === 'overdue'));
-    return { items, rhythm: r, next, bed, napsDone: today.naps.length, expectedToday, skipped: skips.length };
+    return { items, rhythm: r, next, bed, napsDone: today.naps.length, expectedToday, skipped: skips.length, hard, dst };
   };
 
   /* Estado de vigilia actual con la próxima siesta y la hora de dormir del plan. */
@@ -3138,10 +3256,10 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   W.plan = () => {
     const p = S.dayPlan(), r = p.rhythm, now = Date.now();
     const napName = (x) => `Siesta ${x.idx + 1}`;
-    const adjTxt = (x) => (x.adj ? ` · ${x.adj < 0 ? 'adelantada' : 'retrasada'} ${U.dur(Math.abs(x.adj))} porque ${x.why}` : '');
+    const adjTxt = (x) => (x.adj ? ` · ${x.adj < 0 ? 'adelantada' : 'retrasada'} ${U.dur(Math.abs(x.adj))} porque ${x.why}` : '') + ((x.tweaks || []).length ? ` · ${x.tweaks.join(', ')}` : '');
     const row = (x) => {
       let t, title, sub, act = '';
-      if (x.kind === 'wake') { t = U.time(x.t); title = 'Despertar'; sub = x.state === 'done' ? 'registrado' : 'hora habitual'; }
+      if (x.kind === 'wake') { t = U.time(x.t); title = 'Despertar'; sub = x.state === 'done' ? 'registrado' : x.state === 'fixed' ? 'hora fijada por vosotros' : 'hora habitual'; }
       else if (x.kind === 'nap' && x.state === 'skipped') {
         t = U.time(x.start); title = 'Siesta saltada'; sub = 'el resto del día se ha recolocado';
         act = `<button type="button" class="link sm" data-act="nap-unskip" data-id="${x.id}">Deshacer</button>`;
@@ -3156,13 +3274,13 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
         if (x.state === 'planned' || x.state === 'overdue') act = `<button type="button" class="link sm" data-act="nap-skip">Saltar</button>`;
       } else {
         t = `${x.state === 'done' ? '' : '~'}${U.time(x.t)}`; title = 'A la cama';
-        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'adjusted' ? 'ajustado a un horario razonable (18:30–21:00)' : `entre ${U.time(x.from)} y ${U.time(x.to)} · tras ${U.dur(x.window)} despierta${adjTxt(x)}`;
+        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'fixed' ? `hora fijada por vosotros${x.natural && Math.abs(x.natural - x.t) > 30 * U.MIN ? ` · por cómo va el día, lo natural sería ~${U.time(x.natural)}` : ''}` : x.state === 'adjusted' ? `ajustado a un horario razonable (${p.hard ? '18:00' : '18:30'}–21:00)` : `entre ${U.time(x.from)} y ${U.time(x.to)} · tras ${U.dur(x.window)} despierta${adjTxt(x)}`;
       }
       return `<li class="plan-it is-${x.state} k-${x.kind}"><time>${t}</time><i class="plan-dot" aria-hidden="true"></i><span><b>${title}</b><small>${sub}</small></span>${act}</li>`;
     };
     const ws = r.windows.map((w, i) => (i === r.expected ? `cama ${U.dur(w, true)}` : U.dur(w, true))).join(' · ');
-    return W.card('Plan de hoy', `<ol class="plan">${p.items.map(row).join('')}</ol>
-      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días; se ajusta según cómo vayan las siestas de hoy.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}</span></p>`, { cls: 'c-sleep' });
+    return W.card('Plan de hoy', `${W.planAlerts()}<ol class="plan">${p.items.map(row).join('')}</ol>
+      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días; se ajusta según cómo vayan las siestas de hoy.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}${r.transition ? ' En transición: ventanas del siguiente tramo de edad hasta que aprenda las nuevas.' : ''}</span></p>`, { cls: 'c-sleep', act: `<button type="button" class="link" data-act="plan-adjust">${icon('cog', 'sm')} Ajustar</button>` });
   };
 
   /* Sonidos para dormir con temporizador de apagado. */
@@ -3641,6 +3759,113 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
         ${n.wakings.length ? `<ul class="wakes">${n.wakings.map((w) => `<li><button type="button" class="wk" data-act="edit" data-col="sleeps" data-id="${w.id}"><time>${U.time(w.a)}</time><span>${U.dur(w.min)} despierta</span><span class="wk-why">${w.reason ? `${emo(N.WAKE_REASONS, w.reason)} ${name(N.WAKE_REASONS, w.reason)}` : '<i>sin motivo</i>'}${w.soothe ? ` → ${emo(N.SOOTHE, w.soothe)} ${name(N.SOOTHE, w.soothe)}` : ''}</span></button></li>`).join('')}</ul>` : '<p class="muted small">Durmió del tirón.</p>'}
       </div>`, { cls: 'c-sleep' });
   };
+})(window.Nido = window.Nido || {});
+
+/* ==========================================================================
+   Nido · Ajustes del plan de sueño
+   Ajuste manual de ventanas, horas fijas, transición de siestas, días
+   difíciles y cambio de hora. Todo se guarda en sleepPrefs del bebé.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, icon } = N;
+  const A = N.actions;
+  const save = (patch) => { Object.assign(S.prefs(), patch); Store.commit(); };
+
+  /* Avisos que se muestran encima del plan. */
+  N.W.planAlerts = () => {
+    const out = [], prefs = S.prefs(), today = U.today();
+    const hard = S.hardDay(today);
+    if (hard) {
+      out.push(`<div class="palert is-hard"><span>${(N.HARD_DAYS.find((x) => x.id === hard.reason) || {}).emoji || '🌀'}</span><div><b>Día difícil: ${N.HARD_DAY_LABEL(hard.reason)}${hard.from < today ? ` (desde el ${U.date(hard.from)})` : ''}</b>
+        <small>Ventanas un 15 % más cortas y la noche puede adelantarse a las 18:00. Estos días no se usan para aprender su ritmo.</small></div>
+        <button type="button" class="btn soft sm" data-act="hard-end">Ya está mejor</button></div>`);
+    }
+    const dst = S.dstUpcoming();
+    if (dst && !(prefs.dst && prefs.dst.date === dst.date && prefs.dst.dismissed)) {
+      const back = dst.dir === 'back', when = U.dateLong(dst.date);
+      const applied = prefs.dst && prefs.dst.date === dst.date && prefs.dst.mode === 'gradual';
+      if (dst.days > 0) {
+        out.push(`<div class="palert is-dst"><span>🕒</span><div><b>Cambio de hora el ${when} (${dst.days === 1 ? 'mañana' : `en ${dst.days} días`})</b>
+          <small>${back ? 'A las 3:00 serán las 2:00: por el reloj, querrá despertarse una hora antes.' : 'A las 2:00 serán las 3:00: por el reloj, tendrá sueño una hora más tarde.'}
+          ${applied ? 'Plan gradual activado: ' : 'Plan gradual: '}${dst.plan.map((p) => `${U.WEEKDAYS[new Date(U.parseDay(p.date)).getDay()]} ${p.shift > 0 ? '+' : '−'}${Math.abs(p.shift)}`).join(' · ')} min sobre su horario.</small></div>
+          ${applied ? `<button type="button" class="link sm" data-act="dst-off">Quitar</button>` : `<div class="palert-act"><button type="button" class="btn primary sm" data-act="dst-on" data-date="${dst.date}">Hacerlo gradual</button><button type="button" class="link sm" data-act="dst-dismiss" data-date="${dst.date}">De golpe</button></div>`}</div>`);
+      } else {
+        out.push(`<div class="palert is-dst"><span>🕒</span><div><b>${dst.days === 0 ? 'Hoy' : `Hace ${-dst.days} días`} ha cambiado la hora</b>
+          <small>Suele tardar entre 3 y 7 días en ajustarse. Mantén luz natural por la mañana, habitación a oscuras de noche y no adelantes${back ? ' el levantarse aunque se despierte antes' : ''}.</small></div>
+          <button type="button" class="link sm" data-act="dst-dismiss" data-date="${dst.date}">Entendido</button></div>`);
+      }
+    }
+    const tr = S.napTransition();
+    if (prefs.targetNaps && S.learnRhythm().transition) {
+      out.push(`<div class="palert is-tr"><span>🔁</span><div><b>Transición a ${prefs.targetNaps} siesta${prefs.targetNaps > 1 ? 's' : ''} en marcha${prefs.transitionFrom ? ` desde el ${U.date(prefs.transitionFrom)}` : ''}</b>
+        <small>Ventanas más largas. Algunos días necesitará la siesta de antes: sáltate el plan y vuelve a él al día siguiente. Tras una noche corta, acuéstala hasta 30 min antes.</small></div>
+        <button type="button" class="link sm" data-act="tr-cancel">Volver a ${prefs.targetNaps + 1}</button></div>`);
+    } else if (tr && tr.ready && !prefs.targetNaps && prefs.trDismissed !== `${tr.from}:${today.slice(0, 7)}`) {
+      out.push(`<div class="palert is-tr"><span>🔁</span><div><b>Puede estar lista para pasar de ${tr.from} a ${tr.to} siesta${tr.to > 1 ? 's' : ''}</b>
+        <small>Lo habitual es entre los ${tr.age[0]} y ${tr.age[1]} meses. Señales: ${tr.signals.join('; ')}.</small></div>
+        <div class="palert-act"><button type="button" class="btn primary sm" data-act="tr-start" data-n="${tr.to}">Empezar transición</button><button type="button" class="link sm" data-act="tr-dismiss" data-k="${tr.from}:${today.slice(0, 7)}">Aún no</button></div></div>`);
+    }
+    if (prefs.shift || prefs.wakeTarget || prefs.bedTarget) {
+      const bits = [prefs.shift ? `ventanas ${prefs.shift > 0 ? '+' : '−'}${Math.abs(prefs.shift)} min` : '', prefs.wakeTarget ? `despertar ${prefs.wakeTarget}` : '', prefs.bedTarget ? `a la cama ${prefs.bedTarget}` : ''].filter(Boolean);
+      out.push(`<p class="ptweaks">${icon('cog', 'sm')} Ajustes vuestros: ${bits.join(' · ')} <button type="button" class="link sm" data-act="plan-adjust">Cambiar</button></p>`);
+    }
+    return out.join('');
+  };
+
+  /* Hoja de ajustes del plan. */
+  A['plan-adjust'] = () => {
+    const p = S.prefs(), r = S.learnRhythm(), hard = S.hardDay(U.today());
+    const shift = p.shift || 0;
+    UI.sheet({
+      title: 'Ajustar el plan de sueño', submit: 'Guardar',
+      body: `<fieldset class="fld full"><legend>¿Qué tal le van las horas del plan?</legend>
+          <div class="shift-pick">
+            <button type="button" class="btn soft" data-x="shift" data-d="-10">Le entra el sueño antes<small>acortar ventanas 10 min</small></button>
+            <output id="shift-out">${shift ? `${shift > 0 ? '+' : '−'}${Math.abs(shift)} min` : 'Sin ajuste'}</output>
+            <button type="button" class="btn soft" data-x="shift" data-d="10">A esa hora aún no tiene sueño<small>alargar ventanas 10 min</small></button>
+          </div><input type="hidden" name="shift" value="${shift}">
+          <p class="hint">Se suma a lo que aprende de sus registros. Puedes repetirlo hasta ±45 min.</p></fieldset>` +
+        UI.f.row(`<label class="fld"><span>Hora de despertar fija <small>(opcional)</small></span><input type="time" name="wakeTarget" value="${p.wakeTarget || ''}"></label>`,
+          `<label class="fld"><span>Hora de dormir fija <small>(opcional)</small></span><input type="time" name="bedTarget" value="${p.bedTarget || ''}"></label>`) +
+        '<p class="hint">Útil si la guardería o el trabajo marcan el horario. El plan reparte las siestas para llegar a esa hora.</p>' +
+        UI.f.select('targetNaps', 'Siestas al día', [['', `Automático (ahora ${r.natural})`], ...[4, 3, 2, 1].map((n) => [n, `${n} siesta${n > 1 ? 's' : ''}`])], p.targetNaps || '') +
+        `<fieldset class="fld full"><legend>¿Hoy es un día difícil?</legend><div class="chips">
+          <label class="chip"><input type="radio" name="hard" value="" ${!hard ? 'checked' : ''}><span>No</span></label>
+          ${N.HARD_DAYS.map((h) => `<label class="chip"><input type="radio" name="hard" value="${h.id}" ${hard && hard.reason === h.id ? 'checked' : ''}><span>${h.emoji} ${h.name}</span></label>`).join('')}</div>
+          <p class="hint">Hace el plan más suave y no aprende de estos días. Sigue activo hasta que pulses «Ya está mejor».</p></fieldset>`,
+      onMount: (form) => form.addEventListener('click', (e) => {
+        const b = e.target.closest('[data-x=shift]'); if (!b) return;
+        const inp = form.querySelector('[name=shift]'), v = U.clamp(Number(inp.value) + Number(b.dataset.d), -45, 45);
+        inp.value = v; form.querySelector('#shift-out').textContent = v ? `${v > 0 ? '+' : '−'}${Math.abs(v)} min` : 'Sin ajuste';
+      }),
+      onSubmit: (x) => {
+        const patch = { shift: Number(x.shift) || 0, wakeTarget: x.wakeTarget || null, bedTarget: x.bedTarget || null };
+        const tn = x.targetNaps ? Number(x.targetNaps) : null;
+        if (tn !== (p.targetNaps || null)) Object.assign(patch, { targetNaps: tn, transitionFrom: tn ? U.today() : null });
+        Object.assign(p, patch);
+        setHard(x.hard || null, true);
+        Store.commit(); UI.toast('Plan ajustado');
+      }
+    });
+  };
+
+  /* Abre o cierra el día difícil de hoy. Un día difícil sigue activo hasta que se cierra. */
+  const setHard = (reason, silent) => {
+    const p = S.prefs(), today = U.today(), list = (p.hard = p.hard || []);
+    const cur = S.hardDay(today);
+    if (cur && cur.reason === reason) return;
+    if (cur) { if (cur.from === today) list.splice(list.indexOf(cur), 1); else cur.to = U.dayKey(U.addDays(U.parseDay(today), -1)); }
+    if (reason) list.push({ from: today, to: null, reason });
+    if (!silent) Store.commit();
+  };
+  A['hard-end'] = () => { setHard(null); UI.toast('Vuelve el plan normal'); };
+  A['dst-on'] = (el) => save({ dst: { date: el.dataset.date, mode: 'gradual' } });
+  A['dst-off'] = () => save({ dst: null });
+  A['dst-dismiss'] = (el) => save({ dst: { date: el.dataset.date, mode: 'sudden', dismissed: true } });
+  A['tr-start'] = (el) => { save({ targetNaps: Number(el.dataset.n), transitionFrom: U.today() }); UI.toast(`Plan con ${el.dataset.n} siestas`); };
+  A['tr-cancel'] = () => save({ targetNaps: null, transitionFrom: null });
+  A['tr-dismiss'] = (el) => save({ trDismissed: el.dataset.k });
 })(window.Nido = window.Nido || {});
 
 </script>
@@ -4781,7 +5006,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   'use strict';
   const { U, Store } = N;
   const LS = 'nido.sync.v1';
-  const MAPS = ['milestones', 'teeth', 'blwPlans'];
+  const MAPS = ['milestones', 'teeth', 'blwPlans', 'sleepPrefs'];
   const enc = new TextEncoder(), dec = new TextDecoder();
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -4987,7 +5212,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       if (!probe.last) { this.cfg = null; throw new Error('Esa familia no existe o aún no tiene datos'); }
       if (mode === 'replace') {
         const keep = { settings: Store.state.settings, sent: Store.state.sent };
-        Store.state = Object.assign(Store.state, { babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, activeBabyId: null }, keep);
+        Store.state = Object.assign(Store.state, { babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sleepPrefs: {}, activeBabyId: null }, keep);
         Store.COLLECTIONS.forEach((c) => { Store.state[c] = []; });
         if (N.Media) await N.Media.clear();
       }
@@ -5165,12 +5390,13 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       // Mañana: despertar
       let wake = day0 + 7 * HOUR + jit(25);
       breast(wake + 5 * MIN);
-      const naps = [[120, 55, 20], [135, 85, 25], [140, 38, 10]];
+      // La tercera siesta se le empieza a resistir: corta y le cuesta dormirse (señales de pasar a 2 siestas).
+      const naps = [[120, 55, 20], [135, 85, 25], [140, 30, 10]];
       let cur = wake;
       naps.forEach(([ww, dur, dj], i) => {
         const s = cur + ww * MIN + jit(15), e = s + dur * MIN + jit(dj);
-        const how = i === 2 && r() < 0.5 ? 'carrito' : pick(['pecho', 'pecho', 'brazos', 'sola', 'meciendo', 'acompanada']);
-        const down = how === 'carrito' ? null : s - (3 + r() * 14) * MIN;
+        const how = i === 2 && r() < 0.2 ? 'carrito' : pick(['pecho', 'pecho', 'brazos', 'sola', 'meciendo', 'acompanada']);
+        const down = how === 'carrito' ? null : s - (i === 2 ? 16 + r() * 20 : 3 + r() * 14) * MIN;
         // De vez en cuando se despierta un rato a mitad de siesta.
         const pauses = i === 1 && r() < 0.25 ? [{ a: s + dur * 0.45 * MIN, b: s + dur * 0.45 * MIN + (4 + r() * 6) * MIN }] : undefined;
         if (s <= now && e > now) st.timers.sleep = { babyId, phase: 'asleep', start: s, type: 'nap', down, how, pauses: [] }; // siesta en curso

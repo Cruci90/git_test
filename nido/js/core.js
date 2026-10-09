@@ -95,7 +95,7 @@
   const empty = () => ({
     version: 1, activeBabyId: null,
     settings: { theme: 'auto', caregiver: 'Mamá' },
-    babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sent: {},
+    babies: [], milestones: {}, teeth: {}, timers: {}, blwPlans: {}, shopping: {}, sent: {}, sleepPrefs: {},
     ...Object.fromEntries(COLLECTIONS.map((c) => [c, []]))
   });
 
@@ -248,41 +248,116 @@
   };
 
   const stdev = (xs) => { if (xs.length < 2) return null; const m = U.avg(xs); return Math.sqrt(U.avg(xs, (x) => (x - m) * (x - m))); };
-  S.learnRhythm = (now = Date.now()) => {
-    const norm = S.sleepNorm(S.ageMonths(now));
+
+  /* ---- Preferencias del plan (por bebé; se sincronizan con la familia) ----
+     shift        · minutos que se suman a todas las ventanas (ajuste manual)
+     wakeTarget   · hora de despertar fija 'HH:MM' (si aún no se ha registrado)
+     bedTarget    · hora de dormir fija 'HH:MM'
+     targetNaps   · número de siestas elegido (transición)
+     hard         · [{ from, to|null, reason }] días difíciles (no se aprende de ellos)
+     dst          · { date, mode } plan elegido para el cambio de hora */
+  S.prefs = () => (Store.state.activeBabyId ? Store.babyMap('sleepPrefs') : {});
+  S.hardDay = (key) => (S.prefs().hard || []).find((h) => key >= h.from && (!h.to || key <= h.to)) || null;
+
+  /* ---- Cambio de hora (UE: último domingo de marzo y de octubre) ---- */
+  const lastSunday = (y, m) => { const d = new Date(y, m + 1, 0); d.setDate(d.getDate() - d.getDay()); return U.dayKey(d.getTime()); };
+  S.dstChanges = (year) => [{ date: lastSunday(year, 2), dir: 'forward' }, { date: lastSunday(year, 9), dir: 'back' }];
+  /* Próximo cambio relevante: desde 10 días antes hasta 5 días después. */
+  S.dstUpcoming = (now = Date.now()) => {
+    const y = new Date(now).getFullYear();
+    const today = U.dayStart(now);
+    for (const c of [...S.dstChanges(y), ...S.dstChanges(y + 1)]) {
+      const days = Math.round((U.parseDay(c.date) - today) / DAY);
+      if (days >= -5 && days <= 10) {
+        // Plan gradual: 15 min por día los 4 días anteriores. En otoño (se atrasa la hora) el día se
+        // retrasa; en primavera (se adelanta) se adelanta. El domingo ya cuadra con la hora nueva.
+        const sign = c.dir === 'back' ? 1 : -1;
+        const plan = [4, 3, 2, 1].map((k, i) => ({ date: U.dayKey(U.addDays(U.parseDay(c.date), -k)), shift: sign * 15 * (i + 1) }));
+        return Object.assign({ days, plan }, c);
+      }
+    }
+    return null;
+  };
+  /* Minutos que hay que desplazar el día `key` según el plan de cambio de hora elegido. */
+  S.dstShift = (key) => {
+    const p = S.prefs().dst; if (!p || p.mode !== 'gradual') return 0;
+    const up = S.dstUpcoming(U.parseDay(key));
+    if (!up || up.date !== p.date) return 0;
+    const d = up.plan.find((x) => x.date === key);
+    return d ? d.shift : 0;
+  };
+
+  const fallbackDur = (n) => (n === 1 ? [150] : n === 2 ? [80, 90] : [55, 85, 40, 30, 30]);
+  /* opts.natural: ignora el número de siestas elegido (para detectar transiciones). */
+  S.learnRhythm = (now = Date.now(), opts = {}) => {
+    const age = S.ageMonths(now), norm = S.sleepNorm(age);
+    const prefs = S.prefs();
     const days = [];
     for (let i = 1; i <= 7; i++) {
-      const sh = S.dayShape(U.dayKey(U.addDays(now, -i)));
+      const key = U.dayKey(U.addDays(now, -i));
+      if (S.hardDay(key)) continue; // los días difíciles no enseñan el ritmo habitual
+      const sh = S.dayShape(key);
       if (sh.wake && sh.bed && sh.naps.length) days.push(sh);
     }
     const counts = days.map((d) => d.naps.length).sort((a, b) => a - b);
-    const expected = counts.length >= 3 ? counts[Math.floor(counts.length / 2)] : Math.round((norm.naps[0] + norm.naps[1]) / 2);
+    const natural = counts.length >= 3 ? counts[Math.floor(counts.length / 2)] : Math.round((norm.naps[0] + norm.naps[1]) / 2);
+    const target = !opts.natural && prefs.targetNaps ? prefs.targetNaps : null;
+    const expected = target || natural;
     const same = days.filter((d) => d.naps.length === expected);
-    const lo = norm.ww[0] * 0.8, hi = norm.ww[1] * 1.25;
+    // En una transición a menos siestas aún no hay días que enseñen las ventanas nuevas: se usan las del siguiente tramo de edad.
+    const transition = !!(target && target < natural && same.length < 3);
+    const ref = transition ? (N.SLEEP_BY_AGE.find((r) => r.upTo > norm.upTo && r.naps[0] <= target) || norm) : norm;
+    const lo = norm.ww[0] * 0.8, hi = ref.ww[1] * 1.25;
     const windows = [], spread = [];
     for (let i = 0; i <= expected; i++) {
       // La vigilia se alarga a lo largo del día: la primera es la más corta y la de antes de dormir, la más larga.
-      const typical = norm.ww[0] + (norm.ww[1] - norm.ww[0]) * (expected ? i / expected : 0.5);
+      const typical = ref.ww[0] + (ref.ww[1] - ref.ww[0]) * (expected ? i / expected : 0.5);
       const samples = same.map((d) => ((i === expected ? d.bed : d.naps[i].start) - (i === 0 ? d.wake : d.naps[i - 1].end)) / MIN).filter((g) => g > 20 && g < 420);
       const learned = samples.length >= 2 ? U.avg(samples) : null;
       windows.push(Math.round(U.clamp(learned != null ? learned * 0.7 + typical * 0.3 : typical, lo, hi)));
       const sd = stdev(samples);
       spread.push(Math.round(U.clamp(sd != null && samples.length >= 3 ? sd : 20, 10, 30)));
     }
-    const fallback = expected <= 2 ? [80, 90] : [55, 85, 40, 30, 30];
     const durations = [];
     for (let i = 0; i < expected; i++) {
       const s = same.map((d) => S.sleepMin(d.naps[i]));
-      durations.push(Math.round(s.length >= 2 ? U.avg(s) : fallback[i] || 35));
+      durations.push(Math.round(s.length >= 2 ? U.avg(s) : fallbackDur(expected)[i] || 35));
     }
     const wakes = days.map((d) => hourOf(d.wake));
-    const nights = []; for (let i = 2; i <= 8; i++) { const n = S.nightOf(U.dayKey(U.addDays(now, -i))); if (n) nights.push(n); }
+    const nights = []; for (let i = 2; i <= 8; i++) { const k = U.dayKey(U.addDays(now, -i)); if (S.hardDay(k)) continue; const n = S.nightOf(k); if (n) nights.push(n); }
     const lat = S.sleeps().filter((s) => s.start > now - 14 * DAY).map(S.latency).filter((x) => x != null);
     return {
-      expected, windows, spread, durations, norm, days: days.length, learned: same.length >= 3,
+      expected, natural, transition, windows, spread, durations, norm, days: days.length, learned: same.length >= 3, shapes: days,
       wakeHour: wakes.length ? U.avg(wakes) : 7, nightAvg: nights.length ? U.avg(nights, (n) => n.total) : null,
       latency: lat.length >= 3 ? U.avg(lat) : null
     };
+  };
+
+  /* ---- Transiciones de siestas ----
+     Señales (últimos 7 días que no fueron difíciles) de que está lista para una siesta menos, si
+     además está en la edad habitual para ese paso. Hacen falta al menos dos. */
+  const TRANSITIONS = { 4: [3, 5.5], 3: [6, 9.5], 2: [12, 18.5] };
+  S.napTransition = (now = Date.now()) => {
+    const r = S.learnRhythm(now, { natural: true });
+    const n = r.natural, win = TRANSITIONS[n];
+    if (!win) return null;
+    const age = S.ageMonths(now);
+    if (age < win[0] - 0.5 || age > win[1] + 1) return null;
+    const days = r.shapes;
+    if (days.length < 4) return null;
+    const signals = [];
+    const fewer = days.filter((d) => d.naps.length < n).length + S.skips().filter((k) => k.time > now - 7 * DAY && k.time < U.dayStart(now)).length;
+    if (fewer >= 2) signals.push(`${fewer} de los últimos días ha hecho o aceptado solo ${n - 1} siestas`);
+    const last = days.filter((d) => d.naps.length === n).map((d) => d.naps[n - 1]);
+    const shortLast = last.filter((s) => S.sleepMin(s) < 30).length;
+    if (shortLast >= 3) signals.push(`la última siesta dura menos de 30 min (${shortLast} días)`);
+    const lastLat = last.map(S.latency).filter((x) => x != null);
+    if (lastLat.length >= 3 && U.avg(lastLat) >= 20) signals.push(`tarda de media ${Math.round(U.avg(lastLat))} min en dormirse en la última siesta`);
+    const lateBed = days.filter((d) => hourOf(d.bed) >= 20.5 || hourOf(d.bed) < 4).length;
+    if (lateBed >= 3) signals.push(`la hora de dormir se va más allá de las 20:30 (${lateBed} días)`);
+    const early = days.filter((d) => hourOf(d.wake) < 6).length;
+    if (early >= 3) signals.push(`se despierta antes de las 6:00 (${early} días)`);
+    return { from: n, to: n - 1, age: win, signals, ready: signals.length >= 2 };
   };
 
   /* Presión de sueño: tras una siesta más corta de lo habitual se acumula
@@ -300,13 +375,14 @@
   S.dayPlan = (now = Date.now()) => {
     const r = S.learnRhythm(now);
     const d0 = U.dayStart(now), todayKey = U.dayKey(now), today = S.dayShape(todayKey);
+    const prefs = S.prefs(), hard = S.hardDay(todayKey), dst = S.dstShift(todayKey);
     const active = S.activeSleep();
     const activeNap = active && S.timerType(active) === 'nap';
     const skips = S.skips().filter((x) => x.date === todayKey);
     const items = [];
-    // Sin despertar registrado (aún duerme o no se anotó la noche): se usa su hora habitual.
-    const realWake = today.wake || d0 + r.wakeHour * HOUR;
-    items.push({ kind: 'wake', t: realWake, state: today.wake ? 'done' : 'planned' });
+    // Sin despertar registrado: la hora fijada por la familia o, si no hay, su hora habitual.
+    const realWake = today.wake || (prefs.wakeTarget ? U.fromInputs(todayKey, prefs.wakeTarget) : d0 + r.wakeHour * HOUR);
+    items.push({ kind: 'wake', t: realWake, state: today.wake ? 'done' : prefs.wakeTarget ? 'fixed' : 'planned' });
     // Hoy se esperan las siestas habituales menos las que se han saltado.
     const expectedToday = Math.max(today.naps.length + (activeNap ? 1 : 0), r.expected - skips.length);
     const offset = r.expected - expectedToday; // las siestas que quedan usan las ventanas de posiciones más tardías
@@ -323,6 +399,17 @@
       const end = Math.max(st + (r.durations[pos(i)] || 40) * MIN, now + 5 * MIN);
       items.push({ kind: 'nap', idx: i, start: st, end, state: 'now' }); cursor = end; i++; prevNap = null;
     }
+    // Ajustes que se suman a cada ventana: manual, día difícil y cambio de hora (repartido entre las que quedan).
+    const remaining = Math.max(1, expectedToday - i + 1);
+    const extras = (base) => {
+      const parts = [];
+      let a = 0;
+      if (prefs.shift) { a += prefs.shift; parts.push(`ajuste manual ${prefs.shift > 0 ? '+' : '−'}${Math.abs(prefs.shift)} min`); }
+      if (hard) { const h = -Math.round(base * 0.15); a += h; parts.push(`día difícil (${N.HARD_DAY_LABEL ? N.HARD_DAY_LABEL(hard.reason) : hard.reason})`); }
+      if (dst) { const s = Math.round(dst / remaining); a += s; parts.push(`cambio de hora (${dst > 0 ? '+' : '−'}${Math.abs(dst)} min hoy)`); }
+      return { a, parts };
+    };
+    const wlo = r.norm.ww[0] * 0.6, whi = r.norm.ww[1] * 1.4;
     for (; i < expectedToday; i++) {
       const p = pos(i), base = r.windows[p];
       let adj = 0, why = '';
@@ -331,37 +418,42 @@
         const night = S.nightOf(U.dayKey(U.addDays(now, -1)));
         if (night && (night.total < r.nightAvg - 60 || night.wakes >= 3)) { adj = -Math.round(base * 0.1); why = 'la noche fue movida'; }
       }
-      const w = base + adj;
+      const ex = extras(base);
+      const w = Math.round(U.clamp(base + adj + ex.a, wlo, whi));
       let start = cursor + w * MIN; const overdue = start < now;
       if (overdue) start = now;
       if (hourOf(start) > 18 || U.dayKey(start) !== todayKey) break;
       const sp = r.spread[p];
-      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[p] * MIN, state: overdue ? 'overdue' : 'planned', window: w, adj, why, from: start - sp * MIN, to: start + sp * MIN });
+      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[p] * MIN, state: overdue ? 'overdue' : 'planned', window: w, adj, why, tweaks: ex.parts, from: start - sp * MIN, to: start + sp * MIN });
       cursor = start + r.durations[p] * MIN; prevNap = null;
     }
     const bedBase = r.windows[r.expected];
     const bp = prevNap ? pressure(bedBase, prevNap, r.durations[pos(i - 1)]) : { adj: 0 };
     // Si hoy se ha saltado una siesta, la noche llega antes (más cansancio acumulado).
     const skipAdj = skips.length && !prevNap ? -Math.round(bedBase * 0.1) : 0;
-    const bedWindow = bedBase + bp.adj + skipAdj;
+    const bex = extras(bedBase);
+    const bedWindow = Math.round(U.clamp(bedBase + bp.adj + skipAdj + bex.a, wlo, whi));
     let bed = cursor + bedWindow * MIN;
     // Si la última siesta empujaría la noche más allá de las 21:00, se acorta a una siesta corta.
     const lastPlanned = items[items.length - 1];
     if (hourOf(bed) > 21 && lastPlanned.kind === 'nap' && lastPlanned.state === 'planned' && lastPlanned.end - lastPlanned.start > 30 * MIN) {
       lastPlanned.end = lastPlanned.start + 30 * MIN; lastPlanned.short = true; bed = lastPlanned.end + bedWindow * MIN;
     }
-    let bedState = 'planned';
+    let bedState = 'planned', natural = null;
+    const minBed = hard ? 18 : 18.5;
     if (today.bed) { bed = today.bed; bedState = 'done'; }
     else if (active && !activeNap) { bed = active.phase === 'down' ? active.down : active.start; bedState = 'done'; }
-    else {
+    else if (prefs.bedTarget) {
+      natural = bed; bed = U.fromInputs(todayKey, prefs.bedTarget) + dst * MIN; bedState = 'fixed';
+    } else {
       const h = hourOf(bed);
-      if (h < 18.5) { bed = d0 + 18.5 * HOUR; bedState = 'adjusted'; }
+      if (h < minBed) { bed = d0 + minBed * HOUR; bedState = 'adjusted'; }
       else if (h > 21 || U.dayKey(bed) !== todayKey) { bed = d0 + 21 * HOUR; bedState = 'adjusted'; }
     }
     const bsp = r.spread[r.expected];
-    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow, adj: bp.adj + skipAdj, why: bp.why || (skipAdj ? 'hoy se saltó una siesta' : ''), from: bed - bsp * MIN, to: bed + bsp * MIN });
+    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow, adj: bp.adj + skipAdj, why: bp.why || (skipAdj ? 'hoy se saltó una siesta' : ''), tweaks: bex.parts, natural, from: bed - bsp * MIN, to: bed + bsp * MIN });
     const next = items.find((x) => x.kind === 'nap' && (x.state === 'planned' || x.state === 'overdue'));
-    return { items, rhythm: r, next, bed, napsDone: today.naps.length, expectedToday, skipped: skips.length };
+    return { items, rhythm: r, next, bed, napsDone: today.naps.length, expectedToday, skipped: skips.length, hard, dst };
   };
 
   /* Estado de vigilia actual con la próxima siesta y la hora de dormir del plan. */
