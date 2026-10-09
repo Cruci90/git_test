@@ -84,7 +84,7 @@ Cubren la sincronización (dos dispositivos contra el servidor real: unirse, cam
 
 ## Publicarlo
 
-Para usarlo en los móviles basta con servir la carpeta `nido/` por HTTPS, por ejemplo con GitHub Pages (Ajustes del repositorio → Pages). Para compartir entre cuidadores, despliega también el servidor de `server/`.
+Guía paso a paso en [`deploy/README.md`](deploy/README.md): la app en GitHub Pages (`https://cruci90.github.io/git_test/nido/`) y el servidor de sincronización en un VPS con Docker y Caddy, instalado con un comando (`deploy/setup-vps.sh`), con copias de seguridad (`deploy/backup.sh`).
 
 ## Aviso
 

@@ -1,0 +1,22 @@
+# Caddy pide y renueva solo el certificado HTTPS de Let's Encrypt para DOMAIN.
+{
+	email {$EMAIL}
+}
+
+{$DOMAIN} {
+	encode gzip
+	# Las peticiones de espera (long-poll) duran hasta 25 s: sin búfer para que lleguen al momento.
+	reverse_proxy relay:8787 {
+		flush_interval -1
+	}
+	header {
+		-Server
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+	}
+	log {
+		output stdout
+		format console
+	}
+}

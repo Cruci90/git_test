@@ -12,6 +12,8 @@ Relé mínimo para compartir Nido entre cuidadores. Todo llega **cifrado de extr
 
 ## Ponerlo en marcha
 
+**Guía recomendada, paso a paso:** [`../deploy/README.md`](../deploy/README.md) (VPS con Docker y Caddy, instalación con un comando, copias de seguridad). Lo de abajo son otras opciones.
+
 Los navegadores exigen **HTTPS** cuando la app se sirve por HTTPS, así que el servidor necesita un certificado (todas las opciones de abajo lo dan).
 
 ### En local, para probar

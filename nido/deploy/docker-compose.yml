@@ -1,0 +1,37 @@
+# Nido · relé de sincronización + Caddy (HTTPS automático)
+# Uso: copia .env.example a .env, rellénalo y ejecuta `docker compose up -d --build`.
+name: nido
+
+services:
+  relay:
+    build: ../server
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /data
+      ALLOW_ORIGIN: ${ALLOW_ORIGIN:-*}
+    volumes:
+      - relay-data:/data
+    expose:
+      - "8787"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - relay
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN:?Falta DOMAIN en .env}
+      EMAIL: ${EMAIL:?Falta EMAIL en .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  relay-data:
+  caddy-data:
+  caddy-config:
