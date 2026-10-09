@@ -29,32 +29,27 @@
           <button type="button" class="btn primary" data-act="breast-stop">${icon('check')}Terminar toma</button>
         </div></section>`;
     }
-    if (s) {
-      return `<section class="live live-sleep night-sky">
-        <div class="live-top"><span class="eyebrow">${icon('moon')} Durmiendo desde las ${U.time(s.start)}</span><button type="button" class="link" data-act="sleep-cancel">Descartar</button></div>
-        <b class="live-clock" data-since="${s.start}">00:00</b>
-        <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-stop">${icon('sun')}Se ha despertado</button></div>
-      </section>`;
-    }
+    if (s || S.activeNightWake()) return W.liveSleep();
     const p = S.predict();
     if (!p) return `<section class="live"><div class="live-top"><span class="eyebrow">${icon('sun')} Despierta</span></div>
       <p class="muted">Registra un sueño para calcular las ventanas de vigilia.</p>
-      <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-start">${icon('moon')}A dormir</button></div></section>`;
+      <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button><button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button></div></section>`;
     const over = p.awakeMin > p.windowRange[1];
     const pct = Math.round(U.clamp(p.progress, 0, 1) * 100);
     return `<section class="live">
-      <div class="live-top"><span class="eyebrow">${icon('sun')} Despierta desde las ${U.time(p.awakeSince)}</span>${over ? UI.pill('Ventana superada', 'warn') : p.progress > 0.8 ? UI.pill('Busca señales de sueño', 'soft') : ''}</div>
+      <div class="live-top"><span class="eyebrow">${icon('sun')} Despierta desde las ${U.time(p.awakeSince)}</span>${over ? UI.pill('Buen momento para dormir', 'warn') : p.progress > 0.8 ? UI.pill('Busca señales de sueño', 'soft') : ''}</div>
       <div class="ww">
         <div class="ww-head"><b class="live-clock sm" data-since="${p.awakeSince}">00:00</b><span class="muted">de ${U.dur(p.ww)} de ventana</span></div>
         <div class="ww-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Ventana de vigilia"><i style="width:${pct}%"></i><span class="ww-mark" style="left:${Math.round((p.windowRange[0] / p.ww) * 100 * 0.999)}%"></span></div>
       </div>
       <div class="pred">
-        ${p.nextNap ? `<div><small>Próxima siesta</small><b>${U.time(p.nextNap)}</b><span>${p.nextNap < Date.now() ? 'ahora' : 'en ' + U.dur((p.nextNap - Date.now()) / U.MIN)}</span></div>` : `<div><small>Siestas</small><b>${p.napsToday}/${p.expectedNaps}</b><span>completadas</span></div>`}
+        ${p.nextNap ? `<div><small>Próxima siesta</small><b>${U.time(p.nextNap)}</b><span>${p.nextNap < Date.now() + U.MIN ? 'ahora' : `entre ${U.time(p.plan.next.from)} y ${U.time(p.plan.next.to)}`}</span></div>` : `<div><small>Siestas</small><b>${p.napsToday}/${p.expectedNaps}</b><span>completadas</span></div>`}
         <div><small>A la cama</small><b>${U.time(p.bedtime)}</b><span>aprox.</span></div>
         <div><small>Siestas hoy</small><b>${p.napsToday}<em>/${p.expectedNaps}</em></b><span>${p.learned ? 'ajustado a su ritmo' : 'según su edad'}</span></div>
       </div>
-      <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-start">${icon('moon')}A dormir</button>
-        <button type="button" class="btn soft" data-act="quick-add">${icon('plus')}Registrar</button></div>
+      <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button>
+        <button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button>
+        ${p.nextNap && p.plan.next.state === 'overdue' ? `<button type="button" class="btn soft" data-act="nap-skip">Saltar siesta</button>` : ''}</div>
     </section>`;
   };
 
@@ -65,7 +60,12 @@
   W.describe = (it) => {
     const r = it.rec;
     switch (it.kind) {
-      case 'sleep': return [`${r.type === 'nap' ? 'Siesta' : 'Noche'} · ${U.dur((r.end - r.start) / U.MIN)}`, `${U.time(r.start)} – ${U.time(r.end)}${r.place ? ' · ' + r.place : ''}`];
+      case 'sleep': {
+        const L = N.sleepLabels, lat = S.latency(r), np = (r.pauses || []).length, af = r.after || {};
+        const extra = [lat != null ? `tardó ${U.dur(lat)}` : '', r.how ? L.how(r.how).toLowerCase() : '', np ? `${np} rato${np > 1 ? 's' : ''} despierta` : '',
+          af.reason || af.soothe ? `tras despertar${af.reason ? ' (' + L.reason(af.reason).toLowerCase() + ')' : ''}${af.soothe ? ' · volvió con ' + L.soothe(af.soothe).toLowerCase() : ''}` : ''].filter(Boolean);
+        return [`${r.type === 'nap' ? 'Siesta' : 'Noche'} · ${U.dur(S.sleepMin(r))}`, `${U.time(r.start)} – ${U.time(r.end)}${extra.length ? ' · ' + extra.join(' · ') : r.place ? ' · ' + r.place : ''}`];
+      }
       case 'feed': return r.kind === 'breast'
         ? [`Pecho · ${(r.durL || 0) + (r.durR || 0)} min`, r.sideUnknown ? 'Lado sin registrar' : `Izq. ${r.durL || 0}′ · Dcho. ${r.durR || 0}′ · terminó en ${r.lastSide === 'L' ? 'izquierdo' : 'derecho'}`]
         : [`Biberón · ${r.ml} ml`, r.milk === 'formula' ? 'Fórmula' : r.milk === 'mixta' ? 'Mixta' : 'Leche materna'];
@@ -94,26 +94,31 @@
   W.plan = () => {
     const p = S.dayPlan(), r = p.rhythm, now = Date.now();
     const napName = (x) => `Siesta ${x.idx + 1}`;
+    const adjTxt = (x) => (x.adj ? ` · ${x.adj < 0 ? 'adelantada' : 'retrasada'} ${U.dur(Math.abs(x.adj))} porque ${x.why}` : '');
     const row = (x) => {
-      let t, title, sub;
+      let t, title, sub, act = '';
       if (x.kind === 'wake') { t = U.time(x.t); title = 'Despertar'; sub = x.state === 'done' ? 'registrado' : 'hora habitual'; }
-      else if (x.kind === 'nap') {
-        const dur = U.dur((x.end - x.start) / U.MIN);
+      else if (x.kind === 'nap' && x.state === 'skipped') {
+        t = U.time(x.start); title = 'Siesta saltada'; sub = 'el resto del día se ha recolocado';
+        act = `<button type="button" class="link sm" data-act="nap-unskip" data-id="${x.id}">Deshacer</button>`;
+      } else if (x.kind === 'nap') {
+        const dur = U.dur((x.state === 'done' ? x.min : (x.end - x.start) / U.MIN));
         t = `${x.state === 'done' || x.state === 'now' ? '' : '~'}${U.time(x.start)}`;
         title = `${napName(x)} · ${x.state === 'done' ? dur : '~' + dur}`;
         sub = x.state === 'done' ? `${U.time(x.start)} – ${U.time(x.end)}`
           : x.state === 'now' ? 'durmiendo ahora'
           : x.state === 'overdue' ? 'ya toca: busca señales de sueño'
-          : `en ${U.dur((x.start - now) / U.MIN)} · tras ${U.dur(x.window)} despierta${x.short ? ' · corta para no retrasar la noche' : ''}`;
+          : `entre ${U.time(x.from)} y ${U.time(x.to)} · tras ${U.dur(x.window)} despierta${adjTxt(x)}${x.short ? ' · corta para no retrasar la noche' : ''}`;
+        if (x.state === 'planned' || x.state === 'overdue') act = `<button type="button" class="link sm" data-act="nap-skip">Saltar</button>`;
       } else {
         t = `${x.state === 'done' ? '' : '~'}${U.time(x.t)}`; title = 'A la cama';
-        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'adjusted' ? 'ajustado a un horario razonable (18:30–21:00)' : `tras ${U.dur(x.window)} despierta`;
+        sub = x.state === 'done' ? 'ya está en la cama' : x.state === 'adjusted' ? 'ajustado a un horario razonable (18:30–21:00)' : `entre ${U.time(x.from)} y ${U.time(x.to)} · tras ${U.dur(x.window)} despierta${adjTxt(x)}`;
       }
-      return `<li class="plan-it is-${x.state} k-${x.kind}"><time>${t}</time><i class="plan-dot" aria-hidden="true"></i><span><b>${title}</b><small>${sub}</small></span></li>`;
+      return `<li class="plan-it is-${x.state} k-${x.kind}"><time>${t}</time><i class="plan-dot" aria-hidden="true"></i><span><b>${title}</b><small>${sub}</small></span>${act}</li>`;
     };
     const ws = r.windows.map((w, i) => (i === r.expected ? `cama ${U.dur(w, true)}` : U.dur(w, true))).join(' · ');
     return W.card('Plan de hoy', `<ol class="plan">${p.items.map(row).join('')}</ol>
-      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}</span></p>`, { cls: 'c-sleep' });
+      <p class="plan-foot">${icon('spark')}<span>${r.expected} siestas · ventanas ${ws}. ${r.learned ? `Aprendido de sus últimos ${r.days} días; se ajusta según cómo vayan las siestas de hoy.` : 'Según su edad: se ajustará cuando haya unos días registrados.'}</span></p>`, { cls: 'c-sleep' });
   };
 
   /* Sonidos para dormir con temporizador de apagado. */
@@ -148,6 +153,7 @@
       <div class="grid-hoy">
         <div class="col-main">
           ${W.live()}
+          ${new Date().getHours() < 13 ? W.night(S.nightOf(U.dayKey(U.addDays(Date.now(), -1))), 'Anoche') : ''}
           <div class="quick">
             <button type="button" class="q c-feed" data-act="breast-start" data-side="${nextSide === 'derecho' ? 'R' : 'L'}">${icon('breast')}<b>Pecho</b><small>sigue el ${nextSide}</small></button>
             <button type="button" class="q c-feed" data-act="form-bottle">${icon('bottle')}<b>Biberón</b><small>${lastFeed ? U.ago(lastFeed.time) : '—'}</small></button>
@@ -207,6 +213,9 @@
       ${day.allergen ? `<p class="idea-al">${icon('info')} <span>Alérgeno de hoy: <b>${day.allergen.name}</b>. Ofrécelo por la mañana y observa 2 horas.</span></p>` : ''}</div>`, { act: '<button type="button" class="link" data-act="blw-plan">Ver semana</button>' });
     }
   };
+  N.actions['night-detail'] = (el) => {
+    UI.sheet({ title: `Noche del ${U.dateLong(el.dataset.key)}`, footer: false, body: W.night(S.nightOf(el.dataset.key), '') + '<p class="muted small">Toca un despertar para corregir su motivo o la hora.</p>' });
+  };
   N.actions['blw-plan'] = () => { UI.st.seg.blw = 'plan'; UI.go('blw'); };
   N.actions['med-vitd'] = () => {
     const last = Store.list('meds').filter((m) => /vitamina d/i.test(m.name)).pop();
@@ -229,17 +238,19 @@
       const inRange = avgTotal / 60 >= norm.total[0] && avgTotal / 60 <= norm.total[1];
       const list = S.sleeps().slice(-40).reverse();
       const groups = {}; list.forEach((s) => { (groups[U.dayKey(s.end)] = groups[U.dayKey(s.end)] || []).push(s); });
+      const recent = S.sleeps().filter((s) => s.start > Date.now() - 14 * U.DAY);
+      const lat = recent.map(S.latency).filter((x) => x != null);
 
       return UI.head('Sueño', `Ventanas de vigilia y siestas para ${S.correctedText() ? S.correctedText() + ' de edad corregida' : U.ageText(S.baby().birth)}`, `<button type="button" class="btn soft" data-act="form-sleep">${icon('plus')}Añadir sueño</button>`) + `
       <div class="grid-2">
-        <div class="stack">${W.live()}${W.plan()}
+        <div class="stack">${W.live()}${W.plan()}${W.night(S.nightOf(U.dayKey(U.addDays(Date.now(), -1))), 'Anoche')}
           <div class="kpis three">
             ${W.kpi('Media diaria', U.dur(avgTotal), `${inRange ? UI.pill('En rango', 'good') : UI.pill('Fuera de rango', 'warn')} ${norm.total[0]}–${norm.total[1]} h`, 'c-sleep')}
             ${W.kpi('Noche', U.dur(U.avg(nights, (n) => n.total)), `${U.num(U.avg(nights, (n) => n.wakes), 1)} despertares · tramo más largo ${U.dur(U.avg(nights, (n) => n.longest))}`, 'c-sleep')}
             ${W.kpi('Siestas', U.num(avgNaps, 1) + '/día', `${U.dur(avgDay)} de día`, 'c-sleep')}
             ${W.kpi('Se acuesta', nights.length ? avgMinOfDay(nights, bedF) : '–', 'hora media', 'c-sleep')}
             ${W.kpi('Se despierta', nights.length ? avgMinOfDay(nights, wakeF) : '–', 'hora media', 'c-sleep')}
-            ${W.kpi('Ventana ideal', `${U.dur(norm.ww[0], true)}–${U.dur(norm.ww[1], true)}`, `${norm.naps[0] === norm.naps[1] ? norm.naps[0] : norm.naps.join('–')} siestas a esta edad`, 'c-sleep')}
+            ${W.kpi('Tarda en dormirse', lat.length ? U.dur(U.avg(lat)) : '–', lat.length ? `media de ${lat.length} veces (14 días)` : 'usa «A la cuna» para medirlo', 'c-sleep')}
           </div>
         </div>
         <div class="stack">
@@ -250,6 +261,7 @@
         </div>
       </div>
       ${W.card('Patrón de las últimas dos semanas', `<div class="scroll-x">${Charts.pattern(rows, { feeds: true })}</div><ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul>`)}
+      <div class="grid-2">${this.nights()}${this.habits(recent)}</div>
       <div class="grid-2">
         ${W.card('Registro', Object.keys(groups).slice(0, 3).map((k) => `<h3 class="day-h">${U.relDay(k) === 'hoy' || U.relDay(k) === 'ayer' ? U.relDay(k) : U.dateLong(k)}</h3>` +
           W.timeline(groups[k].map((s) => ({ t: s.start, kind: 'sleep', rec: s, col: 'sleeps' })))).join(''))}
@@ -261,6 +273,33 @@
           <div><dt>Sueño seguro</dt><dd>Boca arriba, en superficie firme, sin almohadas, cojines ni peluches en la cuna.</dd></div>
         </dl>`)}
       </div>`;
+    },
+    /* Tabla de las últimas noches. */
+    nights() {
+      const rows = []; for (let i = 1; i <= 7; i++) { const n = S.nightOf(U.dayKey(U.addDays(Date.now(), -i))); if (n) rows.push(n); }
+      if (!rows.length) return W.card('Últimas noches', UI.empty('moon', 'Sin noches registradas', 'Usa «Despertar nocturno» y «Buenos días» en el cronómetro.'));
+      return W.card('Últimas noches', `<div class="scroll-x"><table class="tbl nights"><thead><tr><th>Noche</th><th>Horario</th><th class="num">Dormida</th><th class="num">Despertares</th><th class="num">Despierta</th><th class="num">Tardó</th></tr></thead><tbody>
+        ${rows.map((n) => { const d = new Date(U.parseDay(n.key)); return `<tr data-act="night-detail" data-key="${n.key}" tabindex="0"><td>${U.WEEKDAYS[d.getDay()]} ${d.getDate()}</td><td>${U.time(n.start)} → ${U.time(n.end)}</td><td class="num"><b>${U.dur(n.total, true)}</b></td><td class="num">${n.wakes}</td><td class="num">${n.wakes ? U.dur(n.awake, true) : '–'}</td><td class="num">${n.latency != null ? U.dur(n.latency, true) : '–'}</td></tr>`; }).join('')}
+      </tbody></table></div><p class="muted small">Toca una noche para ver cada despertar.</p>`);
+    },
+    /* Cómo se duerme y por qué se despierta (14 días). */
+    habits(recent) {
+      const L = N.sleepLabels;
+      const dist = (vals, list) => {
+        const c = {}; vals.forEach((v) => { c[v] = (c[v] || 0) + 1; });
+        const tot = vals.length;
+        return Object.entries(c).sort((a, b) => b[1] - a[1]).map(([id, n]) => `<li><span>${L.emo(list, id)} ${(list.find((x) => x.id === id) || {}).name || id}</span><span class="cat-track"><i style="width:${(n / tot) * 100}%;background:var(--c-sleep)"></i></span><b>${Math.round((n / tot) * 100)} %</b></li>`).join('');
+      };
+      const hows = recent.map((s) => s.how).filter(Boolean);
+      const wakes = []; for (let i = 1; i <= 14; i++) { const n = S.nightOf(U.dayKey(U.addDays(Date.now(), -i))); if (n) wakes.push(...n.wakings); }
+      const reasons = wakes.map((w) => w.reason).filter(Boolean), soothes = wakes.map((w) => w.soothe).filter(Boolean);
+      const indep = hows.length ? hows.filter((h) => h === 'sola' || h === 'acompanada').length / hows.length : 0;
+      return W.card('Cómo se duerme', hows.length || reasons.length ? `
+        ${hows.length ? `<h3 class="day-h">Al dormirse (${hows.length} veces)</h3><ul class="cat-bars">${dist(hows, N.SLEEP_HOW)}</ul>` : ''}
+        ${reasons.length ? `<h3 class="day-h">Por qué se despierta de noche</h3><ul class="cat-bars">${dist(reasons, N.WAKE_REASONS)}</ul>` : ''}
+        ${soothes.length ? `<h3 class="day-h">Cómo vuelve a dormirse</h3><ul class="cat-bars">${dist(soothes, N.SOOTHE)}</ul>` : ''}
+        ${hows.length >= 5 ? `<p class="note">${N.icon('info')}<span>${indep >= 0.5 ? 'Se duerme sola o solo acompañada en la mitad de las ocasiones o más.' : 'Casi siempre se duerme con ayuda (pecho, brazos, meciendo). Es normal a esta edad; si quieres que gane autonomía, prueba a dejarla en la cuna somnolienta pero despierta en la primera siesta, que suele ser la más fácil.'}</span></p>` : ''}`
+        : UI.empty('moon', 'Aún sin datos', 'Al registrar con el cronómetro, anota cómo se durmió y por qué se despertó.'));
     }
   };
   N.actions.seg = ((orig) => (el) => {

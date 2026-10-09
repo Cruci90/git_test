@@ -851,3 +851,53 @@ code { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; background: 
 .sync-dot.is-offline { background: var(--warn); }
 .sync-dot.is-error { background: var(--crit); }
 .btn:disabled { opacity: .6; cursor: progress; }
+
+/* ---------- Sueño: tarjetas en vivo ampliadas ---------- */
+.live-sub { margin-top: 6px; font-size: 13px; color: #C9CCFF; }
+.live-q { display: flex; flex-direction: column; gap: 6px; }
+.live-q small { font-size: 12px; font-weight: 600; color: #C9CCFF; }
+.live-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.lchip { border: 1px solid rgba(255, 255, 255, .22); background: rgba(255, 255, 255, .08); color: #EEF0FF; border-radius: 99px; padding: 6px 11px; font-size: 13px; font-weight: 500; }
+.lchip:hover { background: rgba(255, 255, 255, .16); }
+.lchip.on { background: #FFE3A8; color: #1E2257; border-color: #FFE3A8; font-weight: 700; }
+.seg-dark { background: rgba(255, 255, 255, .1); }
+.seg-dark button { color: #C9CCFF; }
+.seg-dark button.on { background: rgba(255, 255, 255, .92); color: #1E2257; }
+.night-sky .btn.on-dark { background: rgba(255, 255, 255, .12); color: #EEF0FF; }
+.night-sky .btn.on-dark:hover { background: rgba(255, 255, 255, .2); }
+.night-sky .link.on-dark { color: #C9CCFF; align-self: center; }
+.night-sky.is-awake { background: linear-gradient(160deg, #2B2F6B, #5A4A8A); }
+.night-sky.is-awake .live-clock { color: #FFE3A8; }
+.lcheck { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #EEF0FF; cursor: pointer; }
+.lcheck input { width: 18px; height: 18px; accent-color: #FFE3A8; }
+
+/* ---------- Plan: rangos, saltar ---------- */
+.plan-it { grid-template-columns: 50px 24px minmax(0, 1fr) auto; }
+.plan-it .link.sm { align-self: center; }
+.plan-it.is-skipped b { text-decoration: line-through; color: var(--ink-3); }
+.plan-it.is-skipped .plan-dot { border-style: dotted; border-color: var(--ink-3); }
+
+/* ---------- Resumen de la noche ---------- */
+.night-sum { display: flex; flex-direction: column; gap: 10px; }
+.ns-main { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.ns-main b { font: 700 30px/1 var(--f-display); letter-spacing: -.02em; color: var(--c-sleep); }
+.ns-main span { color: var(--ink-2); font-size: 14px; }
+.ns-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.nbar { position: relative; height: 14px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+.nbar i { position: absolute; top: 0; bottom: 0; }
+.nb-sleep { background: var(--c-sleep); }
+.nb-lat { background: repeating-linear-gradient(45deg, var(--c-nap), var(--c-nap) 3px, transparent 3px, transparent 6px); }
+.nbar-t { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); margin-top: -4px; }
+.wakes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.wk { display: grid; grid-template-columns: 48px 110px minmax(0, 1fr); gap: 8px; align-items: center; width: 100%; padding: 7px 8px; border: 0; border-radius: 10px; background: var(--surface-2); text-align: left; font-size: 13.5px; }
+.wk:hover { background: var(--surface-3); }
+.wk time { font-weight: 700; color: var(--ink-2); }
+.wk span:nth-child(2) { color: var(--ink-3); }
+.wk-why i { color: var(--ink-3); }
+@media (max-width: 480px) { .wk { grid-template-columns: 44px minmax(0, 1fr); } .wk-why { grid-column: 2; } }
+.tbl.nights { min-width: 440px; }
+
+/* ---------- Formulario de sueño ---------- */
+form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display: none; }
+.pause-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end; margin-bottom: 8px; }
+.fld small { font-weight: 400; color: var(--ink-3); }

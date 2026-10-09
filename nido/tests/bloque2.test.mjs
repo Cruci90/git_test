@@ -78,7 +78,8 @@ test('importar napper_events.csv', () => {
   assert.equal(night[0].start, Date.parse('2026-09-01T19:30:00+02:00'));
   assert.equal(night[1].start, Date.parse('2026-09-02T01:20:00+02:00'));
   assert.equal(night[2].end, Date.parse('2026-09-02T07:00:00+02:00'));
-  assert.equal(res.out.sleeps.filter((s) => s.type === 'nap').length, 1, 'la siesta saltada no cuenta');
+  assert.equal(res.out.sleeps.filter((s) => s.type === 'nap').length, 1, 'la siesta saltada no cuenta como sueño');
+  assert.equal(res.out.skips.length, 1, 'pero se guarda como siesta saltada');
   assert.equal(res.out.feeds.length, 2);
   const bottle = res.out.feeds.find((f) => f.kind === 'bottle');
   assert.equal(bottle.ml, 120);

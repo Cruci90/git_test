@@ -35,7 +35,7 @@
       settings: { theme: 'auto', caregiver: 'Mamá' },
       babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', gestWeeks: 39, gestDays: 4, birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
       milestones: {}, teeth: {}, timers: {},
-      sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: [], activities: [], reminders: [], blwPlans: {}, shopping: {}, sent: {}
+      sleeps: [], feeds: [], diapers: [], meals: [], measures: [], appointments: [], vaccines: [], meds: [], temps: [], diary: [], events: [], pumps: [], activities: [], reminders: [], skips: [], blwPlans: {}, shopping: {}, sent: {}
     };
     const add = (col, rec) => st[col].push(Object.assign({ id: U.uid() + st[col].length, babyId, by: r() < 0.7 ? 'Mamá' : 'Papá' }, rec));
 
@@ -57,8 +57,12 @@
       let cur = wake;
       naps.forEach(([ww, dur, dj], i) => {
         const s = cur + ww * MIN + jit(15), e = s + dur * MIN + jit(dj);
-        if (s <= now && e > now) st.timers.sleep = { babyId, start: s }; // siesta en curso
-        if (e < now) add('sleeps', { start: s, end: e, type: 'nap', place: i === 2 && r() < 0.5 ? 'Carrito' : pick(['Cuna', 'Cuna', 'Brazos', 'Cuna']), quality: pick([2, 3, 3]) });
+        const how = i === 2 && r() < 0.5 ? 'carrito' : pick(['pecho', 'pecho', 'brazos', 'sola', 'meciendo', 'acompanada']);
+        const down = how === 'carrito' ? null : s - (3 + r() * 14) * MIN;
+        // De vez en cuando se despierta un rato a mitad de siesta.
+        const pauses = i === 1 && r() < 0.25 ? [{ a: s + dur * 0.45 * MIN, b: s + dur * 0.45 * MIN + (4 + r() * 6) * MIN }] : undefined;
+        if (s <= now && e > now) st.timers.sleep = { babyId, phase: 'asleep', start: s, type: 'nap', down, how, pauses: [] }; // siesta en curso
+        if (e < now) add('sleeps', { start: s, end: e, type: 'nap', place: how === 'carrito' ? 'Carrito' : how === 'brazos' ? 'Brazos' : 'Cuna', quality: pick([2, 3, 3]), down, how, pauses });
         breast(s - 10 * MIN);
         cur = e;
       });
@@ -74,8 +78,11 @@
       for (let i = 0; i < pts.length - 1; i++) {
         const s = i === 0 ? pts[0] : pts[i] + (12 + r() * 18) * MIN;
         const e = pts[i + 1];
-        if (s <= now && e > now) st.timers.sleep = { babyId, start: s }; // noche en curso
-        if (e < now) add('sleeps', { start: s, end: e, type: 'night', place: pick(['Cuna', 'Cuna', 'Colecho']), quality: 3 });
+        const first = i === 0;
+        const extra = first ? { down: s - (5 + r() * 15) * MIN, how: pick(['pecho', 'pecho', 'pecho', 'brazos', 'acompanada']) }
+          : { after: { reason: pick(['hambre', 'hambre', 'hambre', 'consuelo', 'consuelo', 'dientes', 'panal']), soothe: pick(['pecho', 'pecho', 'pecho', 'brazos', 'chupete']) } };
+        if (s <= now && e > now) st.timers.sleep = Object.assign({ babyId, phase: 'asleep', start: s, type: 'night', pauses: [] }, extra); // noche en curso
+        if (e < now) add('sleeps', Object.assign({ start: s, end: e, type: 'night', place: pick(['Cuna', 'Cuna', 'Colecho']), quality: 3 }, extra));
         if (i > 0) breast(pts[i] + 2 * MIN, true);
       }
       // Pañales

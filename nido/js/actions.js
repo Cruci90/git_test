@@ -13,38 +13,7 @@
 
   const splitDT = (t) => [U.dateInput(t), U.timeInput(t)];
 
-  /* ======================= Sueño ======================= */
-  F.sleep = (rec) => {
-    const now = Date.now();
-    const s = rec || { start: now - 60 * U.MIN, end: now, type: new Date(now).getHours() >= 19 || new Date(now).getHours() < 7 ? 'night' : 'nap', place: 'Cuna', quality: 3 };
-    const [d0, t0] = splitDT(s.start);
-    UI.sheet({
-      title: rec ? 'Editar sueño' : 'Registrar sueño',
-      body: f.chips('type', 'Tipo', [['nap', 'Siesta'], ['night', 'Noche']], s.type) +
-        f.row(f.date('d0', 'Empezó', d0), f.time('t0', 'Hora', t0), f.time('t1', 'Se despertó', U.timeInput(s.end))) +
-        f.row(f.select('place', 'Dónde', N.SLEEP_PLACES.map((p) => [p, p]), s.place), f.select('quality', 'Cómo durmió', [[3, 'Bien'], [2, 'Regular'], [1, 'Mal']], s.quality)) +
-        f.area('note', 'Nota', s.note, 'Ej.: se durmió al pecho, ruido en la calle…'),
-      onDelete: rec && (() => { UI.closeSheet(); UI.removeWithUndo('sleeps', rec.id, 'Sueño eliminado'); }),
-      onSubmit: (d) => {
-        const start = U.fromInputs(d.d0, d.t0);
-        let end = U.fromInputs(d.d0, d.t1);
-        if (end <= start) end += U.DAY;
-        const data = { start, end, type: d.type, place: d.place, quality: +d.quality, note: d.note };
-        rec ? Store.update('sleeps', rec.id, data) : Store.add('sleeps', data);
-        UI.toast(`${d.type === 'nap' ? 'Siesta' : 'Sueño nocturno'} de ${U.dur((end - start) / U.MIN)} guardado`);
-      }
-    });
-  };
-  A['sleep-start'] = () => { Store.state.timers.sleep = { babyId: Store.state.activeBabyId, start: Date.now() }; Store.commit(); UI.toast('A dormir. Cronómetro en marcha'); };
-  A['sleep-stop'] = () => {
-    const t = S.activeSleep(); if (!t) return;
-    const end = Date.now(), h = new Date(t.start).getHours();
-    delete Store.state.timers.sleep;
-    if (end - t.start < U.MIN) { Store.commit(); UI.toast('Cronómetro descartado (menos de 1 min)'); return; }
-    const rec = Store.add('sleeps', { start: t.start, end, type: h >= 19 || h < 6 ? 'night' : 'nap', place: 'Cuna', quality: 3 });
-    UI.toast(`Ha dormido ${U.dur((end - t.start) / U.MIN)}`, () => Store.remove('sleeps', rec.id));
-  };
-  A['sleep-cancel'] = () => { delete Store.state.timers.sleep; Store.commit(); };
+  /* Sueño: formulario y cronómetros en js/sleep.js */
 
   /* ======================= Tomas ======================= */
   F.feed = (rec, kind) => {
@@ -474,7 +443,7 @@
     UI.sheet({
       title: 'Registrar', footer: false, wide: true,
       body: `<div class="qa-grid">
-        ${s ? tile('sleep-stop', 'sun', 'Se ha despertado', `Dormía desde ${U.time(s.start)}`, 'c-sleep') : tile('sleep-start', 'moon', 'A dormir', 'Inicia el cronómetro', 'c-sleep')}
+        ${s ? tile('sleep-stop', 'sun', 'Se ha despertado', `Dormía desde ${U.time(s.start)}`, 'c-sleep') : tile('sleep-down', 'bed', 'A la cuna', 'Cuenta lo que tarda en dormirse', 'c-sleep') + tile('sleep-start', 'moon', 'Ya duerme', 'Inicia el cronómetro', 'c-sleep')}
         ${tile('form-sleep', 'bed', 'Sueño pasado', 'Siesta o noche', 'c-sleep')}
         ${tile('breast-start', 'breast', 'Pecho', `Empezar por el ${next === 'L' ? 'izquierdo' : 'derecho'}`, 'c-feed', `data-side="${next}"`)}
         ${tile('form-bottle', 'bottle', 'Biberón', 'Leche materna o fórmula', 'c-feed')}

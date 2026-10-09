@@ -90,7 +90,7 @@
 
   /* ======================= Almacenamiento ======================= */
   const KEY = 'nido.v1';
-  const COLLECTIONS = ['sleeps', 'feeds', 'diapers', 'meals', 'measures', 'appointments', 'vaccines', 'meds', 'temps', 'diary', 'events', 'pumps', 'activities', 'reminders'];
+  const COLLECTIONS = ['sleeps', 'feeds', 'diapers', 'meals', 'measures', 'appointments', 'vaccines', 'meds', 'temps', 'diary', 'events', 'pumps', 'activities', 'reminders', 'skips'];
 
   const empty = () => ({
     version: 1, activeBabyId: null,
@@ -168,46 +168,77 @@
     return U.ageText(S.dueDate(b), at);
   };
 
-  /* ---- Sueño ---- */
+  /* ---- Sueño ----
+     Un registro de sueño es un tramo dormido {start, end, type}. Campos opcionales:
+       down    · hora en que se le dejó en la cuna (start − down = lo que tardó en dormirse)
+       how     · cómo se durmió (pecho, brazos, sola en la cuna…)
+       pauses  · [{a, b}] ratos despierta dentro de una siesta
+       after   · {reason, soothe} del despertar nocturno que precede a este tramo
+     La noche se guarda como varios tramos: el hueco entre dos tramos es un despertar. */
   S.sleeps = () => Store.list('sleeps').filter((s) => s.end).sort((a, b) => a.start - b.start);
   S.sleepNorm = (m = S.ageMonths()) => N.SLEEP_BY_AGE.find((r) => m < r.upTo) || N.SLEEP_BY_AGE[N.SLEEP_BY_AGE.length - 1];
+  /* Tramos realmente dormidos de un registro (sin las pausas). */
+  S.segments = (s) => {
+    const ps = (s.pauses || []).filter((p) => p.b > p.a).sort((x, y) => x.a - y.a);
+    const out = []; let cur = s.start;
+    ps.forEach((p) => { const a = Math.max(p.a, s.start), b = Math.min(p.b, s.end); if (a > cur) out.push([cur, a]); cur = Math.max(cur, b); });
+    if (s.end > cur) out.push([cur, s.end]);
+    return out;
+  };
+  S.sleepMin = (s) => U.sum(S.segments(s), ([a, b]) => b - a) / MIN;
+  S.latency = (s) => (s.down && s.down < s.start && s.start - s.down < 3 * HOUR ? (s.start - s.down) / MIN : null);
+  S.skips = () => Store.list('skips').sort((a, b) => a.time - b.time);
 
   /* Minutos de sueño dentro de un día natural, separando siestas y noche. */
   S.sleepDay = (key) => {
     const from = U.parseDay(key), to = U.addDays(from, 1);
     const out = { key, day: 0, night: 0, naps: 0, wakes: 0, longest: 0, blocks: [] };
     S.sleeps().forEach((s) => {
-      const a = Math.max(s.start, from), b = Math.min(s.end, to);
-      if (b <= a) return;
-      const min = (b - a) / MIN;
-      if (s.type === 'nap') { out.day += min; if (s.start >= from) out.naps++; }
-      else out.night += min;
-      out.longest = Math.max(out.longest, (s.end - s.start) / MIN);
-      out.blocks.push({ a, b, type: s.type, id: s.id });
+      if (s.end <= from || s.start >= to) return;
+      if (s.type === 'nap' && s.start >= from) out.naps++;
+      out.longest = Math.max(out.longest, S.sleepMin(s));
+      S.segments(s).forEach(([a0, b0]) => {
+        const a = Math.max(a0, from), b = Math.min(b0, to);
+        if (b <= a) return;
+        if (s.type === 'nap') out.day += (b - a) / MIN; else out.night += (b - a) / MIN;
+        out.blocks.push({ a, b, type: s.type, id: s.id });
+      });
     });
     out.total = out.day + out.night;
     return out;
   };
 
-  /* Noche que comienza en la tarde del día `key`: bloques nocturnos entre 17:00 y 12:00. */
+  /* Noche que empieza la tarde del día `key` (tramos nocturnos entre las 17:00 y las 12:00 del día siguiente). */
   S.nightOf = (key) => {
     const from = U.parseDay(key) + 17 * HOUR, to = U.parseDay(key) + 36 * HOUR;
     const blocks = S.sleeps().filter((s) => s.type === 'night' && s.start >= from && s.start < to);
     if (!blocks.length) return null;
-    const total = U.sum(blocks, (s) => (s.end - s.start) / MIN);
-    return { start: blocks[0].start, end: blocks[blocks.length - 1].end, total, wakes: blocks.length - 1, longest: Math.max(...blocks.map((s) => (s.end - s.start) / MIN)) };
+    const wakings = [];
+    for (let i = 1; i < blocks.length; i++) {
+      const prev = blocks[i - 1], cur = blocks[i], af = cur.after || {};
+      wakings.push({ a: prev.end, b: cur.start, min: Math.max(0, (cur.start - prev.end) / MIN), reason: af.reason || null, soothe: af.soothe || null, id: cur.id });
+    }
+    const total = U.sum(blocks, S.sleepMin);
+    return {
+      key, start: blocks[0].start, end: blocks[blocks.length - 1].end, total, wakes: wakings.length, wakings,
+      awake: U.sum(wakings, (w) => w.min), longest: Math.max(...blocks.map(S.sleepMin)),
+      latency: S.latency(blocks[0]), how: blocks[0].how || null, down: blocks[0].down || null, blocks
+    };
   };
 
   S.activeSleep = () => { const t = Store.state.timers.sleep; return t && t.babyId === Store.state.activeBabyId ? t : null; };
+  S.activeNightWake = () => { const t = Store.state.timers.nightWake; return t && t.babyId === Store.state.activeBabyId ? t : null; };
   S.activeBreast = () => { const t = Store.state.timers.breast; return t && t.babyId === Store.state.activeBabyId ? t : null; };
+  const hourOf = (t) => { const d = new Date(t); return d.getHours() + d.getMinutes() / 60; };
+  /* Tipo del sueño en curso: el elegido o, si no, según la hora (de 18:30 a 6:00 es noche). */
+  S.timerType = (t, at = t && t.start) => (t && t.type) || (hourOf(at) >= 18.5 || hourOf(at) < 6 ? 'night' : 'nap');
 
   /* ---- Ritmo aprendido y plan del día ----
      Para cada uno de los últimos 7 días completos se reconstruye su forma:
      despertar de la mañana, siestas y hora de acostarse. De ahí salen el
      número habitual de siestas y, por posición, la ventana de vigilia antes
-     de cada siesta y la duración de cada una. Se mezcla 70 % real y 30 %
-     tabla por edad, limitado a un rango saludable. */
-  const hourOf = (t) => { const d = new Date(t); return d.getHours() + d.getMinutes() / 60; };
+     de cada siesta, su variabilidad y la duración de cada siesta. Se mezcla
+     70 % real y 30 % tabla por edad, limitado a un rango saludable. */
   S.dayShape = (key) => {
     const d0 = U.parseDay(key), all = S.sleeps();
     const morning = all.filter((s) => s.type === 'night' && s.end >= d0 + 4 * HOUR && s.end <= d0 + 11 * HOUR).pop();
@@ -216,6 +247,7 @@
     return { key, wake: morning ? morning.end : null, naps, bed: bed ? bed.start : null };
   };
 
+  const stdev = (xs) => { if (xs.length < 2) return null; const m = U.avg(xs); return Math.sqrt(U.avg(xs, (x) => (x - m) * (x - m))); };
   S.learnRhythm = (now = Date.now()) => {
     const norm = S.sleepNorm(S.ageMonths(now));
     const days = [];
@@ -227,47 +259,91 @@
     const expected = counts.length >= 3 ? counts[Math.floor(counts.length / 2)] : Math.round((norm.naps[0] + norm.naps[1]) / 2);
     const same = days.filter((d) => d.naps.length === expected);
     const lo = norm.ww[0] * 0.8, hi = norm.ww[1] * 1.25;
-    const windows = [];
+    const windows = [], spread = [];
     for (let i = 0; i <= expected; i++) {
       // La vigilia se alarga a lo largo del día: la primera es la más corta y la de antes de dormir, la más larga.
       const typical = norm.ww[0] + (norm.ww[1] - norm.ww[0]) * (expected ? i / expected : 0.5);
       const samples = same.map((d) => ((i === expected ? d.bed : d.naps[i].start) - (i === 0 ? d.wake : d.naps[i - 1].end)) / MIN).filter((g) => g > 20 && g < 420);
       const learned = samples.length >= 2 ? U.avg(samples) : null;
       windows.push(Math.round(U.clamp(learned != null ? learned * 0.7 + typical * 0.3 : typical, lo, hi)));
+      const sd = stdev(samples);
+      spread.push(Math.round(U.clamp(sd != null && samples.length >= 3 ? sd : 20, 10, 30)));
     }
     const fallback = expected <= 2 ? [80, 90] : [55, 85, 40, 30, 30];
     const durations = [];
     for (let i = 0; i < expected; i++) {
-      const s = same.map((d) => (d.naps[i].end - d.naps[i].start) / MIN);
+      const s = same.map((d) => S.sleepMin(d.naps[i]));
       durations.push(Math.round(s.length >= 2 ? U.avg(s) : fallback[i] || 35));
     }
     const wakes = days.map((d) => hourOf(d.wake));
-    return { expected, windows, durations, norm, days: days.length, learned: same.length >= 3, wakeHour: wakes.length ? U.avg(wakes) : 7 };
+    const nights = []; for (let i = 2; i <= 8; i++) { const n = S.nightOf(U.dayKey(U.addDays(now, -i))); if (n) nights.push(n); }
+    const lat = S.sleeps().filter((s) => s.start > now - 14 * DAY).map(S.latency).filter((x) => x != null);
+    return {
+      expected, windows, spread, durations, norm, days: days.length, learned: same.length >= 3,
+      wakeHour: wakes.length ? U.avg(wakes) : 7, nightAvg: nights.length ? U.avg(nights, (n) => n.total) : null,
+      latency: lat.length >= 3 ? U.avg(lat) : null
+    };
+  };
+
+  /* Presión de sueño: tras una siesta más corta de lo habitual se acumula
+     cansancio antes y la siguiente ventana se acorta (la mitad del déficit,
+     hasta un 30 %); tras una más larga se alarga un poco (hasta un 15 %).
+     Una noche movida acorta la primera ventana del día un 10 %. */
+  const pressure = (w, prevNap, typicalDur) => {
+    if (!prevNap || !typicalDur) return { adj: 0 };
+    const delta = S.sleepMin(prevNap) - typicalDur;
+    if (Math.abs(delta) < 10) return { adj: 0 };
+    const adj = U.clamp(delta < 0 ? delta * 0.5 : delta * 0.3, -0.3 * w, 0.15 * w);
+    return { adj: Math.round(adj), why: delta < 0 ? 'la siesta anterior fue corta' : 'la siesta anterior fue larga' };
   };
 
   S.dayPlan = (now = Date.now()) => {
     const r = S.learnRhythm(now);
-    const d0 = U.dayStart(now), today = S.dayShape(U.dayKey(now));
+    const d0 = U.dayStart(now), todayKey = U.dayKey(now), today = S.dayShape(todayKey);
     const active = S.activeSleep();
-    const activeNap = active && hourOf(active.start) >= 6.5 && hourOf(active.start) < 18.5;
+    const activeNap = active && S.timerType(active) === 'nap';
+    const skips = S.skips().filter((x) => x.date === todayKey);
     const items = [];
     // Sin despertar registrado (aún duerme o no se anotó la noche): se usa su hora habitual.
     const realWake = today.wake || d0 + r.wakeHour * HOUR;
     items.push({ kind: 'wake', t: realWake, state: today.wake ? 'done' : 'planned' });
-    let cursor = realWake, i = 0;
-    today.naps.forEach((s) => { items.push({ kind: 'nap', idx: i, start: s.start, end: s.end, state: 'done' }); cursor = s.end; i++; });
+    // Hoy se esperan las siestas habituales menos las que se han saltado.
+    const expectedToday = Math.max(today.naps.length + (activeNap ? 1 : 0), r.expected - skips.length);
+    const offset = r.expected - expectedToday; // las siestas que quedan usan las ventanas de posiciones más tardías
+    const pos = (i) => Math.min(i + Math.max(0, offset), r.expected - 1);
+    let cursor = realWake, i = 0, prevNap = null;
+    const timeline = [...today.naps.map((s) => ({ t: s.start, s })), ...skips.map((k) => ({ t: k.time, k }))].sort((a, b) => a.t - b.t);
+    timeline.forEach((x) => {
+      if (x.k) { items.push({ kind: 'nap', state: 'skipped', start: x.k.time, id: x.k.id }); return; }
+      items.push({ kind: 'nap', idx: i, start: x.s.start, end: x.s.end, state: 'done', min: S.sleepMin(x.s) });
+      cursor = x.s.end; prevNap = x.s; i++;
+    });
     if (activeNap) {
-      const end = Math.max(active.start + (r.durations[i] || 40) * MIN, now + 5 * MIN);
-      items.push({ kind: 'nap', idx: i, start: active.start, end, state: 'now' }); cursor = end; i++;
+      const st = active.phase === 'down' ? active.down : active.start;
+      const end = Math.max(st + (r.durations[pos(i)] || 40) * MIN, now + 5 * MIN);
+      items.push({ kind: 'nap', idx: i, start: st, end, state: 'now' }); cursor = end; i++; prevNap = null;
     }
-    for (; i < r.expected; i++) {
-      let start = cursor + r.windows[i] * MIN; const overdue = start < now;
+    for (; i < expectedToday; i++) {
+      const p = pos(i), base = r.windows[p];
+      let adj = 0, why = '';
+      if (prevNap) ({ adj, why = '' } = pressure(base, prevNap, r.durations[pos(i - 1)]));
+      else if (i === 0 && r.nightAvg) {
+        const night = S.nightOf(U.dayKey(U.addDays(now, -1)));
+        if (night && (night.total < r.nightAvg - 60 || night.wakes >= 3)) { adj = -Math.round(base * 0.1); why = 'la noche fue movida'; }
+      }
+      const w = base + adj;
+      let start = cursor + w * MIN; const overdue = start < now;
       if (overdue) start = now;
-      if (hourOf(start) > 18 || U.dayKey(start) !== U.dayKey(now)) break;
-      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[i] * MIN, state: overdue ? 'overdue' : 'planned', window: r.windows[i] });
-      cursor = start + r.durations[i] * MIN;
+      if (hourOf(start) > 18 || U.dayKey(start) !== todayKey) break;
+      const sp = r.spread[p];
+      items.push({ kind: 'nap', idx: i, start, end: start + r.durations[p] * MIN, state: overdue ? 'overdue' : 'planned', window: w, adj, why, from: start - sp * MIN, to: start + sp * MIN });
+      cursor = start + r.durations[p] * MIN; prevNap = null;
     }
-    const bedWindow = r.windows[r.expected];
+    const bedBase = r.windows[r.expected];
+    const bp = prevNap ? pressure(bedBase, prevNap, r.durations[pos(i - 1)]) : { adj: 0 };
+    // Si hoy se ha saltado una siesta, la noche llega antes (más cansancio acumulado).
+    const skipAdj = skips.length && !prevNap ? -Math.round(bedBase * 0.1) : 0;
+    const bedWindow = bedBase + bp.adj + skipAdj;
     let bed = cursor + bedWindow * MIN;
     // Si la última siesta empujaría la noche más allá de las 21:00, se acorta a una siesta corta.
     const lastPlanned = items[items.length - 1];
@@ -276,27 +352,28 @@
     }
     let bedState = 'planned';
     if (today.bed) { bed = today.bed; bedState = 'done'; }
-    else if (active && !activeNap) { bed = active.start; bedState = 'done'; }
+    else if (active && !activeNap) { bed = active.phase === 'down' ? active.down : active.start; bedState = 'done'; }
     else {
       const h = hourOf(bed);
       if (h < 18.5) { bed = d0 + 18.5 * HOUR; bedState = 'adjusted'; }
-      else if (h > 21 || U.dayKey(bed) !== U.dayKey(now)) { bed = d0 + 21 * HOUR; bedState = 'adjusted'; }
+      else if (h > 21 || U.dayKey(bed) !== todayKey) { bed = d0 + 21 * HOUR; bedState = 'adjusted'; }
     }
-    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow });
+    const bsp = r.spread[r.expected];
+    items.push({ kind: 'bed', t: bed, state: bedState, window: bedWindow, adj: bp.adj + skipAdj, why: bp.why || (skipAdj ? 'hoy se saltó una siesta' : ''), from: bed - bsp * MIN, to: bed + bsp * MIN });
     const next = items.find((x) => x.kind === 'nap' && (x.state === 'planned' || x.state === 'overdue'));
-    return { items, rhythm: r, next, bed, napsDone: today.naps.length };
+    return { items, rhythm: r, next, bed, napsDone: today.naps.length, expectedToday, skipped: skips.length };
   };
 
   /* Estado de vigilia actual con la próxima siesta y la hora de dormir del plan. */
   S.predict = (now = Date.now()) => {
     const sleeps = S.sleeps(); const last = sleeps[sleeps.length - 1];
-    if (!last || S.activeSleep()) return null;
+    if (!last || S.activeSleep() || S.activeNightWake()) return null;
     const plan = S.dayPlan(now), r = plan.rhythm;
-    const ww = plan.next ? plan.next.window : r.windows[r.expected];
+    const ww = plan.next ? plan.next.window : plan.items[plan.items.length - 1].window;
     const awakeMin = (now - last.end) / MIN;
     return {
       awakeSince: last.end, awakeMin, ww, windowRange: r.norm.ww,
-      nextNap: plan.next ? plan.next.start : null, bedtime: plan.bed, napsToday: plan.napsDone, expectedNaps: r.expected,
+      nextNap: plan.next ? plan.next.start : null, bedtime: plan.bed, napsToday: plan.napsDone, expectedNaps: plan.expectedToday,
       progress: U.clamp(awakeMin / ww, 0, 1.4), learned: r.learned, plan
     };
   };

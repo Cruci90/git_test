@@ -334,6 +334,25 @@
   ];
 
   N.SLEEP_PLACES = ['Cuna', 'Colecho', 'Brazos', 'Carrito', 'Coche', 'Fular'];
+  /* Cómo se durmió: sirve para ver qué asociaciones tiene para dormirse. */
+  N.SLEEP_HOW = [
+    { id: 'sola', name: 'Sola en la cuna', emoji: '🛏️' }, { id: 'pecho', name: 'Al pecho', emoji: '🤱' },
+    { id: 'biberon', name: 'Con biberón', emoji: '🍼' }, { id: 'brazos', name: 'En brazos', emoji: '🫂' },
+    { id: 'meciendo', name: 'Meciendo', emoji: '🪑' }, { id: 'acompanada', name: 'Acompañada en la cuna', emoji: '🤲' },
+    { id: 'carrito', name: 'Carrito o coche', emoji: '🚗' }, { id: 'porteo', name: 'Porteo', emoji: '🧣' }
+  ];
+  /* Despertares nocturnos: por qué y cómo volvió a dormirse. */
+  N.WAKE_REASONS = [
+    { id: 'hambre', name: 'Hambre', emoji: '🍼' }, { id: 'panal', name: 'Pañal', emoji: '🧷' },
+    { id: 'consuelo', name: 'Consuelo', emoji: '🫂' }, { id: 'dientes', name: 'Dientes', emoji: '🦷' },
+    { id: 'malestar', name: 'Malestar o fiebre', emoji: '🤒' }, { id: 'pesadilla', name: 'Llanto sin motivo claro', emoji: '😢' },
+    { id: 'otro', name: 'Otro', emoji: '✨' }
+  ];
+  N.SOOTHE = [
+    { id: 'sola', name: 'Sola', emoji: '🌙' }, { id: 'pecho', name: 'Pecho', emoji: '🤱' }, { id: 'biberon', name: 'Biberón', emoji: '🍼' },
+    { id: 'brazos', name: 'Brazos', emoji: '🫂' }, { id: 'chupete', name: 'Chupete', emoji: '🍭' },
+    { id: 'caricias', name: 'Caricias o shh', emoji: '🤲' }, { id: 'colecho', name: 'A la cama con nosotros', emoji: '🛌' }
+  ];
   N.DIAPER_COLORS = [
     { id: 'amarillo', name: 'Amarillo mostaza', hex: '#D9A92B', ok: true },
     { id: 'verde', name: 'Verde', hex: '#6E8B3D', ok: true },

@@ -71,7 +71,7 @@
 
   /* ---------- Conversión a registros de Nido ---------- */
   I.convert = (events, existing = { sleeps: S.sleeps(), keys: new Set(Store.COLLECTIONS.flatMap((c) => Store.list(c).map((x) => x.src).filter(Boolean))) }) => {
-    const out = { sleeps: [], feeds: [], meds: [], diapers: [], pumps: [] };
+    const out = { sleeps: [], feeds: [], meds: [], diapers: [], pumps: [], skips: [] };
     const skipped = { dup: 0, unsupported: {}, incomplete: 0 };
     const push = (col, rec, src) => {
       rec.src = 'napper:' + src;
@@ -84,7 +84,7 @@
       const key = `${e.cat}:${e.start}`;
       switch (e.cat) {
         case 'NAP':
-          if (e.skipped) return;
+          if (e.skipped) { push('skips', { date: U.dayKey(e.start), time: e.start }, key); return; }
           if (!e.end || e.end <= e.start) { skipped.incomplete++; return; }
           push('sleeps', { start: e.start, end: e.end, type: 'nap', place: '', quality: 3, note: e.comment }, key); return;
         case 'BED_TIME': beds.push(e.start); return;
@@ -133,7 +133,7 @@
   };
 
   /* ---------- Hoja de importación ---------- */
-  const LABELS = { sleeps: 'Sueños (siestas y tramos de noche)', feeds: 'Tomas', meds: 'Medicación', diapers: 'Pañales', pumps: 'Extracciones' };
+  const LABELS = { sleeps: 'Sueños (siestas y tramos de noche)', feeds: 'Tomas', meds: 'Medicación', diapers: 'Pañales', pumps: 'Extracciones', skips: 'Siestas saltadas' };
   N.actions['import-napper'] = () => {
     let res = null;
     UI.sheet({
