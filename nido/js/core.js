@@ -257,6 +257,14 @@
      hard         · [{ from, to|null, reason }] días difíciles (no se aprende de ellos)
      dst          · { date, mode } plan elegido para el cambio de hora */
   S.prefs = () => (Store.state.activeBabyId ? Store.babyMap('sleepPrefs') : {});
+  /* Rutina de dormir: pasos activos con su duración (los de la familia o los de por defecto). */
+  S.routine = () => {
+    const saved = S.prefs().routine;
+    if (!saved) return N.ROUTINE_STEPS.map((x) => Object.assign({}, x));
+    return saved.filter((x) => x.on !== false).map((x) => Object.assign({}, N.ROUTINE_STEPS.find((d) => d.id === x.id) || { emoji: '✨' }, x));
+  };
+  S.routineTotal = () => U.sum(S.routine(), (x) => Number(x.min) || 0);
+  S.activeRoutine = () => { const t = Store.state.timers.routine; return t && t.babyId === Store.state.activeBabyId ? t : null; };
   S.hardDay = (key) => (S.prefs().hard || []).find((h) => key >= h.from && (!h.to || key <= h.to)) || null;
 
   /* ---- Cambio de hora (UE: último domingo de marzo y de octubre) ---- */
@@ -468,6 +476,41 @@
       nextNap: plan.next ? plan.next.start : null, bedtime: plan.bed, napsToday: plan.napsDone, expectedNaps: plan.expectedToday,
       progress: U.clamp(awakeMin / ww, 0, 1.4), learned: r.learned, plan
     };
+  };
+
+  /* ---- Tendencias por semanas (lunes a domingo) ----
+     Para cada semana completa o en curso: medias por día con datos. Las horas
+     de acostarse se miden en minutos desde el mediodía para que las 00:30
+     cuenten como más tarde que las 23:30. */
+  S.weekStart = (t) => { const d = new Date(U.dayStart(t)); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+  /* Medias de sueño de `n` días desde `from` (solo días ya terminados). */
+  S.sleepStats = (from, n, now = Date.now()) => {
+    const days = [], nights = [];
+    // El primer día con registros suele estar a medias: no cuenta.
+    const first = Store.list('sleeps').reduce((m, x) => Math.min(m, x.start), Infinity);
+    const firstFull = first === Infinity ? Infinity : U.addDays(U.dayStart(first), 1);
+    for (let d = 0; d < n; d++) {
+      const t = U.addDays(from, d); if (t >= U.dayStart(now)) break;
+      if (t < firstFull) continue;
+      const key = U.dayKey(t), sd = S.sleepDay(key), night = S.nightOf(key);
+      if (sd.total > 0) days.push(sd);
+      if (night) nights.push(night);
+    }
+    const sinceNoon = (t) => { const d = new Date(t); const m = d.getHours() * 60 + d.getMinutes(); return m < 12 * 60 ? m + 12 * 60 : m - 12 * 60; };
+    const ofDay = (t) => { const d = new Date(t); return d.getHours() * 60 + d.getMinutes(); };
+    const lat = nights.map((x) => x.latency).filter((x) => x != null);
+    const avg = (arr, f) => (arr.length ? U.avg(arr, f) : null);
+    return {
+      start: U.dayKey(from), days: days.length, nights: nights.length,
+      total: avg(days, (d) => d.total), day: avg(days, (d) => d.day), naps: avg(days, (d) => d.naps),
+      night: avg(nights, (x) => x.total), wakes: avg(nights, (x) => x.wakes), longest: avg(nights, (x) => x.longest),
+      bed: nights.length ? (U.avg(nights, (x) => sinceNoon(x.start)) + 12 * 60) % 1440 : null,
+      wake: avg(nights, (x) => ofDay(x.end)), latency: lat.length ? U.avg(lat) : null
+    };
+  };
+  S.sleepWeeks = (n = 8, now = Date.now()) => {
+    const first = U.addDays(S.weekStart(now), -7 * (n - 1));
+    return Array.from({ length: n }, (_, w) => S.sleepStats(U.addDays(first, 7 * w), 7, now));
   };
 
   /* ---- Actividades ---- */

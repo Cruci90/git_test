@@ -30,6 +30,7 @@
         </div></section>`;
     }
     if (s || S.activeNightWake()) return W.liveSleep();
+    if (S.activeRoutine()) return W.liveRoutine();
     const p = S.predict();
     if (!p) return `<section class="live"><div class="live-top"><span class="eyebrow">${icon('sun')} Despierta</span></div>
       <p class="muted">Registra un sueño para calcular las ventanas de vigilia.</p>
@@ -50,6 +51,7 @@
       <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button>
         <button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button>
         ${p.nextNap && p.plan.next.state === 'overdue' ? `<button type="button" class="btn soft" data-act="nap-skip">Saltar siesta</button>` : ''}</div>
+      ${!p.nextNap && S.routineTotal() && p.bedtime - Date.now() < (S.routineTotal() + 45) * U.MIN ? `<div class="rt-hint">${icon('moon')}<span>Rutina de ${S.routineTotal()} min: empieza hacia las <b>${U.time(p.bedtime - S.routineTotal() * U.MIN)}</b></span><button type="button" class="btn soft sm" data-act="routine-start">Empezar rutina</button></div>` : ''}
     </section>`;
   };
 
@@ -262,17 +264,11 @@
       </div>
       ${W.card('Patrón de las últimas dos semanas', `<div class="scroll-x">${Charts.pattern(rows, { feeds: true })}</div><ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul>`)}
       <div class="grid-2">${this.nights()}${this.habits(recent)}</div>
-      <div class="grid-2">
-        ${W.card('Registro', Object.keys(groups).slice(0, 3).map((k) => `<h3 class="day-h">${U.relDay(k) === 'hoy' || U.relDay(k) === 'ayer' ? U.relDay(k) : U.dateLong(k)}</h3>` +
+      <div class="grid-2">${W.routine()}${W.guide()}</div>
+      ${W.trends()}
+      ${W.card('Registro', Object.keys(groups).slice(0, 3).map((k) => `<h3 class="day-h">${U.relDay(k) === 'hoy' || U.relDay(k) === 'ayer' ? U.relDay(k) : U.dateLong(k)}</h3>` +
           W.timeline(groups[k].map((s) => ({ t: s.start, kind: 'sleep', rec: s, col: 'sleeps' })))).join(''))}
-        ${W.card('Guía para su edad', `<dl class="guide">
-          <div><dt>Sueño total</dt><dd>${norm.total[0]}–${norm.total[1]} h en 24 h, siestas incluidas.</dd></div>
-          <div><dt>Ventanas de vigilia</dt><dd>${U.dur(norm.ww[0])} a ${U.dur(norm.ww[1])}. La primera del día suele ser la más corta y la última, la más larga.</dd></div>
-          <div><dt>Siestas</dt><dd>${norm.naps[0] === norm.naps[1] ? norm.naps[0] : norm.naps.join(' a ')} al día. ${S.ageMonths() >= 6 && S.ageMonths() < 9 ? 'Entre los 7 y 9 meses muchos bebés pasan de 3 a 2 siestas.' : ''}</dd></div>
-          <div><dt>Señales de sueño</dt><dd>Mirada perdida, frotarse los ojos, tirarse de la oreja, bostezos, irritabilidad.</dd></div>
-          <div><dt>Sueño seguro</dt><dd>Boca arriba, en superficie firme, sin almohadas, cojines ni peluches en la cuna.</dd></div>
-        </dl>`)}
-      </div>`;
+      `;
     },
     /* Tabla de las últimas noches. */
     nights() {

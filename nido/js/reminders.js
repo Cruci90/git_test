@@ -20,10 +20,11 @@
     const cfg = S.reminderSettings(), out = [], today = U.dayKey(now);
     const add = (key, at, title, body, hash, kind) => { if (at > now - WINDOW && at < now + horizon) out.push({ key, at, title, body, hash, kind }); };
 
-    if (cfg.nap.on || cfg.bed.on) {
+    if (cfg.nap.on || cfg.bed.on || (cfg.routine && cfg.routine.on)) {
       const plan = S.dayPlan(now);
       plan.items.forEach((x) => {
         if (cfg.nap.on && x.kind === 'nap' && x.state === 'planned') add(`nap:${today}:${x.idx}`, x.start - cfg.nap.before * U.MIN, `Siesta ${x.idx + 1} en ${cfg.nap.before} min`, `Prevista a las ${U.time(x.start)}. Empieza a bajar el ritmo: luz tenue y calma.`, 'sueno', 'nap');
+        if (cfg.routine && cfg.routine.on && x.kind === 'bed' && x.state !== 'done' && S.routineTotal()) add(`routine:${today}`, x.t - S.routineTotal() * U.MIN, 'Hora de empezar la rutina de dormir', `${S.routine().map((s) => s.name.toLowerCase()).join(', ')}. A la cuna hacia las ${U.time(x.t)}.`, 'sueno', 'routine');
         if (cfg.bed.on && x.kind === 'bed' && x.state !== 'done') add(`bed:${today}`, x.t - cfg.bed.before * U.MIN, `A la cama en ${cfg.bed.before} min`, `Hora prevista: ${U.time(x.t)}. Buen momento para el baño o la rutina.`, 'sueno', 'bed');
       });
     }
@@ -90,6 +91,7 @@
       <ul class="rem-list">
         ${row('nap', 'Antes de cada siesta prevista', num('nap', 'before', 'min', 0, 60))}
         ${row('bed', 'Antes de la hora de dormir', num('bed', 'before', 'min', 0, 90))}
+        ${row('routine', 'Al empezar la rutina de dormir')}
         ${row('feed', 'Si pasa tiempo sin toma (de día)', num('feed', 'hours', 'h', 1, 8))}
         ${row('appt', 'Citas: la víspera y 1 h antes')}
         ${row('vitd', 'Vitamina D si no está anotada', time('vitd'))}

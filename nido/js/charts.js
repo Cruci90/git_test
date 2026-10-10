@@ -124,6 +124,33 @@
         stroke-dasharray="${r1(c * p)} ${r1(c)}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>`;
   };
 
+  /* ---------- Tendencia semanal: una serie, línea de 2px, último punto destacado ----------
+     pts: [{ label, v, tip }] (v puede ser null) · opts.fmt formatea el eje · opts.step paso del eje */
+  C.trend = (pts, opts = {}) => {
+    const W = 320, H = 132, pl = 40, pr = 10, pt = 14, pb = 22;
+    const vals = pts.map((p) => p.v).filter((v) => v != null);
+    if (vals.length < 2) return '<p class="muted small">Hacen falta al menos dos semanas con datos.</p>';
+    const step = opts.step || 1, fmt = opts.fmt || ((v) => v);
+    let lo = Math.floor(Math.min(...vals) / step) * step, hi = Math.ceil(Math.max(...vals) / step) * step;
+    if (hi - lo < step) hi = lo + step;
+    const X = (i) => pl + (W - pl - pr) * (pts.length === 1 ? 0.5 : i / (pts.length - 1));
+    const Y = (v) => pt + (H - pt - pb) * (1 - (v - lo) / (hi - lo));
+    let g = '';
+    const ticks = [lo, (lo + hi) / 2, hi];
+    ticks.forEach((v) => { g += `<line class="grid" x1="${pl}" x2="${W - pr}" y1="${r1(Y(v))}" y2="${r1(Y(v))}"/><text class="ax" x="${pl - 6}" y="${r1(Y(v)) + 4}" text-anchor="end">${fmt(v)}</text>`; });
+    const seg = []; let cur = [];
+    pts.forEach((p, i) => { if (p.v == null) { if (cur.length) seg.push(cur); cur = []; } else cur.push([X(i), Y(p.v)]); });
+    if (cur.length) seg.push(cur);
+    seg.forEach((sg) => { if (sg.length > 1) g += `<path class="t-line" d="${sg.map(([x, y], i) => `${i ? 'L' : 'M'}${r1(x)},${r1(y)}`).join('')}"/>`; });
+    const lastI = pts.map((p) => p.v != null).lastIndexOf(true);
+    pts.forEach((p, i) => {
+      if (i === 0 || i === pts.length - 1 || pts.length <= 6) g += `<text class="ax ${i === lastI ? 'ax-strong' : ''}" x="${r1(X(i))}" y="${H - 6}" text-anchor="middle">${p.label}</text>`;
+      if (p.v == null) return;
+      g += `<g data-tip="${U.esc(p.tip || '')}"><circle cx="${r1(X(i))}" cy="${r1(Y(p.v))}" r="12" fill="transparent"/><circle class="t-dot ${i === lastI ? 'last' : ''}" cx="${r1(X(i))}" cy="${r1(Y(p.v))}" r="${i === lastI ? 5 : 3.5}"/></g>`;
+    });
+    return svg(W, H, g, 'trend');
+  };
+
   /* ---------- Barras simples (tomas/pañales por día) ---------- */
   C.miniBars = (items, cls = 'm-feed') => {
     const W = 320, H = 90, pb = 18, pt = 14;

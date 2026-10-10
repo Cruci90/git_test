@@ -341,6 +341,15 @@
     { id: 'meciendo', name: 'Meciendo', emoji: '🪑' }, { id: 'acompanada', name: 'Acompañada en la cuna', emoji: '🤲' },
     { id: 'carrito', name: 'Carrito o coche', emoji: '🚗' }, { id: 'porteo', name: 'Porteo', emoji: '🧣' }
   ];
+  /* Rutina de dormir por defecto. act: actividad que se anota al terminar el paso. */
+  N.ROUTINE_STEPS = [
+    { id: 'bano', name: 'Baño', emoji: '🛁', min: 10, act: 'bath' },
+    { id: 'masaje', name: 'Masaje', emoji: '🤲', min: 5, act: 'massage' },
+    { id: 'pijama', name: 'Pañal y pijama', emoji: '👶', min: 5 },
+    { id: 'toma', name: 'Última toma', emoji: '🍼', min: 15 },
+    { id: 'cuento', name: 'Cuento', emoji: '📖', min: 5, act: 'reading' },
+    { id: 'cancion', name: 'Canción y luz apagada', emoji: '🎶', min: 5, act: 'music' }
+  ];
   /* Días difíciles: el plan es más suave y no aprende de ellos. */
   N.HARD_DAYS = [
     { id: 'enfermedad', name: 'Está malita', emoji: '🤒' }, { id: 'dientes', name: 'Dientes', emoji: '🦷' },
@@ -394,6 +403,7 @@
   N.REMINDER_DEFAULTS = {
     nap: { on: true, before: 10 },        // minutos antes de la siesta prevista
     bed: { on: true, before: 20 },        // minutos antes de la hora de dormir
+    routine: { on: true },                // al empezar la rutina de dormir (hora de dormir − duración)
     feed: { on: false, hours: 3 },        // si no hay toma en X horas (de día)
     appt: { on: true },                   // día anterior 20:00 y 1 h antes
     vitd: { on: true, time: '10:00' },    // si toma vitamina D y aún no se ha dado

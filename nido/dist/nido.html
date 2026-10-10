@@ -937,6 +937,63 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
 .shift-pick output { font: 700 16px var(--f-display); min-width: 80px; text-align: center; }
 .plan-it.is-fixed time { color: var(--accent); }
 
+/* ---------- Tendencias ---------- */
+.trend .t-line { fill: none; stroke: var(--c-sleep); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.trend .t-dot { fill: var(--c-sleep); stroke: var(--surface); stroke-width: 2; }
+.trend .t-dot.last { stroke-width: 2.5; }
+.trends { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.trend-box h3 { font: 600 13px var(--f-body); color: var(--ink-2); margin-bottom: 2px; display: flex; justify-content: space-between; gap: 8px; }
+.trend-box h3 b { font: 700 15px var(--f-display); color: var(--ink); }
+.wow { width: 100%; border-collapse: collapse; font-size: 14px; }
+.wow th { text-align: left; font-size: 12px; color: var(--ink-3); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.wow td { padding: 8px; border-bottom: 1px solid var(--line); }
+.wow td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.delta { font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 99px; }
+.delta.good { background: var(--good-soft); color: var(--good); }
+.delta.bad { background: var(--warn-soft); color: var(--warn); }
+.delta.same { background: var(--surface-3); color: var(--ink-3); }
+.delta { white-space: nowrap; }
+@media (max-width: 600px) {
+  .wow { font-size: 13px; }
+  .wow th, .wow td { padding: 6px 4px; }
+  .wow .delta { font-size: 11px; padding: 2px 5px; }
+}
+
+/* ---------- Rutina de dormir ---------- */
+.rt-now { display: flex; align-items: center; gap: 14px; }
+.rt-e { font-size: 40px; line-height: 1; }
+.rt-now b { display: block; font: 700 24px/1.15 var(--f-display); color: #fff; }
+.rt-now small { color: #C9CCFF; font-size: 13px; }
+.rt-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.rt-steps li { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 99px; font-size: 12.5px; background: rgba(255, 255, 255, .08); color: #C9CCFF; }
+.rt-steps li em { font-style: normal; opacity: .7; }
+.rt-steps li.done { text-decoration: line-through; opacity: .6; }
+.rt-steps li.now { background: #FFE3A8; color: #1E2257; font-weight: 700; }
+.rt-list { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.rt-list li { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; background: var(--surface-2); font-size: 14px; }
+.rt-list li em { margin-left: auto; font-style: normal; color: var(--ink-3); font-size: 13px; }
+.rt-hint { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--c-sleep) 10%, var(--surface)); font-size: 13.5px; }
+.rt-hint .ic { color: var(--c-sleep); }
+.rt-hint span { flex: 1; min-width: 160px; }
+.rt-edits { display: flex; flex-direction: column; gap: 8px; }
+.rt-edit { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 10px; align-items: center; }
+.rt-edit .unit-wrap input { width: 100%; min-height: 40px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
+
+/* ---------- Guía ---------- */
+.guide-list { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.guide-it { display: grid; grid-template-columns: 34px minmax(0, 1fr) 16px; gap: 10px; align-items: center; width: 100%; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); text-align: left; }
+.guide-it:hover { border-color: var(--c-sleep); }
+.guide-it .g-e { font-size: 24px; }
+.guide-it span:nth-child(2) { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.guide-it b { font-size: 14.5px; }
+.guide-it small { font-size: 12.5px; color: var(--ink-3); }
+.guide-it em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--c-sleep); }
+.guide-it em.g-age { color: var(--ink-3); font-weight: 600; }
+.guide-it.is-off { opacity: .6; }
+.guide-it .ic { color: var(--ink-3); }
+.guide-art { display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.55; max-width: 65ch; }
+.guide-art ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
 </style>
 </head>
 <body>
@@ -1297,6 +1354,15 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     { id: 'meciendo', name: 'Meciendo', emoji: '🪑' }, { id: 'acompanada', name: 'Acompañada en la cuna', emoji: '🤲' },
     { id: 'carrito', name: 'Carrito o coche', emoji: '🚗' }, { id: 'porteo', name: 'Porteo', emoji: '🧣' }
   ];
+  /* Rutina de dormir por defecto. act: actividad que se anota al terminar el paso. */
+  N.ROUTINE_STEPS = [
+    { id: 'bano', name: 'Baño', emoji: '🛁', min: 10, act: 'bath' },
+    { id: 'masaje', name: 'Masaje', emoji: '🤲', min: 5, act: 'massage' },
+    { id: 'pijama', name: 'Pañal y pijama', emoji: '👶', min: 5 },
+    { id: 'toma', name: 'Última toma', emoji: '🍼', min: 15 },
+    { id: 'cuento', name: 'Cuento', emoji: '📖', min: 5, act: 'reading' },
+    { id: 'cancion', name: 'Canción y luz apagada', emoji: '🎶', min: 5, act: 'music' }
+  ];
   /* Días difíciles: el plan es más suave y no aprende de ellos. */
   N.HARD_DAYS = [
     { id: 'enfermedad', name: 'Está malita', emoji: '🤒' }, { id: 'dientes', name: 'Dientes', emoji: '🦷' },
@@ -1350,6 +1416,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   N.REMINDER_DEFAULTS = {
     nap: { on: true, before: 10 },        // minutos antes de la siesta prevista
     bed: { on: true, before: 20 },        // minutos antes de la hora de dormir
+    routine: { on: true },                // al empezar la rutina de dormir (hora de dormir − duración)
     feed: { on: false, hours: 3 },        // si no hay toma en X horas (de día)
     appt: { on: true },                   // día anterior 20:00 y 1 h antes
     vitd: { on: true, time: '10:00' },    // si toma vitamina D y aún no se ha dado
@@ -1619,6 +1686,14 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
      hard         · [{ from, to|null, reason }] días difíciles (no se aprende de ellos)
      dst          · { date, mode } plan elegido para el cambio de hora */
   S.prefs = () => (Store.state.activeBabyId ? Store.babyMap('sleepPrefs') : {});
+  /* Rutina de dormir: pasos activos con su duración (los de la familia o los de por defecto). */
+  S.routine = () => {
+    const saved = S.prefs().routine;
+    if (!saved) return N.ROUTINE_STEPS.map((x) => Object.assign({}, x));
+    return saved.filter((x) => x.on !== false).map((x) => Object.assign({}, N.ROUTINE_STEPS.find((d) => d.id === x.id) || { emoji: '✨' }, x));
+  };
+  S.routineTotal = () => U.sum(S.routine(), (x) => Number(x.min) || 0);
+  S.activeRoutine = () => { const t = Store.state.timers.routine; return t && t.babyId === Store.state.activeBabyId ? t : null; };
   S.hardDay = (key) => (S.prefs().hard || []).find((h) => key >= h.from && (!h.to || key <= h.to)) || null;
 
   /* ---- Cambio de hora (UE: último domingo de marzo y de octubre) ---- */
@@ -1830,6 +1905,41 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       nextNap: plan.next ? plan.next.start : null, bedtime: plan.bed, napsToday: plan.napsDone, expectedNaps: plan.expectedToday,
       progress: U.clamp(awakeMin / ww, 0, 1.4), learned: r.learned, plan
     };
+  };
+
+  /* ---- Tendencias por semanas (lunes a domingo) ----
+     Para cada semana completa o en curso: medias por día con datos. Las horas
+     de acostarse se miden en minutos desde el mediodía para que las 00:30
+     cuenten como más tarde que las 23:30. */
+  S.weekStart = (t) => { const d = new Date(U.dayStart(t)); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+  /* Medias de sueño de `n` días desde `from` (solo días ya terminados). */
+  S.sleepStats = (from, n, now = Date.now()) => {
+    const days = [], nights = [];
+    // El primer día con registros suele estar a medias: no cuenta.
+    const first = Store.list('sleeps').reduce((m, x) => Math.min(m, x.start), Infinity);
+    const firstFull = first === Infinity ? Infinity : U.addDays(U.dayStart(first), 1);
+    for (let d = 0; d < n; d++) {
+      const t = U.addDays(from, d); if (t >= U.dayStart(now)) break;
+      if (t < firstFull) continue;
+      const key = U.dayKey(t), sd = S.sleepDay(key), night = S.nightOf(key);
+      if (sd.total > 0) days.push(sd);
+      if (night) nights.push(night);
+    }
+    const sinceNoon = (t) => { const d = new Date(t); const m = d.getHours() * 60 + d.getMinutes(); return m < 12 * 60 ? m + 12 * 60 : m - 12 * 60; };
+    const ofDay = (t) => { const d = new Date(t); return d.getHours() * 60 + d.getMinutes(); };
+    const lat = nights.map((x) => x.latency).filter((x) => x != null);
+    const avg = (arr, f) => (arr.length ? U.avg(arr, f) : null);
+    return {
+      start: U.dayKey(from), days: days.length, nights: nights.length,
+      total: avg(days, (d) => d.total), day: avg(days, (d) => d.day), naps: avg(days, (d) => d.naps),
+      night: avg(nights, (x) => x.total), wakes: avg(nights, (x) => x.wakes), longest: avg(nights, (x) => x.longest),
+      bed: nights.length ? (U.avg(nights, (x) => sinceNoon(x.start)) + 12 * 60) % 1440 : null,
+      wake: avg(nights, (x) => ofDay(x.end)), latency: lat.length ? U.avg(lat) : null
+    };
+  };
+  S.sleepWeeks = (n = 8, now = Date.now()) => {
+    const first = U.addDays(S.weekStart(now), -7 * (n - 1));
+    return Array.from({ length: n }, (_, w) => S.sleepStats(U.addDays(first, 7 * w), 7, now));
   };
 
   /* ---- Actividades ---- */
@@ -2158,6 +2268,33 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       <circle class="ring-track" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" fill="none"/>
       <circle class="ring-val" cx="${size / 2}" cy="${size / 2}" r="${r}" stroke-width="${stroke}" fill="none" stroke-linecap="round"
         stroke-dasharray="${r1(c * p)} ${r1(c)}" transform="rotate(-90 ${size / 2} ${size / 2})"/></svg>`;
+  };
+
+  /* ---------- Tendencia semanal: una serie, línea de 2px, último punto destacado ----------
+     pts: [{ label, v, tip }] (v puede ser null) · opts.fmt formatea el eje · opts.step paso del eje */
+  C.trend = (pts, opts = {}) => {
+    const W = 320, H = 132, pl = 40, pr = 10, pt = 14, pb = 22;
+    const vals = pts.map((p) => p.v).filter((v) => v != null);
+    if (vals.length < 2) return '<p class="muted small">Hacen falta al menos dos semanas con datos.</p>';
+    const step = opts.step || 1, fmt = opts.fmt || ((v) => v);
+    let lo = Math.floor(Math.min(...vals) / step) * step, hi = Math.ceil(Math.max(...vals) / step) * step;
+    if (hi - lo < step) hi = lo + step;
+    const X = (i) => pl + (W - pl - pr) * (pts.length === 1 ? 0.5 : i / (pts.length - 1));
+    const Y = (v) => pt + (H - pt - pb) * (1 - (v - lo) / (hi - lo));
+    let g = '';
+    const ticks = [lo, (lo + hi) / 2, hi];
+    ticks.forEach((v) => { g += `<line class="grid" x1="${pl}" x2="${W - pr}" y1="${r1(Y(v))}" y2="${r1(Y(v))}"/><text class="ax" x="${pl - 6}" y="${r1(Y(v)) + 4}" text-anchor="end">${fmt(v)}</text>`; });
+    const seg = []; let cur = [];
+    pts.forEach((p, i) => { if (p.v == null) { if (cur.length) seg.push(cur); cur = []; } else cur.push([X(i), Y(p.v)]); });
+    if (cur.length) seg.push(cur);
+    seg.forEach((sg) => { if (sg.length > 1) g += `<path class="t-line" d="${sg.map(([x, y], i) => `${i ? 'L' : 'M'}${r1(x)},${r1(y)}`).join('')}"/>`; });
+    const lastI = pts.map((p) => p.v != null).lastIndexOf(true);
+    pts.forEach((p, i) => {
+      if (i === 0 || i === pts.length - 1 || pts.length <= 6) g += `<text class="ax ${i === lastI ? 'ax-strong' : ''}" x="${r1(X(i))}" y="${H - 6}" text-anchor="middle">${p.label}</text>`;
+      if (p.v == null) return;
+      g += `<g data-tip="${U.esc(p.tip || '')}"><circle cx="${r1(X(i))}" cy="${r1(Y(p.v))}" r="12" fill="transparent"/><circle class="t-dot ${i === lastI ? 'last' : ''}" cx="${r1(X(i))}" cy="${r1(Y(p.v))}" r="${i === lastI ? 5 : 3.5}"/></g>`;
+    });
+    return svg(W, H, g, 'trend');
   };
 
   /* ---------- Barras simples (tomas/pañales por día) ---------- */
@@ -3192,6 +3329,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
         </div></section>`;
     }
     if (s || S.activeNightWake()) return W.liveSleep();
+    if (S.activeRoutine()) return W.liveRoutine();
     const p = S.predict();
     if (!p) return `<section class="live"><div class="live-top"><span class="eyebrow">${icon('sun')} Despierta</span></div>
       <p class="muted">Registra un sueño para calcular las ventanas de vigilia.</p>
@@ -3212,6 +3350,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button>
         <button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button>
         ${p.nextNap && p.plan.next.state === 'overdue' ? `<button type="button" class="btn soft" data-act="nap-skip">Saltar siesta</button>` : ''}</div>
+      ${!p.nextNap && S.routineTotal() && p.bedtime - Date.now() < (S.routineTotal() + 45) * U.MIN ? `<div class="rt-hint">${icon('moon')}<span>Rutina de ${S.routineTotal()} min: empieza hacia las <b>${U.time(p.bedtime - S.routineTotal() * U.MIN)}</b></span><button type="button" class="btn soft sm" data-act="routine-start">Empezar rutina</button></div>` : ''}
     </section>`;
   };
 
@@ -3424,17 +3563,11 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       </div>
       ${W.card('Patrón de las últimas dos semanas', `<div class="scroll-x">${Charts.pattern(rows, { feeds: true })}</div><ul class="legend"><li><i class="lg-night"></i>Noche</li><li><i class="lg-nap"></i>Siesta</li><li><i class="lg-feed"></i>Toma</li></ul>`)}
       <div class="grid-2">${this.nights()}${this.habits(recent)}</div>
-      <div class="grid-2">
-        ${W.card('Registro', Object.keys(groups).slice(0, 3).map((k) => `<h3 class="day-h">${U.relDay(k) === 'hoy' || U.relDay(k) === 'ayer' ? U.relDay(k) : U.dateLong(k)}</h3>` +
+      <div class="grid-2">${W.routine()}${W.guide()}</div>
+      ${W.trends()}
+      ${W.card('Registro', Object.keys(groups).slice(0, 3).map((k) => `<h3 class="day-h">${U.relDay(k) === 'hoy' || U.relDay(k) === 'ayer' ? U.relDay(k) : U.dateLong(k)}</h3>` +
           W.timeline(groups[k].map((s) => ({ t: s.start, kind: 'sleep', rec: s, col: 'sleeps' })))).join(''))}
-        ${W.card('Guía para su edad', `<dl class="guide">
-          <div><dt>Sueño total</dt><dd>${norm.total[0]}–${norm.total[1]} h en 24 h, siestas incluidas.</dd></div>
-          <div><dt>Ventanas de vigilia</dt><dd>${U.dur(norm.ww[0])} a ${U.dur(norm.ww[1])}. La primera del día suele ser la más corta y la última, la más larga.</dd></div>
-          <div><dt>Siestas</dt><dd>${norm.naps[0] === norm.naps[1] ? norm.naps[0] : norm.naps.join(' a ')} al día. ${S.ageMonths() >= 6 && S.ageMonths() < 9 ? 'Entre los 7 y 9 meses muchos bebés pasan de 3 a 2 siestas.' : ''}</dd></div>
-          <div><dt>Señales de sueño</dt><dd>Mirada perdida, frotarse los ojos, tirarse de la oreja, bostezos, irritabilidad.</dd></div>
-          <div><dt>Sueño seguro</dt><dd>Boca arriba, en superficie firme, sin almohadas, cojines ni peluches en la cuna.</dd></div>
-        </dl>`)}
-      </div>`;
+      `;
     },
     /* Tabla de las últimas noches. */
     nights() {
@@ -3651,7 +3784,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     return Store.add('sleeps', {
       start: t.start, end, type: S.timerType(t), place: 'Cuna', quality: 3,
       down: t.down && t.down < t.start ? t.down : null, how: t.how || null,
-      pauses: pauses.length ? pauses : undefined, after: t.after || undefined
+      pauses: pauses.length ? pauses : undefined, after: t.after || undefined, routine: t.routine || undefined
     });
   };
   A['sleep-stop'] = () => {
@@ -3866,6 +3999,393 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   A['tr-start'] = (el) => { save({ targetNaps: Number(el.dataset.n), transitionFrom: U.today() }); UI.toast(`Plan con ${el.dataset.n} siestas`); };
   A['tr-cancel'] = () => save({ targetNaps: null, transitionFrom: null });
   A['tr-dismiss'] = (el) => save({ trDismissed: el.dataset.k });
+})(window.Nido = window.Nido || {});
+
+/* ==========================================================================
+   Nido · Rutina de dormir
+   Pasos con temporizador; al terminar se anotan las actividades (baño,
+   masaje, cuento, música) y empieza «A la cuna», marcando el sueño como
+   precedido de rutina para comparar cuánto tarda en dormirse.
+     timers.routine = { babyId, start, step, stepStart, log: [{ id, a, b }] }
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, icon } = N;
+  const A = N.actions, T = () => Store.state.timers;
+
+  A['routine-start'] = () => {
+    if (!S.routine().length) { UI.toast('La rutina no tiene pasos: edítala primero'); return; }
+    const now = Date.now();
+    T().routine = { babyId: Store.state.activeBabyId, start: now, step: 0, stepStart: now, log: [] };
+    Store.commit(); UI.closeSheet();
+  };
+  A['routine-next'] = () => {
+    const r = S.activeRoutine(); if (!r) return;
+    const steps = S.routine(), now = Date.now();
+    r.log.push({ id: steps[r.step].id, a: r.stepStart, b: now });
+    r.step++; r.stepStart = now;
+    if (r.step >= steps.length) return A['routine-finish']();
+    Store.commit();
+  };
+  /* Termina la rutina: anota actividades y deja a la bebé «en la cuna». */
+  A['routine-finish'] = () => {
+    const r = S.activeRoutine(); if (!r) return;
+    const steps = S.routine(), now = Date.now();
+    if (r.step < steps.length && !r.log.some((l) => l.id === steps[r.step].id)) r.log.push({ id: steps[r.step].id, a: r.stepStart, b: now });
+    r.log.forEach((l) => {
+      const st = steps.find((x) => x.id === l.id) || N.ROUTINE_STEPS.find((x) => x.id === l.id);
+      const dur = Math.round((l.b - l.a) / U.MIN);
+      if (st && st.act && dur >= 1) Store.state.activities.push({ id: U.uid(), babyId: r.babyId, by: Store.state.settings.caregiver, time: l.a, kind: st.act, dur, note: 'Rutina de dormir' });
+    });
+    delete T().routine;
+    T().sleep = { babyId: r.babyId, phase: 'down', down: now, start: now, type: 'night', pauses: [], routine: true };
+    Store.commit();
+    UI.toast(now - r.start < U.MIN ? 'Rutina hecha. A la cuna' : `Rutina de ${U.dur((now - r.start) / U.MIN)}. A la cuna`);
+  };
+  A['routine-cancel'] = () => { delete T().routine; Store.commit(); };
+
+  N.W.liveRoutine = () => {
+    const r = S.activeRoutine(); if (!r) return '';
+    const steps = S.routine(), cur = steps[r.step] || steps[steps.length - 1];
+    const planned = U.sum(steps, (x) => x.min), endAt = r.stepStart + (cur.min || 0) * U.MIN;
+    return `<section class="live live-sleep night-sky routine">
+      <div class="live-top"><span class="eyebrow">${icon('moon')} Rutina de dormir · paso ${r.step + 1} de ${steps.length}</span><button type="button" class="link on-dark" data-act="routine-cancel">Descartar</button></div>
+      <div class="rt-now"><span class="rt-e">${cur.emoji || '✨'}</span><div><b>${U.esc(cur.name)}</b><small>${cur.min} min previstos · quedan <span data-until="${endAt}"></span></small></div></div>
+      <ol class="rt-steps">${steps.map((x, i) => `<li class="${i < r.step ? 'done' : i === r.step ? 'now' : ''}"><span>${x.emoji || '✨'}</span>${U.esc(x.name)}<em>${x.min}′</em></li>`).join('')}</ol>
+      <p class="live-sub">Empezó a las ${U.time(r.start)} · ${planned} min en total</p>
+      <div class="live-actions">${r.step < steps.length - 1 ? `<button type="button" class="btn primary" data-act="routine-next">${icon('check')}Siguiente: ${U.esc(steps[r.step + 1].name)}</button>` : ''}
+        <button type="button" class="btn ${r.step < steps.length - 1 ? 'soft on-dark' : 'primary'}" data-act="routine-finish">${icon('bed')}Terminar y a la cuna</button></div>
+    </section>`;
+  };
+
+  /* Tarjeta de la rutina en Sueño. */
+  N.W.routine = () => {
+    const steps = S.routine(), total = S.routineTotal();
+    const plan = S.dayPlan(), bed = plan.items[plan.items.length - 1];
+    const startAt = bed.t - total * U.MIN;
+    const nights = S.sleeps().filter((s) => s.type === 'night' && s.start > Date.now() - 21 * U.DAY && s.down && S.latency(s) != null);
+    const withR = nights.filter((s) => s.routine).map(S.latency), without = nights.filter((s) => !s.routine).map(S.latency);
+    const insight = withR.length >= 3 && without.length >= 3
+      ? `<p class="note">${icon('info')}<span>Con rutina tarda de media <b>${U.dur(U.avg(withR))}</b> en dormirse; sin ella, <b>${U.dur(U.avg(without))}</b>.</span></p>` : '';
+    return N.W.card('Rutina de dormir', `
+      ${steps.length ? `<ol class="rt-list">${steps.map((x) => `<li><span>${x.emoji || '✨'}</span>${U.esc(x.name)}<em>${x.min} min</em></li>`).join('')}</ol>
+      <p class="muted small">${total} min en total.${bed.state !== 'done' ? ` Para estar en la cuna a las <b>${U.time(bed.t)}</b>, empieza hacia las <b>${U.time(startAt)}</b>.` : ''} Hacerla siempre en el mismo orden le ayuda a anticipar que llega la noche.</p>` : '<p class="muted">Sin pasos. Añade alguno para usar el temporizador.</p>'}
+      ${insight}
+      <div class="btn-row">${S.activeRoutine() ? '' : `<button type="button" class="btn primary" data-act="routine-start">${icon('play')}Empezar rutina</button>`}<button type="button" class="btn soft" data-act="routine-edit">${icon('edit')}Editar pasos</button></div>`, { cls: 'c-sleep' });
+  };
+
+  A['routine-edit'] = () => {
+    const saved = S.prefs().routine;
+    const rows = (saved || N.ROUTINE_STEPS.map((x) => ({ id: x.id, on: true, min: x.min }))).map((x) => Object.assign({}, N.ROUTINE_STEPS.find((d) => d.id === x.id) || {}, x));
+    N.ROUTINE_STEPS.forEach((d) => { if (!rows.some((x) => x.id === d.id)) rows.push(Object.assign({}, d, { on: false })); });
+    const row = (x) => `<div class="rt-edit"><label class="chip"><input type="checkbox" name="on_${x.id}" ${x.on !== false ? 'checked' : ''}><span>${x.emoji || '✨'} ${U.esc(x.name)}</span></label>
+      <span class="unit-wrap"><input type="number" name="min_${x.id}" value="${x.min}" min="1" max="60" aria-label="Minutos de ${U.esc(x.name)}"><i>min</i></span></div>`;
+    UI.sheet({
+      title: 'Pasos de la rutina', submit: 'Guardar',
+      body: `<p class="muted small">Marca los pasos que hacéis y cuánto suelen durar. El orden es el de la lista.</p>
+        <div class="rt-edits">${rows.map(row).join('')}</div>
+        ${UI.f.row(UI.f.text('custom', 'Añadir un paso propio', '', 'placeholder="Ej.: lavar los dientes"'), UI.f.num('custom_min', 'Minutos', 5, 'min="1" max="60"'))}`,
+      onSubmit: (x) => {
+        const out = rows.map((r) => ({ id: r.id, name: r.name, emoji: r.emoji, act: r.act, on: !!x['on_' + r.id], min: Math.max(1, Number(x['min_' + r.id]) || r.min) }));
+        if ((x.custom || '').trim()) out.push({ id: 'c_' + U.uid(), name: x.custom.trim(), emoji: '✨', on: true, min: Math.max(1, Number(x.custom_min) || 5) });
+        S.prefs().routine = out; Store.commit(); UI.toast('Rutina guardada');
+      }
+    });
+  };
+})(window.Nido = window.Nido || {});
+
+/* ==========================================================================
+   Nido · Tendencias de sueño por semanas
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, UI, Charts } = N;
+  const clock = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
+  const hours = (min) => `${U.num(min / 60, min % 60 ? 1 : 0)} h`;
+  /* Métricas: valor, formato, paso del eje y si subir es bueno (+1), malo (−1) o neutro (0). */
+  const METRICS = [
+    { k: 'total', name: 'Sueño total al día', fmt: hours, axis: (v) => `${Math.round(v / 60)}h`, step: 60, good: 0 },
+    { k: 'night', name: 'Sueño de noche', fmt: hours, axis: (v) => `${Math.round(v / 60)}h`, step: 60, good: 1 },
+    { k: 'wakes', name: 'Despertares por noche', fmt: (v) => U.num(v, 1), axis: (v) => U.num(v, 0), step: 1, good: -1 },
+    { k: 'longest', name: 'Tramo más largo', fmt: hours, axis: (v) => `${Math.round(v / 60)}h`, step: 60, good: 1 },
+    { k: 'bed', name: 'Se acuesta', fmt: clock, axis: clock, step: 30, good: 0 },
+    { k: 'wake', name: 'Se despierta', fmt: clock, axis: clock, step: 30, good: 0 },
+    { k: 'latency', name: 'Tarda en dormirse', fmt: (v) => U.dur(v), axis: (v) => `${Math.round(v)}m`, step: 5, good: -1 },
+    { k: 'naps', name: 'Siestas al día', fmt: (v) => U.num(v, 1), axis: (v) => U.num(v, 0), step: 1, good: 0 }
+  ];
+
+  N.W.trends = () => {
+    const n = UI.st.trendWeeks || 8;
+    const weeks = S.sleepWeeks(n);
+    const label = (w) => { const d = new Date(U.parseDay(w.start)); return `${d.getDate()} ${U.MONTHS[d.getMonth()]}`; };
+    // Comparación: últimos 7 días frente a los 7 anteriores.
+    const today = U.dayStart(Date.now());
+    const cur = S.sleepStats(U.addDays(today, -7), 7), prev = S.sleepStats(U.addDays(today, -14), 7);
+    const delta = (m) => {
+      const a = cur[m.k], b = prev[m.k]; if (a == null || b == null) return '<span class="delta same">–</span>';
+      const d = a - b, small = m.k === 'wakes' || m.k === 'naps' ? Math.abs(d) < 0.3 : Math.abs(d) < 10;
+      if (small) return '<span class="delta same">igual</span>';
+      const txt = m.k === 'wakes' || m.k === 'naps' ? `${d > 0 ? '+' : '−'}${U.num(Math.abs(d), 1)}` : `${d > 0 ? '+' : '−'}${U.dur(Math.abs(d))}`;
+      const tone = m.good === 0 ? 'same' : (d > 0) === (m.good > 0) ? 'good' : 'bad';
+      return `<span class="delta ${tone}">${txt}</span>`;
+    };
+    const boxes = METRICS.map((m) => {
+      const pts = weeks.map((w) => ({ label: label(w), v: w[m.k], tip: w[m.k] == null ? '' : `Semana del ${label(w)}|${m.name}: ${m.fmt(w[m.k])}|${w.days} días con datos` }));
+      const last = [...weeks].reverse().find((w) => w[m.k] != null);
+      return `<div class="trend-box"><h3>${m.name}<b>${last ? m.fmt(last[m.k]) : '–'}</b></h3>${Charts.trend(pts, { fmt: m.axis, step: m.step })}</div>`;
+    }).join('');
+    return N.W.card('Tendencias por semanas', `<div class="chart-top">${UI.seg('trendWeeks', [[4, '4 semanas'], [8, '8 semanas'], [12, '12 semanas']], n)}<span class="muted small">Media por día de cada semana (lunes a domingo)</span></div>
+      <div class="trends">${boxes}</div>
+      <h3 class="day-h pad-t">Últimos 7 días frente a los 7 anteriores</h3>
+      <div class="scroll-x"><table class="wow"><thead><tr><th>Medida</th><th class="num">Últimos 7 días</th><th class="num">7 anteriores</th><th class="num">Cambio</th></tr></thead><tbody>
+        ${METRICS.map((m) => `<tr><td>${m.name}</td><td class="num"><b>${cur[m.k] == null ? '–' : m.fmt(cur[m.k])}</b></td><td class="num">${prev[m.k] == null ? '–' : m.fmt(prev[m.k])}</td><td class="num">${delta(m)}</td></tr>`).join('')}
+      </tbody></table></div>`, { cls: 'c-sleep' });
+  };
+  N.actions.seg = ((orig) => (el) => {
+    if (el.dataset.seg === 'trendWeeks') { UI.st.trendWeeks = +el.dataset.val; UI.render(); return; }
+    orig(el);
+  })(N.actions.seg);
+})(window.Nido = window.Nido || {});
+
+</script>
+  <script>
+/* ==========================================================================
+   Nido · Guía de sueño
+   Fichas breves según la edad y lo que está pasando ahora (transición,
+   dientes, cambio de hora, despertares, siestas cortas, madrugones…).
+   Son orientaciones generales basadas en recomendaciones habituales de
+   pediatría (AEP, AAP); no sustituyen al pediatra.
+   Formato del cuerpo: un elemento por párrafo; los que empiezan por "- "
+   son viñetas.
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, UI, icon } = N;
+
+  N.GUIDE = [
+    {
+      id: 'seguro', emoji: '🛏️', title: 'Sueño seguro', ages: [0, 12], tags: ['safe'],
+      summary: 'Boca arriba, en su cuna y sin nada suelto alrededor.',
+      body: [
+        'La mayoría de las recomendaciones para reducir el riesgo de muerte súbita del lactante coinciden en lo básico:',
+        '- Siempre boca arriba, también en las siestas. Cuando ya se gira sola en ambos sentidos, puede quedarse en la postura que elija.',
+        '- Colchón firme y plano, con sábana ajustable. Nada más en la cuna: ni almohadas, ni protectores, ni peluches, ni mantas sueltas. Un saco de dormir es buena alternativa a la manta.',
+        '- Lo ideal es que duerma en vuestra habitación, en su cuna o en una cuna adosada, al menos los primeros 6 meses.',
+        '- Sin tabaco en casa ni en el embarazo, y sin abrigarla de más: la habitación fresca.',
+        '- El chupete al dormir se asocia a menos riesgo. Si da el pecho, mejor cuando la lactancia esté bien establecida.',
+        '- Si compartís cama: nunca en sofá o sillón, sin alcohol, tabaco ni medicamentos que den sueño, y con colchón firme. En menores de 3 meses o prematuros es más seguro la cuna junto a vuestra cama.',
+        '- Si se duerme en la silla del coche o en un columpio, pásala a una superficie plana en cuanto podáis.'
+      ]
+    },
+    {
+      id: 'ventanas', emoji: '⏱️', title: 'Ventanas de vigilia y señales de sueño', ages: [0, 24], tags: ['windows'],
+      summary: 'Cuánto aguanta despierta y cómo saber que le toca dormir.',
+      body: [
+        'La ventana de vigilia es el tiempo que aguanta despierta entre dos sueños sin cansarse de más. Crece con la edad y a lo largo del día: la primera suele ser la más corta y la de antes de la noche, la más larga.',
+        'Las señales llegan antes que el llanto:',
+        '- Mirada perdida, menos interés por jugar, movimientos más lentos.',
+        '- Frotarse los ojos o las orejas, bostezos, ojeras rojizas.',
+        '- Más tarde: irritabilidad, arquearse, llanto.',
+        'Si espera a las señales tardías, puede costarle más dormirse: el cansancio acumulado activa al bebé. El plan de Nido os da una hora orientativa, pero manda lo que veis.'
+      ]
+    },
+    {
+      id: 'rutina', emoji: '🌙', title: 'La rutina de dormir', ages: [2, 24], tags: ['routine'],
+      summary: '20–45 minutos, siempre en el mismo orden.',
+      body: [
+        'Una rutina corta y repetida ayuda a que el cuerpo anticipe la noche. No hace falta que sea larga ni perfecta, sino parecida cada día.',
+        '- Entre 20 y 45 minutos. Por ejemplo: baño, masaje, pijama, toma, cuento y canción.',
+        '- Luz tenue y voz tranquila desde el principio; sin pantallas.',
+        '- El último paso, en su habitación, y que sea siempre el mismo.',
+        'Con la rutina de Nido podéis ver si con ella tarda menos en dormirse.'
+      ]
+    },
+    {
+      id: 'regresion4', emoji: '🌀', title: 'La «regresión» de los 4 meses', ages: [3, 5.5], tags: ['regression', 'wakes', 'shortnaps'],
+      summary: 'No es un paso atrás: su sueño empieza a parecerse al nuestro.',
+      body: [
+        'Hacia los 3–5 meses el sueño cambia de forma: aparecen ciclos más parecidos a los del adulto, con despertares breves entre ellos. Por eso muchos bebés que dormían tramos largos empiezan a despertarse más y a hacer siestas de 30–45 minutos.',
+        'Es un cambio de maduración, no un problema, y no vuelve atrás. Suele ayudar:',
+        '- Respetar ventanas de vigilia adecuadas para su edad.',
+        '- Habitación oscura y ruido blanco suave para enlazar ciclos.',
+        '- Darle alguna oportunidad de dormirse con algo menos de ayuda, sin forzar.',
+        'Si además hay fiebre, rechazo de tomas o mucho malestar, consultad con vuestra pediatra.'
+      ]
+    },
+    {
+      id: 'siestas-cortas', emoji: '⏳', title: 'Siestas cortas', ages: [2, 8], tags: ['shortnaps'],
+      summary: 'Siestas de 30–45 minutos: normales hasta los 5–6 meses.',
+      body: [
+        'Hasta los 5–6 meses es habitual que las siestas duren un ciclo (30–45 min). Con el tiempo se alargan solas, sobre todo la del mediodía.',
+        '- Revisad la ventana anterior: tanto si es corta (aún sin sueño) como si es larga (pasada de sueño), las siestas se acortan.',
+        '- Oscuridad y ruido blanco ayudan a enlazar ciclos.',
+        '- Si se despierta a los 30–40 min sin llorar mucho, esperad un par de minutos antes de entrar: a veces vuelve a dormirse.',
+        'Nido ya tiene en cuenta una siesta corta: adelanta la siguiente.'
+      ]
+    },
+    {
+      id: 'despertares', emoji: '🌛', title: 'Despertares nocturnos', ages: [0, 24], tags: ['wakes'],
+      summary: 'Qué es normal y qué puede ayudar.',
+      body: [
+        'Despertarse de noche es normal durante todo el primer año, y muchos bebés siguen necesitando tomas nocturnas. La lactancia a demanda incluye la noche.',
+        'Mirad qué dice vuestra tarjeta «Cómo se duerme»:',
+        '- Si casi todos son por hambre, es lo esperable: suelen ir bajando solos.',
+        '- Si son por consuelo, a veces ayuda que la forma de dormirse al principio de la noche se parezca a lo que encuentra al despertarse.',
+        '- Muchos despertares seguidos después de una época tranquila suelen coincidir con dientes, enfermedad o un salto de desarrollo: marcad un «día difícil».',
+        '- Una hora de dormir demasiado tardía también puede aumentar los despertares.',
+        'Si os preocupa el número de despertares o no descansáis, comentadlo en la revisión: existen enfoques respetuosos y no hay uno solo válido.'
+      ]
+    },
+    {
+      id: 'madrugones', emoji: '🌅', title: 'Madrugones (antes de las 6:00)', ages: [4, 24], tags: ['early'],
+      summary: 'Lo más habitual: luz, una noche demasiado temprana o tardía, o la última ventana.',
+      body: [
+        'Despertarse a las 5 y pico listo para empezar el día es frecuente y suele tener varias causas juntas:',
+        '- Luz que entra al amanecer: oscurecer bien la habitación ayuda mucho.',
+        '- Una hora de acostarse demasiado tardía (pasada de sueño) o demasiado temprana para su edad.',
+        '- Una última ventana demasiado corta (no llega cansada) o una siesta de la tarde muy larga.',
+        '- Ruidos de la calle o de casa: el ruido blanco puede taparlos.',
+        'Mientras tanto, si se despierta antes de las 6:00, tratad ese rato como noche: luz apagada y poca estimulación. Cambiad una cosa cada vez y dadle unos días.'
+      ]
+    },
+    {
+      id: 'tres-dos', emoji: '🔁', title: 'Pasar de 3 a 2 siestas', ages: [6, 9.5], tags: ['transition3'],
+      summary: 'Suele ocurrir entre los 6 y los 9 meses.',
+      body: [
+        'Señales de que puede estar lista: la tercera siesta se acorta o la rechaza, le cuesta mucho dormirse en ella, la noche empieza muy tarde o empieza a madrugar.',
+        'Cómo hacerlo con suavidad:',
+        '- Alargad las ventanas unos 15 minutos cada 2–3 días.',
+        '- En los días de transición, adelantad la hora de dormir hasta 30 minutos para compensar.',
+        '- Si algún día está muy cansada, una siesta corta de rescate a media tarde está bien.',
+        'La transición dura una o dos semanas, con días mejores y peores. En Nido podéis activarla desde el aviso del plan.'
+      ]
+    },
+    {
+      id: 'dos-una', emoji: '🔂', title: 'Pasar de 2 a 1 siesta', ages: [12, 18.5], tags: ['transition2'],
+      summary: 'Lo habitual es entre los 13 y los 18 meses.',
+      body: [
+        'Las señales se parecen: rechaza una de las dos siestas varios días, tarda mucho en dormirse o la noche se retrasa.',
+        '- Id retrasando la siesta de la mañana 15 minutos cada pocos días hasta acercarla al mediodía.',
+        '- Adelantad la comida si hace falta para que no llegue con hambre a la siesta.',
+        '- Durante la transición, acostadla antes por la noche.',
+        'Si empieza la escuela infantil, allí suelen hacer una sola siesta: avisad de cómo va en casa.'
+      ]
+    },
+    {
+      id: 'saltos', emoji: '🧗', title: 'Saltos de desarrollo y ansiedad por separación', ages: [7, 19], tags: ['regression', 'wakes'],
+      summary: 'Gatear, ponerse de pie, caminar… y no querer que os vayáis.',
+      body: [
+        'Entre los 8 y 10 meses, y de nuevo hacia el año y los 18 meses, muchos bebés duermen peor durante unas semanas. Coinciden con nuevas habilidades (gatear, ponerse de pie en la cuna, caminar, hablar) y con la ansiedad por separación.',
+        '- Practicad la habilidad nueva de día, mucho rato: llega a la noche con menos ganas de ensayar.',
+        '- Si se pone de pie en la cuna y no sabe bajar, enseñadle de día a agacharse.',
+        '- Para la ansiedad por separación: despedidas cortas y previsibles, y mucha presencia antes de dormir.',
+        'Suele pasar en 2–6 semanas. Si coincide con malestar, marcad un «día difícil» para que el plan no aprenda de esos días.'
+      ]
+    },
+    {
+      id: 'dientes', emoji: '🦷', title: 'Dientes y sueño', ages: [4, 30], tags: ['teeth'],
+      summary: 'Molestan unos días alrededor de la salida de cada diente.',
+      body: [
+        'La erupción de un diente puede alterar el sueño unos pocos días: más despertares, babeo, encías inflamadas, ganas de morder. La fiebre alta, la diarrea o un malestar que dura muchos días no se deben a los dientes: consultad.',
+        '- Mordedores fríos de la nevera (no congelados) y masaje en la encía con el dedo limpio.',
+        '- Más brazos y paciencia esas noches; no pasa nada por volver a dar más ayuda unos días.',
+        '- Si necesita analgésico, la dosis según su peso os la indica la pediatra o la farmacia.',
+        'Marcad «día difícil: dientes» para que el plan sea más suave y no aprenda de esas noches.'
+      ]
+    },
+    {
+      id: 'metodos', emoji: '🤲', title: 'Ayudarle a dormirse: opciones', ages: [4, 24], tags: ['methods'],
+      summary: 'No hay un único método. Lo importante es que os encaje y ser constantes.',
+      body: [
+        'Dormirse al pecho, en brazos o meciendo es normal y no es un problema si os funciona. Si queréis que gane autonomía, hay caminos graduales y respetuosos:',
+        '- Dejarla en la cuna somnolienta pero despierta, empezando por la primera siesta del día, que suele ser la más fácil.',
+        '- Acompañar con la mano o la voz e ir reduciendo la ayuda poco a poco a lo largo de días o semanas.',
+        '- Una silla junto a la cuna que se va alejando cada pocas noches.',
+        '- Separar la última toma del momento de dormirse (toma, luego cuento, luego cuna).',
+        'Elegid lo que os encaje, cambiad una cosa cada vez y sed constantes al menos una semana. Ante dudas, comentadlo en la revisión.'
+      ]
+    },
+    {
+      id: 'cambio-hora', emoji: '🕒', title: 'El cambio de hora', ages: [0, 36], tags: ['dst'],
+      summary: 'Gradual en los días previos o de golpe: las dos opciones funcionan.',
+      body: [
+        'Dos veces al año el reloj se mueve una hora y el bebé no lo sabe.',
+        '- Gradual: los 4 días anteriores, desplazad su horario 15 minutos al día. El domingo ya cuadra con la hora nueva. Nido puede hacerlo por vosotros.',
+        '- De golpe: el domingo seguid el horario nuevo. Suele ajustarse en 3–7 días.',
+        '- En los dos casos ayuda la luz natural por la mañana y la habitación muy oscura por la noche.',
+        'En otoño (se atrasa la hora) el riesgo son los madrugones: si se despierta antes, mantened la habitación a oscuras hasta la hora de levantarse.'
+      ]
+    },
+    {
+      id: 'viajes', emoji: '🧳', title: 'Viajes y cambios de rutina', ages: [0, 36], tags: ['travel'],
+      summary: 'Llevad lo que le dice «es hora de dormir».',
+      body: [
+        '- Llevad su saco, un objeto familiar y el ruido blanco (en Nido funciona sin conexión).',
+        '- Mantened los pasos de la rutina aunque sean más cortos.',
+        '- Oscurecer la habitación con lo que tengáis: toallas, papel de aluminio en la ventana.',
+        '- Si cambiáis de huso horario, adaptaos al horario local desde el primer día y buscad luz natural por la mañana.',
+        'Marcad los días de viaje como «día difícil» para que no cuenten en su ritmo habitual.'
+      ]
+    }
+  ];
+
+  /* Fichas más útiles ahora: edad + lo que está pasando. Devuelve [{ a, why }]. */
+  S.guideFor = (now = Date.now()) => {
+    const age = S.ageMonths(now), out = [];
+    const hard = S.hardDay(U.today()), tr = S.napTransition(now), prefs = S.prefs(), dst = S.dstUpcoming(now);
+    const nights = []; for (let i = 1; i <= 7; i++) { const n = S.nightOf(U.dayKey(U.addDays(now, -i))); if (n) nights.push(n); }
+    const naps = S.sleeps().filter((s) => s.type === 'nap' && s.start > now - 7 * U.DAY);
+    const early = nights.filter((n) => new Date(n.end).getHours() < 6).length;
+    const routineNights = nights.filter((n) => n.blocks[0].routine).length;
+    N.GUIDE.forEach((a) => {
+      let score = age >= a.ages[0] && age <= a.ages[1] ? 1 : -10, why = '';
+      const has = (t) => a.tags.includes(t);
+      const bump = (n, w) => { if (n > 0) { score += n; if (!why) why = w; } };
+      if (tr && (has('transition3') && tr.from === 3 || has('transition2') && tr.from === 2)) bump(tr.ready || prefs.targetNaps ? 6 : 1, tr.ready ? 'Tiene señales de estar lista' : '');
+      if (hard && has('teeth') && hard.reason === 'dientes') bump(6, 'Hoy: dientes');
+      if (hard && has('travel') && hard.reason === 'viaje') bump(6, 'Hoy: viaje o cambio de rutina');
+      if (hard && has('regression') && hard.reason === 'regresion') bump(5, 'Hoy: regresión o salto');
+      if (dst && has('dst')) bump(6, dst.days > 0 ? `Cambio de hora en ${dst.days} días` : 'Acaba de cambiar la hora');
+      if (nights.length >= 3 && U.avg(nights, (n) => n.wakes) >= 2.5 && has('wakes')) bump(3, `${U.num(U.avg(nights, (n) => n.wakes), 1)} despertares por noche esta semana`);
+      if (naps.length >= 5 && U.avg(naps, S.sleepMin) < 45 && has('shortnaps')) bump(3, 'Sus siestas son cortas esta semana');
+      if (early >= 3 && has('early')) bump(5, `Se ha despertado antes de las 6 ${early} días`);
+      if (has('routine') && nights.length >= 3 && routineNights === 0) bump(1, '');
+      if (has('safe') && age < 12) bump(1, '');
+      if (score > 0) out.push({ a, score, why });
+    });
+    return out.sort((x, y) => y.score - x.score);
+  };
+
+  const renderBody = (body) => {
+    let html = '', list = [];
+    const flush = () => { if (list.length) { html += `<ul>${list.map((x) => `<li>${U.esc(x)}</li>`).join('')}</ul>`; list = []; } };
+    body.forEach((p) => { if (p.startsWith('- ')) list.push(p.slice(2)); else { flush(); html += `<p>${U.esc(p)}</p>`; } });
+    flush();
+    return html;
+  };
+
+  N.W.guide = () => {
+    const top = S.guideFor().slice(0, 3);
+    return N.W.card('Guía para su edad', `<ul class="guide-list">${top.map(({ a, why }) => `<li><button type="button" class="guide-it" data-act="guide-open" data-id="${a.id}">
+        <span class="g-e" aria-hidden="true">${a.emoji}</span><span><b>${a.title}</b><small>${a.summary}</small>${why ? `<em>${U.esc(why)}</em>` : ''}</span>${icon('right', 'sm')}</button></li>`).join('')}</ul>
+      <button type="button" class="link" data-act="guide-all">Ver todas las fichas (${N.GUIDE.length})</button>`, { cls: 'c-sleep' });
+  };
+  N.actions['guide-open'] = (el) => {
+    const a = N.GUIDE.find((x) => x.id === el.dataset.id); if (!a) return;
+    UI.sheet({
+      title: `${a.emoji} ${a.title}`, footer: false,
+      body: `<article class="guide-art">${renderBody(a.body)}</article><p class="muted small">Orientaciones generales basadas en recomendaciones habituales de pediatría. No sustituyen la valoración de vuestra pediatra.</p>`
+    });
+  };
+  N.actions['guide-all'] = () => {
+    const age = S.ageMonths();
+    const fmt = (m) => (m >= 12 ? `${Math.round((m / 12) * 10) / 10} años` : `${m} meses`).replace('.', ',');
+    UI.sheet({
+      title: 'Fichas de sueño', footer: false,
+      body: `<ul class="guide-list">${N.GUIDE.map((a) => `<li><button type="button" class="guide-it ${age < a.ages[0] || age > a.ages[1] ? 'is-off' : ''}" data-act="guide-open" data-id="${a.id}">
+        <span class="g-e" aria-hidden="true">${a.emoji}</span><span><b>${a.title}</b><small>${a.summary}</small><em class="g-age">${a.ages[0] === 0 ? `hasta ${fmt(a.ages[1])}` : `${fmt(a.ages[0])} – ${fmt(a.ages[1])}`}</em></span>${icon('right', 'sm')}</button></li>`).join('')}</ul>`
+    });
+  };
 })(window.Nido = window.Nido || {});
 
 </script>
@@ -4711,10 +5231,11 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     const cfg = S.reminderSettings(), out = [], today = U.dayKey(now);
     const add = (key, at, title, body, hash, kind) => { if (at > now - WINDOW && at < now + horizon) out.push({ key, at, title, body, hash, kind }); };
 
-    if (cfg.nap.on || cfg.bed.on) {
+    if (cfg.nap.on || cfg.bed.on || (cfg.routine && cfg.routine.on)) {
       const plan = S.dayPlan(now);
       plan.items.forEach((x) => {
         if (cfg.nap.on && x.kind === 'nap' && x.state === 'planned') add(`nap:${today}:${x.idx}`, x.start - cfg.nap.before * U.MIN, `Siesta ${x.idx + 1} en ${cfg.nap.before} min`, `Prevista a las ${U.time(x.start)}. Empieza a bajar el ritmo: luz tenue y calma.`, 'sueno', 'nap');
+        if (cfg.routine && cfg.routine.on && x.kind === 'bed' && x.state !== 'done' && S.routineTotal()) add(`routine:${today}`, x.t - S.routineTotal() * U.MIN, 'Hora de empezar la rutina de dormir', `${S.routine().map((s) => s.name.toLowerCase()).join(', ')}. A la cuna hacia las ${U.time(x.t)}.`, 'sueno', 'routine');
         if (cfg.bed.on && x.kind === 'bed' && x.state !== 'done') add(`bed:${today}`, x.t - cfg.bed.before * U.MIN, `A la cama en ${cfg.bed.before} min`, `Hora prevista: ${U.time(x.t)}. Buen momento para el baño o la rutina.`, 'sueno', 'bed');
       });
     }
@@ -4781,6 +5302,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       <ul class="rem-list">
         ${row('nap', 'Antes de cada siesta prevista', num('nap', 'before', 'min', 0, 60))}
         ${row('bed', 'Antes de la hora de dormir', num('bed', 'before', 'min', 0, 90))}
+        ${row('routine', 'Al empezar la rutina de dormir')}
         ${row('feed', 'Si pasa tiempo sin toma (de día)', num('feed', 'hours', 'h', 1, 8))}
         ${row('appt', 'Citas: la víspera y 1 h antes')}
         ${row('vitd', 'Vitamina D si no está anotada', time('vitd'))}
@@ -5377,7 +5899,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     const add = (col, rec) => st[col].push(Object.assign({ id: U.uid() + st[col].length, babyId, by: r() < 0.7 ? 'Mamá' : 'Papá' }, rec));
 
     /* ---------- Sueño, tomas y pañales: 21 días hasta ahora ---------- */
-    const DAYS = 21;
+    const DAYS = 49; // siete semanas: da para ver tendencias
     let side = 'L';
     const breast = (t, night) => {
       const a = Math.round(5 + r() * (night ? 7 : 10)), b = Math.round(r() < 0.25 ? 0 : 4 + r() * 9);
@@ -5409,7 +5931,9 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       const bed = cur + 150 * MIN + jit(12);
       breast(bed - 20 * MIN);
       const nextWake = day0 + DAY + 7 * HOUR + jit(25);
-      const wakesN = r() < 0.35 ? 1 : r() < 0.8 ? 2 : 3;
+      // Las noches mejoran poco a poco a lo largo de las semanas.
+      const prog = (d + DAYS) / DAYS;
+      const wakesN = r() < 0.12 + 0.3 * prog ? 1 : r() < 0.6 + 0.25 * prog ? 2 : 3;
       const pts = [bed];
       for (let i = 1; i <= wakesN; i++) pts.push(bed + (nextWake - bed) * (i / (wakesN + 1)) + jit(40));
       pts.push(nextWake);
@@ -5417,7 +5941,9 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
         const s = i === 0 ? pts[0] : pts[i] + (12 + r() * 18) * MIN;
         const e = pts[i + 1];
         const first = i === 0;
-        const extra = first ? { down: s - (5 + r() * 15) * MIN, how: pick(['pecho', 'pecho', 'pecho', 'brazos', 'acompanada']) }
+        // La rutina de dormir se va asentando; con ella tarda menos en dormirse.
+        const withRoutine = r() < 0.15 + 0.75 * prog;
+        const extra = first ? { down: s - (withRoutine ? 4 + r() * 9 : 10 + r() * 16) * MIN, how: pick(['pecho', 'pecho', 'pecho', 'brazos', 'acompanada']), routine: withRoutine || undefined }
           : { after: { reason: pick(['hambre', 'hambre', 'hambre', 'consuelo', 'consuelo', 'dientes', 'panal']), soothe: pick(['pecho', 'pecho', 'pecho', 'brazos', 'chupete']) } };
         if (s <= now && e > now) st.timers.sleep = Object.assign({ babyId, phase: 'asleep', start: s, type: 'night', pauses: [] }, extra); // noche en curso
         if (e < now) add('sleeps', Object.assign({ start: s, end: e, type: 'night', place: pick(['Cuna', 'Cuna', 'Colecho']), quality: 3 }, extra));

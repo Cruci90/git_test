@@ -112,7 +112,7 @@
     return Store.add('sleeps', {
       start: t.start, end, type: S.timerType(t), place: 'Cuna', quality: 3,
       down: t.down && t.down < t.start ? t.down : null, how: t.how || null,
-      pauses: pauses.length ? pauses : undefined, after: t.after || undefined
+      pauses: pauses.length ? pauses : undefined, after: t.after || undefined, routine: t.routine || undefined
     });
   };
   A['sleep-stop'] = () => {
@@ -327,4 +327,150 @@
   A['tr-start'] = (el) => { save({ targetNaps: Number(el.dataset.n), transitionFrom: U.today() }); UI.toast(`Plan con ${el.dataset.n} siestas`); };
   A['tr-cancel'] = () => save({ targetNaps: null, transitionFrom: null });
   A['tr-dismiss'] = (el) => save({ trDismissed: el.dataset.k });
+})(window.Nido = window.Nido || {});
+
+/* ==========================================================================
+   Nido · Rutina de dormir
+   Pasos con temporizador; al terminar se anotan las actividades (baño,
+   masaje, cuento, música) y empieza «A la cuna», marcando el sueño como
+   precedido de rutina para comparar cuánto tarda en dormirse.
+     timers.routine = { babyId, start, step, stepStart, log: [{ id, a, b }] }
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, Store, UI, icon } = N;
+  const A = N.actions, T = () => Store.state.timers;
+
+  A['routine-start'] = () => {
+    if (!S.routine().length) { UI.toast('La rutina no tiene pasos: edítala primero'); return; }
+    const now = Date.now();
+    T().routine = { babyId: Store.state.activeBabyId, start: now, step: 0, stepStart: now, log: [] };
+    Store.commit(); UI.closeSheet();
+  };
+  A['routine-next'] = () => {
+    const r = S.activeRoutine(); if (!r) return;
+    const steps = S.routine(), now = Date.now();
+    r.log.push({ id: steps[r.step].id, a: r.stepStart, b: now });
+    r.step++; r.stepStart = now;
+    if (r.step >= steps.length) return A['routine-finish']();
+    Store.commit();
+  };
+  /* Termina la rutina: anota actividades y deja a la bebé «en la cuna». */
+  A['routine-finish'] = () => {
+    const r = S.activeRoutine(); if (!r) return;
+    const steps = S.routine(), now = Date.now();
+    if (r.step < steps.length && !r.log.some((l) => l.id === steps[r.step].id)) r.log.push({ id: steps[r.step].id, a: r.stepStart, b: now });
+    r.log.forEach((l) => {
+      const st = steps.find((x) => x.id === l.id) || N.ROUTINE_STEPS.find((x) => x.id === l.id);
+      const dur = Math.round((l.b - l.a) / U.MIN);
+      if (st && st.act && dur >= 1) Store.state.activities.push({ id: U.uid(), babyId: r.babyId, by: Store.state.settings.caregiver, time: l.a, kind: st.act, dur, note: 'Rutina de dormir' });
+    });
+    delete T().routine;
+    T().sleep = { babyId: r.babyId, phase: 'down', down: now, start: now, type: 'night', pauses: [], routine: true };
+    Store.commit();
+    UI.toast(now - r.start < U.MIN ? 'Rutina hecha. A la cuna' : `Rutina de ${U.dur((now - r.start) / U.MIN)}. A la cuna`);
+  };
+  A['routine-cancel'] = () => { delete T().routine; Store.commit(); };
+
+  N.W.liveRoutine = () => {
+    const r = S.activeRoutine(); if (!r) return '';
+    const steps = S.routine(), cur = steps[r.step] || steps[steps.length - 1];
+    const planned = U.sum(steps, (x) => x.min), endAt = r.stepStart + (cur.min || 0) * U.MIN;
+    return `<section class="live live-sleep night-sky routine">
+      <div class="live-top"><span class="eyebrow">${icon('moon')} Rutina de dormir · paso ${r.step + 1} de ${steps.length}</span><button type="button" class="link on-dark" data-act="routine-cancel">Descartar</button></div>
+      <div class="rt-now"><span class="rt-e">${cur.emoji || '✨'}</span><div><b>${U.esc(cur.name)}</b><small>${cur.min} min previstos · quedan <span data-until="${endAt}"></span></small></div></div>
+      <ol class="rt-steps">${steps.map((x, i) => `<li class="${i < r.step ? 'done' : i === r.step ? 'now' : ''}"><span>${x.emoji || '✨'}</span>${U.esc(x.name)}<em>${x.min}′</em></li>`).join('')}</ol>
+      <p class="live-sub">Empezó a las ${U.time(r.start)} · ${planned} min en total</p>
+      <div class="live-actions">${r.step < steps.length - 1 ? `<button type="button" class="btn primary" data-act="routine-next">${icon('check')}Siguiente: ${U.esc(steps[r.step + 1].name)}</button>` : ''}
+        <button type="button" class="btn ${r.step < steps.length - 1 ? 'soft on-dark' : 'primary'}" data-act="routine-finish">${icon('bed')}Terminar y a la cuna</button></div>
+    </section>`;
+  };
+
+  /* Tarjeta de la rutina en Sueño. */
+  N.W.routine = () => {
+    const steps = S.routine(), total = S.routineTotal();
+    const plan = S.dayPlan(), bed = plan.items[plan.items.length - 1];
+    const startAt = bed.t - total * U.MIN;
+    const nights = S.sleeps().filter((s) => s.type === 'night' && s.start > Date.now() - 21 * U.DAY && s.down && S.latency(s) != null);
+    const withR = nights.filter((s) => s.routine).map(S.latency), without = nights.filter((s) => !s.routine).map(S.latency);
+    const insight = withR.length >= 3 && without.length >= 3
+      ? `<p class="note">${icon('info')}<span>Con rutina tarda de media <b>${U.dur(U.avg(withR))}</b> en dormirse; sin ella, <b>${U.dur(U.avg(without))}</b>.</span></p>` : '';
+    return N.W.card('Rutina de dormir', `
+      ${steps.length ? `<ol class="rt-list">${steps.map((x) => `<li><span>${x.emoji || '✨'}</span>${U.esc(x.name)}<em>${x.min} min</em></li>`).join('')}</ol>
+      <p class="muted small">${total} min en total.${bed.state !== 'done' ? ` Para estar en la cuna a las <b>${U.time(bed.t)}</b>, empieza hacia las <b>${U.time(startAt)}</b>.` : ''} Hacerla siempre en el mismo orden le ayuda a anticipar que llega la noche.</p>` : '<p class="muted">Sin pasos. Añade alguno para usar el temporizador.</p>'}
+      ${insight}
+      <div class="btn-row">${S.activeRoutine() ? '' : `<button type="button" class="btn primary" data-act="routine-start">${icon('play')}Empezar rutina</button>`}<button type="button" class="btn soft" data-act="routine-edit">${icon('edit')}Editar pasos</button></div>`, { cls: 'c-sleep' });
+  };
+
+  A['routine-edit'] = () => {
+    const saved = S.prefs().routine;
+    const rows = (saved || N.ROUTINE_STEPS.map((x) => ({ id: x.id, on: true, min: x.min }))).map((x) => Object.assign({}, N.ROUTINE_STEPS.find((d) => d.id === x.id) || {}, x));
+    N.ROUTINE_STEPS.forEach((d) => { if (!rows.some((x) => x.id === d.id)) rows.push(Object.assign({}, d, { on: false })); });
+    const row = (x) => `<div class="rt-edit"><label class="chip"><input type="checkbox" name="on_${x.id}" ${x.on !== false ? 'checked' : ''}><span>${x.emoji || '✨'} ${U.esc(x.name)}</span></label>
+      <span class="unit-wrap"><input type="number" name="min_${x.id}" value="${x.min}" min="1" max="60" aria-label="Minutos de ${U.esc(x.name)}"><i>min</i></span></div>`;
+    UI.sheet({
+      title: 'Pasos de la rutina', submit: 'Guardar',
+      body: `<p class="muted small">Marca los pasos que hacéis y cuánto suelen durar. El orden es el de la lista.</p>
+        <div class="rt-edits">${rows.map(row).join('')}</div>
+        ${UI.f.row(UI.f.text('custom', 'Añadir un paso propio', '', 'placeholder="Ej.: lavar los dientes"'), UI.f.num('custom_min', 'Minutos', 5, 'min="1" max="60"'))}`,
+      onSubmit: (x) => {
+        const out = rows.map((r) => ({ id: r.id, name: r.name, emoji: r.emoji, act: r.act, on: !!x['on_' + r.id], min: Math.max(1, Number(x['min_' + r.id]) || r.min) }));
+        if ((x.custom || '').trim()) out.push({ id: 'c_' + U.uid(), name: x.custom.trim(), emoji: '✨', on: true, min: Math.max(1, Number(x.custom_min) || 5) });
+        S.prefs().routine = out; Store.commit(); UI.toast('Rutina guardada');
+      }
+    });
+  };
+})(window.Nido = window.Nido || {});
+
+/* ==========================================================================
+   Nido · Tendencias de sueño por semanas
+   ========================================================================== */
+(function (N) {
+  'use strict';
+  const { U, S, UI, Charts } = N;
+  const clock = (m) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
+  const hours = (min) => `${U.num(min / 60, min % 60 ? 1 : 0)} h`;
+  /* Métricas: valor, formato, paso del eje y si subir es bueno (+1), malo (−1) o neutro (0). */
+  const METRICS = [
+    { k: 'total', name: 'Sueño total al día', fmt: hours, axis: (v) => `${Math.round(v / 60)}h`, step: 60, good: 0 },
+    { k: 'night', name: 'Sueño de noche', fmt: hours, axis: (v) => `${Math.round(v / 60)}h`, step: 60, good: 1 },
+    { k: 'wakes', name: 'Despertares por noche', fmt: (v) => U.num(v, 1), axis: (v) => U.num(v, 0), step: 1, good: -1 },
+    { k: 'longest', name: 'Tramo más largo', fmt: hours, axis: (v) => `${Math.round(v / 60)}h`, step: 60, good: 1 },
+    { k: 'bed', name: 'Se acuesta', fmt: clock, axis: clock, step: 30, good: 0 },
+    { k: 'wake', name: 'Se despierta', fmt: clock, axis: clock, step: 30, good: 0 },
+    { k: 'latency', name: 'Tarda en dormirse', fmt: (v) => U.dur(v), axis: (v) => `${Math.round(v)}m`, step: 5, good: -1 },
+    { k: 'naps', name: 'Siestas al día', fmt: (v) => U.num(v, 1), axis: (v) => U.num(v, 0), step: 1, good: 0 }
+  ];
+
+  N.W.trends = () => {
+    const n = UI.st.trendWeeks || 8;
+    const weeks = S.sleepWeeks(n);
+    const label = (w) => { const d = new Date(U.parseDay(w.start)); return `${d.getDate()} ${U.MONTHS[d.getMonth()]}`; };
+    // Comparación: últimos 7 días frente a los 7 anteriores.
+    const today = U.dayStart(Date.now());
+    const cur = S.sleepStats(U.addDays(today, -7), 7), prev = S.sleepStats(U.addDays(today, -14), 7);
+    const delta = (m) => {
+      const a = cur[m.k], b = prev[m.k]; if (a == null || b == null) return '<span class="delta same">–</span>';
+      const d = a - b, small = m.k === 'wakes' || m.k === 'naps' ? Math.abs(d) < 0.3 : Math.abs(d) < 10;
+      if (small) return '<span class="delta same">igual</span>';
+      const txt = m.k === 'wakes' || m.k === 'naps' ? `${d > 0 ? '+' : '−'}${U.num(Math.abs(d), 1)}` : `${d > 0 ? '+' : '−'}${U.dur(Math.abs(d))}`;
+      const tone = m.good === 0 ? 'same' : (d > 0) === (m.good > 0) ? 'good' : 'bad';
+      return `<span class="delta ${tone}">${txt}</span>`;
+    };
+    const boxes = METRICS.map((m) => {
+      const pts = weeks.map((w) => ({ label: label(w), v: w[m.k], tip: w[m.k] == null ? '' : `Semana del ${label(w)}|${m.name}: ${m.fmt(w[m.k])}|${w.days} días con datos` }));
+      const last = [...weeks].reverse().find((w) => w[m.k] != null);
+      return `<div class="trend-box"><h3>${m.name}<b>${last ? m.fmt(last[m.k]) : '–'}</b></h3>${Charts.trend(pts, { fmt: m.axis, step: m.step })}</div>`;
+    }).join('');
+    return N.W.card('Tendencias por semanas', `<div class="chart-top">${UI.seg('trendWeeks', [[4, '4 semanas'], [8, '8 semanas'], [12, '12 semanas']], n)}<span class="muted small">Media por día de cada semana (lunes a domingo)</span></div>
+      <div class="trends">${boxes}</div>
+      <h3 class="day-h pad-t">Últimos 7 días frente a los 7 anteriores</h3>
+      <div class="scroll-x"><table class="wow"><thead><tr><th>Medida</th><th class="num">Últimos 7 días</th><th class="num">7 anteriores</th><th class="num">Cambio</th></tr></thead><tbody>
+        ${METRICS.map((m) => `<tr><td>${m.name}</td><td class="num"><b>${cur[m.k] == null ? '–' : m.fmt(cur[m.k])}</b></td><td class="num">${prev[m.k] == null ? '–' : m.fmt(prev[m.k])}</td><td class="num">${delta(m)}</td></tr>`).join('')}
+      </tbody></table></div>`, { cls: 'c-sleep' });
+  };
+  N.actions.seg = ((orig) => (el) => {
+    if (el.dataset.seg === 'trendWeeks') { UI.st.trendWeeks = +el.dataset.val; UI.render(); return; }
+    orig(el);
+  })(N.actions.seg);
 })(window.Nido = window.Nido || {});

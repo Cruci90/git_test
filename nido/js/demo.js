@@ -40,7 +40,7 @@
     const add = (col, rec) => st[col].push(Object.assign({ id: U.uid() + st[col].length, babyId, by: r() < 0.7 ? 'Mamá' : 'Papá' }, rec));
 
     /* ---------- Sueño, tomas y pañales: 21 días hasta ahora ---------- */
-    const DAYS = 21;
+    const DAYS = 49; // siete semanas: da para ver tendencias
     let side = 'L';
     const breast = (t, night) => {
       const a = Math.round(5 + r() * (night ? 7 : 10)), b = Math.round(r() < 0.25 ? 0 : 4 + r() * 9);
@@ -72,7 +72,9 @@
       const bed = cur + 150 * MIN + jit(12);
       breast(bed - 20 * MIN);
       const nextWake = day0 + DAY + 7 * HOUR + jit(25);
-      const wakesN = r() < 0.35 ? 1 : r() < 0.8 ? 2 : 3;
+      // Las noches mejoran poco a poco a lo largo de las semanas.
+      const prog = (d + DAYS) / DAYS;
+      const wakesN = r() < 0.12 + 0.3 * prog ? 1 : r() < 0.6 + 0.25 * prog ? 2 : 3;
       const pts = [bed];
       for (let i = 1; i <= wakesN; i++) pts.push(bed + (nextWake - bed) * (i / (wakesN + 1)) + jit(40));
       pts.push(nextWake);
@@ -80,7 +82,9 @@
         const s = i === 0 ? pts[0] : pts[i] + (12 + r() * 18) * MIN;
         const e = pts[i + 1];
         const first = i === 0;
-        const extra = first ? { down: s - (5 + r() * 15) * MIN, how: pick(['pecho', 'pecho', 'pecho', 'brazos', 'acompanada']) }
+        // La rutina de dormir se va asentando; con ella tarda menos en dormirse.
+        const withRoutine = r() < 0.15 + 0.75 * prog;
+        const extra = first ? { down: s - (withRoutine ? 4 + r() * 9 : 10 + r() * 16) * MIN, how: pick(['pecho', 'pecho', 'pecho', 'brazos', 'acompanada']), routine: withRoutine || undefined }
           : { after: { reason: pick(['hambre', 'hambre', 'hambre', 'consuelo', 'consuelo', 'dientes', 'panal']), soothe: pick(['pecho', 'pecho', 'pecho', 'brazos', 'chupete']) } };
         if (s <= now && e > now) st.timers.sleep = Object.assign({ babyId, phase: 'asleep', start: s, type: 'night', pauses: [] }, extra); // noche en curso
         if (e < now) add('sleeps', Object.assign({ start: s, end: e, type: 'night', place: pick(['Cuna', 'Cuna', 'Colecho']), quality: 3 }, extra));
