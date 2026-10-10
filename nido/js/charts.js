@@ -151,6 +151,43 @@
     return svg(W, H, g, 'trend');
   };
 
+  /* ---------- Arco del día (o de la noche): semicírculo de `from` a `to` ----------
+     Como la trayectoria del sol: a la izquierda el despertar, arriba el mediodía del
+     día del bebé y a la derecha la hora de dormir. opts:
+       segs   [{ a, b, cls, tip }] tramos sobre el arco (siestas, ventana, despertares)
+       labels [{ t, text, cls }] textos junto al arco
+       marker 'sun' | 'moon' en `now` · ends [izquierda, derecha] */
+  C.arc = (o) => {
+    const W = 320, H = 182, cx = 160, cy = 164, R = 132;
+    const span = Math.max(U.MIN, o.to - o.from);
+    const f = (t) => U.clamp((t - o.from) / span, 0, 1);
+    const P = (t, r = R) => { const th = Math.PI * (1 - f(t)); return [cx + r * Math.cos(th), cy - r * Math.sin(th)]; };
+    const path = (a, b, r = R) => {
+      const [x1, y1] = P(a, r), [x2, y2] = P(Math.max(b, a + span * 0.002), r);
+      return `M${r1(x1)},${r1(y1)}A${r},${r} 0 0 1 ${r1(x2)},${r1(y2)}`;
+    };
+    let g = `<path class="arc-track" d="${path(o.from, o.to)}"/>`;
+    (o.segs || []).forEach((sg) => {
+      if (sg.b <= o.from || sg.a >= o.to) return;
+      g += `<path class="arc-seg ${sg.cls}" d="${path(Math.max(sg.a, o.from), Math.min(sg.b, o.to))}"${sg.tip ? ` data-tip="${U.esc(sg.tip)}"` : ''}/>`;
+    });
+    (o.labels || []).forEach((l) => {
+      const [x, y] = P(l.t, R + 22);
+      const anchor = x < cx - 30 ? 'end' : x > cx + 30 ? 'start' : 'middle';
+      g += `<text class="arc-lbl ${l.cls || ''}" x="${r1(x)}" y="${r1(y + 4)}" text-anchor="${anchor}">${l.text}</text>`;
+    });
+    const [lx, ly] = P(o.from), [rx, ry] = P(o.to);
+    g += `<circle class="arc-end" cx="${r1(lx)}" cy="${r1(ly)}" r="4"/><circle class="arc-end" cx="${r1(rx)}" cy="${r1(ry)}" r="4"/>`;
+    if (o.ends) g += `<text class="arc-endt" x="${r1(lx)}" y="${H - 2}" text-anchor="middle">${o.ends[0]}</text><text class="arc-endt" x="${r1(rx)}" y="${H - 2}" text-anchor="middle">${o.ends[1]}</text>`;
+    if (o.now != null) {
+      const [x, y] = P(o.now);
+      g += o.marker === 'moon'
+        ? `<g class="arc-moon" transform="translate(${r1(x)},${r1(y)})"><circle r="17" class="arc-glow"/><path d="M3.5,-10.5A11,11 0 1 0 10.5,3.5A8.5,8.5 0 0 1 3.5,-10.5Z"/></g>`
+        : `<g class="arc-sun" transform="translate(${r1(x)},${r1(y)})"><circle r="19" class="arc-glow"/>${[0, 45, 90, 135, 180, 225, 270, 315].map((d) => `<line x1="0" y1="-13" x2="0" y2="-16.5" transform="rotate(${d})"/>`).join('')}<circle r="9.5"/></g>`;
+    }
+    return `<svg class="chart arc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${U.esc(o.label || '')}">${g}</svg>`;
+  };
+
   /* ---------- Barras simples (tomas/pañales por día) ---------- */
   C.miniBars = (items, cls = 'm-feed') => {
     const W = 320, H = 90, pb = 18, pt = 14;

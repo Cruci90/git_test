@@ -44,6 +44,8 @@
     Store.load();
     // Primera visita: se abre con la demo para enseñar la app funcionando.
     if (!Store.state.babies.length && !localStorageFlag('nido.seen')) N.seedDemo();
+    // La demo sin tocar se regenera para que siempre parezca de hoy (y sin cronómetros de hace días).
+    else if (Store.state.demoAt && !Store.state.demoTouched && Date.now() - Store.state.demoAt > 6 * N.U.HOUR && !(N.Sync && N.Sync.enabled)) N.seedDemo();
     localStorageFlag('nido.seen', true);
     UI.applyTheme();
     UI.initTooltip();

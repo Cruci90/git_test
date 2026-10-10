@@ -35,6 +35,7 @@
   --accent-soft: #FBE7DE;
 
   --c-sleep: #5B5FD0;
+  --sun: #E39B26;
   --c-nap: #9EA3F0;
   --c-feed: #D24F7A;
   --c-diaper: #2F7FC0;
@@ -63,7 +64,7 @@
     --ground: #0C1418; --surface: #131E24; --surface-2: #18252C; --surface-3: #203039; --line: #25363F;
     --ink: #E3ECEE; --ink-2: #B2C1C5; --ink-3: #8497A0;
     --accent: #F08A62; --accent-ink: #1B0F0A; --accent-soft: #3A2219;
-    --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
+    --sun: #F3C46B; --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
     --c-growth: #3FBCB9; --c-health: #F07467; --c-mile: #E5B14A;
     --good: #6FCF97; --good-soft: #173526; --warn: #EDB65B; --warn-soft: #3A2C12; --crit: #FF8A80; --crit-soft: #3D1C1A;
     --night-1: #0B0E2B; --night-2: #262A6E;
@@ -75,7 +76,7 @@
   --ground: #0C1418; --surface: #131E24; --surface-2: #18252C; --surface-3: #203039; --line: #25363F;
   --ink: #E3ECEE; --ink-2: #B2C1C5; --ink-3: #8497A0;
   --accent: #F08A62; --accent-ink: #1B0F0A; --accent-soft: #3A2219;
-  --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
+  --sun: #F3C46B; --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
   --c-growth: #3FBCB9; --c-health: #F07467; --c-mile: #E5B14A;
   --good: #6FCF97; --good-soft: #173526; --warn: #EDB65B; --warn-soft: #3A2C12; --crit: #FF8A80; --crit-soft: #3D1C1A;
   --night-1: #0B0E2B; --night-2: #262A6E;
@@ -994,6 +995,52 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
 .guide-art { display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.55; max-width: 65ch; }
 .guide-art ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 
+/* ---------- Arco del día (sol) y de la noche (luna) ---------- */
+.arc { position: relative; width: 100%; max-width: 400px; margin: 4px auto 0; }
+.arc-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.arc-track { fill: none; stroke: var(--ink-3); stroke-opacity: .45; stroke-width: 2.5; stroke-dasharray: 1 7; stroke-linecap: round; }
+.arc-seg { fill: none; stroke-linecap: round; }
+.arc-seg.ww-past { stroke: var(--sun); stroke-width: 7; }
+.arc-seg.ww-left { stroke: var(--sun); stroke-opacity: .25; stroke-width: 7; }
+.arc-seg.nap-done { stroke: var(--c-sleep); stroke-width: 16; }
+.arc-seg.nap-plan { stroke: var(--c-sleep); stroke-opacity: .28; stroke-width: 16; }
+@supports (stroke: color-mix(in srgb, red 50%, blue)) { .arc-seg.nap-plan { stroke: color-mix(in srgb, var(--c-sleep) 28%, var(--surface)); stroke-opacity: 1; } }
+.arc-lbl { font-size: 11.5px; font-weight: 700; fill: var(--ink-2); }
+.arc-lbl.soft { fill: var(--ink-3); font-weight: 600; }
+.arc-endt { font-size: 12px; font-weight: 700; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
+.arc-end { fill: var(--surface); stroke: var(--ink-3); stroke-width: 2; }
+.arc-sun circle { fill: var(--sun); }
+.arc-sun line { stroke: var(--sun); stroke-width: 2.2; stroke-linecap: round; }
+.arc-glow { opacity: .2; }
+.arc-moon path, .arc-moon circle { fill: #FFE3A8; }
+.arc-moon .arc-glow { opacity: .16; }
+@media (prefers-reduced-motion: no-preference) { .arc-sun .arc-glow, .arc-moon .arc-glow { animation: arc-pulse 3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; } }
+@keyframes arc-pulse { from { transform: scale(.85); } to { transform: scale(1.1); } }
+.arc-c { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); width: 64%; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.arc-k { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.arc-s { font-size: 12.5px; line-height: 1.35; color: var(--ink-3); }
+.arc .live-clock { font-size: 40px; }
+.arc .live-clock.sm { font-size: 32px; }
+.arc-foot { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: 12.5px; color: var(--ink-3); }
+.arc-foot b { color: var(--ink); }
+.arc.on-dark .arc-track { stroke: #C9CCFF; }
+.arc.on-dark .arc-seg.nap-done, .arc.on-dark .arc-seg.sl-done { stroke: #A9ADFF; stroke-width: 16; }
+.arc.on-dark .arc-seg.nap-plan, .arc.on-dark .arc-seg.sl-plan { stroke: #A9ADFF; stroke-opacity: .22; stroke-width: 16; }
+.arc.on-dark .arc-seg.gap { stroke: #FF9F8F; stroke-width: 16; }
+.arc.on-dark .arc-seg.lat { stroke: #A9ADFF; stroke-opacity: .5; stroke-width: 8; }
+.arc.on-dark .arc-seg.ww-past, .arc.on-dark .arc-seg.ww-left { stroke: #FFE3A8; }
+.arc.on-dark .arc-lbl, .arc.on-dark .arc-endt { fill: #DADCFF; }
+.arc.on-dark .arc-lbl.soft { fill: #AEB2E8; }
+.arc.on-dark .arc-end { fill: transparent; stroke: #C9CCFF; }
+.arc.on-dark .arc-k, .arc.on-dark .arc-s { color: #C9CCFF; }
+.night-sky .arc .live-clock { font-size: 44px; }
+.arc-info { text-align: center; margin-top: -4px; }
+.live-q-t { font: 700 22px/1.25 var(--f-display); color: #fff; }
+.stale-end { display: flex; flex-direction: column; gap: 6px; }
+.stale-end small { font-size: 12px; font-weight: 600; color: #C9CCFF; }
+.stale-end input { font: inherit; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; color-scheme: dark; }
+@media (max-width: 420px) { .arc .live-clock { font-size: 34px; } .night-sky .arc .live-clock { font-size: 36px; } .arc .live-clock.sm { font-size: 28px; } .arc-c { width: 70%; } }
+
 </style>
 </head>
 <body>
@@ -1551,14 +1598,16 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     /* CRUD genérico sobre colecciones del bebé activo. */
     add(col, rec) {
       const item = Object.assign({ id: U.uid(), babyId: this.state.activeBabyId, by: this.state.settings.caregiver }, rec);
-      this.state[col].push(item); this.commit(); return item;
+      this.state[col].push(item); this.touchDemo(); this.commit(); return item;
     },
     update(col, id, patch) {
       const it = this.state[col].find((x) => x.id === id);
-      if (it) { Object.assign(it, patch); this.commit(); }
+      if (it) { Object.assign(it, patch); this.touchDemo(); this.commit(); }
       return it;
     },
-    remove(col, id) { this.state[col] = this.state[col].filter((x) => x.id !== id); this.commit(); },
+    remove(col, id) { this.state[col] = this.state[col].filter((x) => x.id !== id); this.touchDemo(); this.commit(); },
+    /* Si la familia ya ha tocado los datos de ejemplo, la demo no se regenera sola. */
+    touchDemo() { if (this.state.demoAt) this.state.demoTouched = true; },
     get(col, id) { return this.state[col].find((x) => x.id === id); },
     list(col) { const b = this.state.activeBabyId; return this.state[col].filter((x) => x.babyId === b); },
     babyMap(key) { const b = this.state.activeBabyId; return (this.state[key][b] = this.state[key][b] || {}); },
@@ -1942,6 +1991,26 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     return Array.from({ length: n }, (_, w) => S.sleepStats(U.addDays(first, 7 * w), 7, now));
   };
 
+  /* Hora prevista de despertar tras una noche que empezó en `from`. */
+  S.expectedWake = (from, now = Date.now()) => {
+    const r = S.learnRhythm(now), prefs = S.prefs();
+    const day = new Date(from).getHours() >= 12 ? U.addDays(U.dayStart(from), 1) : U.dayStart(from);
+    return prefs.wakeTarget ? U.fromInputs(U.dayKey(day), prefs.wakeTarget) : day + r.wakeHour * HOUR;
+  };
+  /* Tramos ya cerrados de la noche en curso (encadenados con huecos de menos de 3 h). */
+  S.tonight = (now = Date.now()) => {
+    const t = S.activeSleep(), w = S.activeNightWake();
+    const cur = t ? (t.down || t.start) : w ? w.start : now;
+    const all = S.sleeps().filter((s) => s.type === 'night' && s.end <= cur + MIN);
+    const chain = [];
+    let edge = cur;
+    for (let i = all.length - 1; i >= 0; i--) {
+      if (edge - all[i].end > 3 * HOUR) break;
+      chain.unshift(all[i]); edge = all[i].down || all[i].start;
+    }
+    return chain;
+  };
+
   /* ---- Actividades ---- */
   S.activities = () => Store.list('activities').sort((a, b) => a.time - b.time);
   S.activeActivity = () => { const t = Store.state.timers.activity; return t && t.babyId === Store.state.activeBabyId ? t : null; };
@@ -2295,6 +2364,43 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       g += `<g data-tip="${U.esc(p.tip || '')}"><circle cx="${r1(X(i))}" cy="${r1(Y(p.v))}" r="12" fill="transparent"/><circle class="t-dot ${i === lastI ? 'last' : ''}" cx="${r1(X(i))}" cy="${r1(Y(p.v))}" r="${i === lastI ? 5 : 3.5}"/></g>`;
     });
     return svg(W, H, g, 'trend');
+  };
+
+  /* ---------- Arco del día (o de la noche): semicírculo de `from` a `to` ----------
+     Como la trayectoria del sol: a la izquierda el despertar, arriba el mediodía del
+     día del bebé y a la derecha la hora de dormir. opts:
+       segs   [{ a, b, cls, tip }] tramos sobre el arco (siestas, ventana, despertares)
+       labels [{ t, text, cls }] textos junto al arco
+       marker 'sun' | 'moon' en `now` · ends [izquierda, derecha] */
+  C.arc = (o) => {
+    const W = 320, H = 182, cx = 160, cy = 164, R = 132;
+    const span = Math.max(U.MIN, o.to - o.from);
+    const f = (t) => U.clamp((t - o.from) / span, 0, 1);
+    const P = (t, r = R) => { const th = Math.PI * (1 - f(t)); return [cx + r * Math.cos(th), cy - r * Math.sin(th)]; };
+    const path = (a, b, r = R) => {
+      const [x1, y1] = P(a, r), [x2, y2] = P(Math.max(b, a + span * 0.002), r);
+      return `M${r1(x1)},${r1(y1)}A${r},${r} 0 0 1 ${r1(x2)},${r1(y2)}`;
+    };
+    let g = `<path class="arc-track" d="${path(o.from, o.to)}"/>`;
+    (o.segs || []).forEach((sg) => {
+      if (sg.b <= o.from || sg.a >= o.to) return;
+      g += `<path class="arc-seg ${sg.cls}" d="${path(Math.max(sg.a, o.from), Math.min(sg.b, o.to))}"${sg.tip ? ` data-tip="${U.esc(sg.tip)}"` : ''}/>`;
+    });
+    (o.labels || []).forEach((l) => {
+      const [x, y] = P(l.t, R + 22);
+      const anchor = x < cx - 30 ? 'end' : x > cx + 30 ? 'start' : 'middle';
+      g += `<text class="arc-lbl ${l.cls || ''}" x="${r1(x)}" y="${r1(y + 4)}" text-anchor="${anchor}">${l.text}</text>`;
+    });
+    const [lx, ly] = P(o.from), [rx, ry] = P(o.to);
+    g += `<circle class="arc-end" cx="${r1(lx)}" cy="${r1(ly)}" r="4"/><circle class="arc-end" cx="${r1(rx)}" cy="${r1(ry)}" r="4"/>`;
+    if (o.ends) g += `<text class="arc-endt" x="${r1(lx)}" y="${H - 2}" text-anchor="middle">${o.ends[0]}</text><text class="arc-endt" x="${r1(rx)}" y="${H - 2}" text-anchor="middle">${o.ends[1]}</text>`;
+    if (o.now != null) {
+      const [x, y] = P(o.now);
+      g += o.marker === 'moon'
+        ? `<g class="arc-moon" transform="translate(${r1(x)},${r1(y)})"><circle r="17" class="arc-glow"/><path d="M3.5,-10.5A11,11 0 1 0 10.5,3.5A8.5,8.5 0 0 1 3.5,-10.5Z"/></g>`
+        : `<g class="arc-sun" transform="translate(${r1(x)},${r1(y)})"><circle r="19" class="arc-glow"/>${[0, 45, 90, 135, 180, 225, 270, 315].map((d) => `<line x1="0" y1="-13" x2="0" y2="-16.5" transform="rotate(${d})"/>`).join('')}<circle r="9.5"/></g>`;
+    }
+    return `<svg class="chart arc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${U.esc(o.label || '')}">${g}</svg>`;
   };
 
   /* ---------- Barras simples (tomas/pañales por día) ---------- */
@@ -3335,18 +3441,13 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
       <p class="muted">Registra un sueño para calcular las ventanas de vigilia.</p>
       <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button><button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button></div></section>`;
     const over = p.awakeMin > p.windowRange[1];
-    const pct = Math.round(U.clamp(p.progress, 0, 1) * 100);
     return `<section class="live">
       <div class="live-top"><span class="eyebrow">${icon('sun')} Despierta desde las ${U.time(p.awakeSince)}</span>${over ? UI.pill('Buen momento para dormir', 'warn') : p.progress > 0.8 ? UI.pill('Busca señales de sueño', 'soft') : ''}</div>
-      <div class="ww">
-        <div class="ww-head"><b class="live-clock sm" data-since="${p.awakeSince}">00:00</b><span class="muted">de ${U.dur(p.ww)} de ventana</span></div>
-        <div class="ww-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Ventana de vigilia"><i style="width:${pct}%"></i><span class="ww-mark" style="left:${Math.round((p.windowRange[0] / p.ww) * 100 * 0.999)}%"></span></div>
-      </div>
-      <div class="pred">
-        ${p.nextNap ? `<div><small>Próxima siesta</small><b>${U.time(p.nextNap)}</b><span>${p.nextNap < Date.now() + U.MIN ? 'ahora' : `entre ${U.time(p.plan.next.from)} y ${U.time(p.plan.next.to)}`}</span></div>` : `<div><small>Siestas</small><b>${p.napsToday}/${p.expectedNaps}</b><span>completadas</span></div>`}
-        <div><small>A la cama</small><b>${U.time(p.bedtime)}</b><span>aprox.</span></div>
-        <div><small>Siestas hoy</small><b>${p.napsToday}<em>/${p.expectedNaps}</em></b><span>${p.learned ? 'ajustado a su ritmo' : 'según su edad'}</span></div>
-      </div>
+      ${W.dayArc(W.arcCenter(
+        p.nextNap ? (p.nextNap < Date.now() + U.MIN ? `Siesta ${p.plan.next.idx + 1}` : `Siesta ${p.plan.next.idx + 1} en`) : 'A la cama en',
+        p.nextNap && p.nextNap < Date.now() + U.MIN ? '<b class="live-clock sm">Ya toca</b>' : `<b class="live-clock sm" data-until="${p.nextNap || p.bedtime}">00:00</b>`,
+        `${p.nextNap ? `~${U.time(p.nextNap)} · ` : `~${U.time(p.bedtime)} · `}despierta <span data-since="${p.awakeSince}"></span>`))}
+      <div class="arc-foot"><span><b>${p.napsToday}</b>/${p.expectedNaps} siestas</span><span>ventana de ${U.dur(p.ww)}</span><span>a la cama ~<b>${U.time(p.bedtime)}</b></span><span>${p.learned ? 'ajustado a su ritmo' : 'según su edad'}</span></div>
       <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button>
         <button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button>
         ${p.nextNap && p.plan.next.state === 'overdue' ? `<button type="button" class="btn soft" data-act="nap-skip">Saltar siesta</button>` : ''}</div>
@@ -3836,13 +3937,94 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
   /* ---------- Tarjetas en vivo ---------- */
   const chips = (list, sel, act) => `<div class="live-chips">${list.map((x) => `<button type="button" class="lchip ${sel === x.id ? 'on' : ''}" data-act="${act}" data-${act === 'sleep-how' ? 'how' : 'v'}="${x.id}" aria-pressed="${sel === x.id}">${x.emoji} ${x.name}</button>`).join('')}</div>`;
 
+  /* ---------- Arcos: el día como la trayectoria del sol y la noche como la de la luna ---------- */
+  const arcBox = (svg, center, cls = '') => `<div class="arc ${cls}">${svg}<div class="arc-c">${center}</div></div>`;
+  const centerHtml = (small, big, sub) => `<small class="arc-k">${small}</small>${big}${sub ? `<span class="arc-s">${sub}</span>` : ''}`;
+
+  N.W.dayArc = (center, opts = {}) => {
+    const p = S.dayPlan(), now = Date.now();
+    const wake = p.items[0].t, bed = p.items[p.items.length - 1].t;
+    const from = Math.min(wake, now), to = Math.max(bed, now + 10 * U.MIN);
+    const segs = [], labels = [];
+    const pr = S.predict();
+    if (pr) {
+      const until = pr.nextNap || pr.bedtime;
+      segs.push({ a: pr.awakeSince, b: now, cls: 'ww-past', tip: `Despierta desde las ${U.time(pr.awakeSince)}` });
+      if (until > now) segs.push({ a: now, b: until, cls: 'ww-left', tip: `${pr.nextNap ? 'Hasta la siesta' : 'Hasta dormir'}|~${U.time(until)}` });
+    }
+    p.items.filter((x) => x.kind === 'nap' && x.state !== 'skipped').forEach((x) => {
+      const name = `Siesta ${x.idx + 1}`;
+      if (x.state === 'done') {
+        segs.push({ a: x.start, b: x.end, cls: 'nap-done', tip: `${name}|${U.time(x.start)} – ${U.time(x.end)} · ${U.dur(x.min)}` });
+        labels.push({ t: (x.start + x.end) / 2, text: U.dur(x.min, true) });
+      } else if (x.state === 'now') {
+        segs.push({ a: x.start, b: now, cls: 'nap-done', tip: `${name}|desde las ${U.time(x.start)}` }, { a: now, b: x.end, cls: 'nap-plan', tip: `${name}|hasta ~${U.time(x.end)}` });
+        labels.push({ t: x.start, text: U.time(x.start) });
+      } else {
+        segs.push({ a: x.start, b: x.end, cls: 'nap-plan', tip: `${name} prevista|entre ${U.time(x.from)} y ${U.time(x.to)} · ~${U.dur((x.end - x.start) / U.MIN)}` });
+        labels.push({ t: x.start, text: '~' + U.time(x.start), cls: 'soft' });
+      }
+    });
+    const svg = N.Charts.arc({ from, to, now, segs, labels, marker: opts.moon ? 'moon' : 'sun', ends: [U.time(wake), (p.items[p.items.length - 1].state === 'done' ? '' : '~') + U.time(bed)], label: `Día de ${U.time(wake)} a ${U.time(bed)}` });
+    return arcBox(svg, center, opts.cls);
+  };
+
+  N.W.nightArc = (center) => {
+    const now = Date.now(), t = S.activeSleep(), w = S.activeNightWake(), chain = S.tonight(now);
+    const first = chain[0] || t || w;
+    const from = Math.min(now, first.down || first.start);
+    const wake = Math.max(S.expectedWake(from, now), now + 10 * U.MIN);
+    const segs = [];
+    let prevEnd = null;
+    const addSleep = (a, b, down) => {
+      if (prevEnd && a - prevEnd > U.MIN) segs.push({ a: prevEnd, b: a, cls: 'gap', tip: `Despierta|${U.time(prevEnd)} – ${U.time(a)} · ${U.dur((a - prevEnd) / U.MIN)}` });
+      if (down && down < a) segs.push({ a: down, b: a, cls: 'lat', tip: `Durmiéndose|${U.dur((a - down) / U.MIN)}` });
+      segs.push({ a, b, cls: 'sl-done', tip: `Durmiendo|${U.time(a)} – ${U.time(b)} · ${U.dur((b - a) / U.MIN)}` });
+      prevEnd = b;
+    };
+    chain.forEach((s) => addSleep(s.start, s.end, s.down));
+    if (t && t.phase !== 'down') addSleep(t.start, now, t.down);
+    if (w && prevEnd) segs.push({ a: prevEnd, b: now, cls: 'gap', tip: 'Despierta ahora' });
+    segs.push({ a: now, b: wake, cls: 'sl-plan', tip: `Hasta ~${U.time(wake)}` });
+    const svg = N.Charts.arc({ from, to: wake, now, segs, marker: 'moon', ends: [U.time(from), '~' + U.time(wake)], label: `Noche de ${U.time(from)} a ${U.time(wake)}` });
+    return arcBox(svg, center, 'on-dark');
+  };
+  N.W.arcCenter = centerHtml;
+
+  /* Un cronómetro que lleva demasiado en marcha casi seguro se quedó sin parar. */
+  const staleCard = (t, type) => {
+    const start = t.start || t.down;
+    const wake = type === 'night' ? S.expectedWake(start) : 0;
+    const est = Math.min(Date.now(), wake > start + 30 * U.MIN ? wake : start + 60 * U.MIN);
+    const h = (Date.now() - start) / U.HOUR;
+    const val = (x) => `${U.dayKey(x)}T${U.time(x)}`;
+    return `<section class="live live-sleep night-sky">
+      <div class="live-top"><span class="eyebrow">${icon('clock')} ${type === 'nap' ? 'Siesta' : 'Noche'} desde el ${U.dateLong(start)} a las ${U.time(start)}</span></div>
+      <div><b class="live-q-t">¿Se quedó el cronómetro sin parar?</b><p class="live-sub">Lleva ${h >= 48 ? `${Math.floor(h / 24)} días` : `${Math.floor(h)} horas`} en marcha. Dinos a qué hora se despertó y lo guardamos bien.</p></div>
+      <label class="stale-end"><small>Se despertó</small><input type="datetime-local" id="stale-end" value="${val(est)}" min="${val(start)}" max="${val(Date.now())}"></label>
+      <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-stop-at">${icon('check')}Guardar</button><button type="button" class="link on-dark" data-act="sleep-cancel">Descartar</button></div>
+    </section>`;
+  };
+  N.W.isStale = (t) => t && Date.now() - (t.start || t.down) > (S.timerType(t) === 'nap' ? 6 : 16) * U.HOUR;
+  A['sleep-stop-at'] = () => {
+    const t = S.activeSleep(); if (!t) return;
+    const el = document.getElementById('stale-end');
+    const end = el && el.value ? new Date(el.value).getTime() : NaN;
+    if (!(end > (t.start || t.down)) || end > Date.now()) { UI.toast('Elige una hora entre el inicio y ahora'); return; }
+    if (t.phase === 'down') t.start = t.down;
+    delete T().sleep;
+    const rec = closeSleep(Object.assign({}, t, { phase: 'asleep' }), end);
+    if (!rec) { Store.commit(); return; }
+    UI.toast(`Guardado: ${U.dur(S.sleepMin(rec))} de ${rec.type === 'night' ? 'noche' : 'siesta'}`, () => Store.remove('sleeps', rec.id));
+  };
+
   N.W.liveSleep = () => {
     const w = S.activeNightWake();
     if (w) {
       const fed = w.soothe === 'pecho' || w.soothe === 'biberon';
       return `<section class="live live-sleep night-sky is-awake">
         <div class="live-top"><span class="eyebrow">${icon('sun')} Despierta de noche desde las ${U.time(w.start)}</span><button type="button" class="link" data-act="nw-cancel">Descartar</button></div>
-        <b class="live-clock sm" data-since="${w.start}">00:00</b>
+        ${N.W.nightArc(centerHtml('Despierta', `<b class="live-clock sm" data-since="${w.start}">00:00</b>`, `se suele despertar ~${U.time(S.expectedWake(S.tonight()[0] ? S.tonight()[0].start : w.start))}`))}
         <div class="live-q"><small>¿Por qué se ha despertado?</small>${chips(N.WAKE_REASONS, w.reason, 'nw-reason')}</div>
         <div class="live-q"><small>¿Cómo vuelve a dormirse?</small>${chips(N.SOOTHE, w.soothe, 'nw-soothe')}</div>
         ${fed ? `<label class="lcheck"><input type="checkbox" data-act="nw-feed" ${w.feed ? 'checked' : ''}><span>Anotar también como toma</span></label>` : ''}
@@ -3851,6 +4033,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     }
     const t = S.activeSleep(); if (!t) return '';
     const type = S.timerType(t);
+    if (N.W.isStale(t)) return staleCard(t, type);
     const typeSeg = `<div class="seg seg-dark">${[['nap', 'Siesta'], ['night', 'Noche']].map(([v, l]) => `<button type="button" class="${type === v ? 'on' : ''}" data-act="sleep-type" data-type="${v}">${l}</button>`).join('')}</div>`;
     if (t.phase === 'down') {
       return `<section class="live live-sleep night-sky">
@@ -3863,9 +4046,21 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     const p = openPause(t);
     const lat = t.down && t.down < t.start ? `tardó ${U.dur((t.start - t.down) / U.MIN)} en dormirse` : '';
     const pausedMin = U.sum((t.pauses || []).filter((x) => x.b), (x) => x.b - x.a) / U.MIN;
+    const info = [lat, t.how ? `${emo(N.SLEEP_HOW, t.how)} ${name(N.SLEEP_HOW, t.how).toLowerCase()}` : '', pausedMin >= 1 ? `${U.dur(pausedMin)} despierta en pausas` : ''].filter(Boolean).join(' · ');
+    const clock = `<b class="live-clock" data-since="${p ? p.a : t.start}">00:00</b>`;
+    let arc;
+    if (type === 'nap') {
+      const cur = S.dayPlan().items.find((x) => x.state === 'now');
+      arc = N.W.dayArc(centerHtml(p ? 'Despierta un momento' : `Siesta ${cur ? cur.idx + 1 : ''}`, clock, cur ? `hasta ~${U.time(cur.end)}` : ''), { moon: true, cls: 'on-dark' });
+    } else {
+      const chain = S.tonight(), wakes = chain.length;
+      const slept = U.sum(chain, (x) => S.sleepMin(x)) + (Date.now() - t.start) / U.MIN;
+      arc = N.W.nightArc(centerHtml('Durmiendo', clock, `${U.dur(slept)} esta noche${wakes ? ` · ${wakes} despertar${wakes > 1 ? 'es' : ''}` : ''}<br>se despierta ~${U.time(S.expectedWake(chain[0] ? chain[0].start : t.start))}`));
+    }
     return `<section class="live live-sleep night-sky ${p ? 'is-awake' : ''}">
       <div class="live-top"><span class="eyebrow">${icon(p ? 'sun' : 'moon')} ${p ? `Despierta un momento desde las ${U.time(p.a)}` : `${type === 'nap' ? 'Siesta' : 'Durmiendo'} desde las ${U.time(t.start)}`}</span>${typeSeg}</div>
-      <div><b class="live-clock" data-since="${p ? p.a : t.start}">00:00</b><p class="live-sub">${[lat, t.how ? `${emo(N.SLEEP_HOW, t.how)} ${name(N.SLEEP_HOW, t.how).toLowerCase()}` : '', pausedMin >= 1 ? `${U.dur(pausedMin)} despierta en pausas` : ''].filter(Boolean).join(' · ')}</p></div>
+      ${arc}
+      ${info ? `<p class="live-sub arc-info">${info}</p>` : ''}
       ${!t.how && !p ? `<div class="live-q"><small>¿Cómo se durmió?</small>${chips(N.SLEEP_HOW, t.how, 'sleep-how')}</div>` : ''}
       <div class="live-actions">${type === 'nap'
         ? (p ? `<button type="button" class="btn primary" data-act="sleep-resume">${icon('moon')}Sigue durmiendo</button><button type="button" class="btn soft on-dark" data-act="sleep-stop">${icon('sun')}Terminar siesta</button>`
@@ -5890,7 +6085,7 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
 
     const babyId = 'lucia';
     const st = {
-      version: 1, activeBabyId: babyId,
+      version: 1, activeBabyId: babyId, demoAt: now,
       settings: { theme: 'auto', caregiver: 'Mamá' },
       babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', gestWeeks: 39, gestDays: 4, birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
       milestones: {}, teeth: {}, timers: {},
@@ -6125,6 +6320,8 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
     Store.load();
     // Primera visita: se abre con la demo para enseñar la app funcionando.
     if (!Store.state.babies.length && !localStorageFlag('nido.seen')) N.seedDemo();
+    // La demo sin tocar se regenera para que siempre parezca de hoy (y sin cronómetros de hace días).
+    else if (Store.state.demoAt && !Store.state.demoTouched && Date.now() - Store.state.demoAt > 6 * N.U.HOUR && !(N.Sync && N.Sync.enabled)) N.seedDemo();
     localStorageFlag('nido.seen', true);
     UI.applyTheme();
     UI.initTooltip();

@@ -19,6 +19,7 @@
   --accent-soft: #FBE7DE;
 
   --c-sleep: #5B5FD0;
+  --sun: #E39B26;
   --c-nap: #9EA3F0;
   --c-feed: #D24F7A;
   --c-diaper: #2F7FC0;
@@ -47,7 +48,7 @@
     --ground: #0C1418; --surface: #131E24; --surface-2: #18252C; --surface-3: #203039; --line: #25363F;
     --ink: #E3ECEE; --ink-2: #B2C1C5; --ink-3: #8497A0;
     --accent: #F08A62; --accent-ink: #1B0F0A; --accent-soft: #3A2219;
-    --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
+    --sun: #F3C46B; --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
     --c-growth: #3FBCB9; --c-health: #F07467; --c-mile: #E5B14A;
     --good: #6FCF97; --good-soft: #173526; --warn: #EDB65B; --warn-soft: #3A2C12; --crit: #FF8A80; --crit-soft: #3D1C1A;
     --night-1: #0B0E2B; --night-2: #262A6E;
@@ -59,7 +60,7 @@
   --ground: #0C1418; --surface: #131E24; --surface-2: #18252C; --surface-3: #203039; --line: #25363F;
   --ink: #E3ECEE; --ink-2: #B2C1C5; --ink-3: #8497A0;
   --accent: #F08A62; --accent-ink: #1B0F0A; --accent-soft: #3A2219;
-  --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
+  --sun: #F3C46B; --c-sleep: #8F95F4; --c-nap: #4E539F; --c-feed: #F07EA2; --c-diaper: #6AAEE8; --c-blw: #72BF78;
   --c-growth: #3FBCB9; --c-health: #F07467; --c-mile: #E5B14A;
   --good: #6FCF97; --good-soft: #173526; --warn: #EDB65B; --warn-soft: #3A2C12; --crit: #FF8A80; --crit-soft: #3D1C1A;
   --night-1: #0B0E2B; --night-2: #262A6E;
@@ -977,3 +978,49 @@ form[data-stype="nap"] .only-night, form[data-stype="night"] .only-nap { display
 .guide-it .ic { color: var(--ink-3); }
 .guide-art { display: flex; flex-direction: column; gap: 10px; font-size: 15px; line-height: 1.55; max-width: 65ch; }
 .guide-art ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+/* ---------- Arco del día (sol) y de la noche (luna) ---------- */
+.arc { position: relative; width: 100%; max-width: 400px; margin: 4px auto 0; }
+.arc-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.arc-track { fill: none; stroke: var(--ink-3); stroke-opacity: .45; stroke-width: 2.5; stroke-dasharray: 1 7; stroke-linecap: round; }
+.arc-seg { fill: none; stroke-linecap: round; }
+.arc-seg.ww-past { stroke: var(--sun); stroke-width: 7; }
+.arc-seg.ww-left { stroke: var(--sun); stroke-opacity: .25; stroke-width: 7; }
+.arc-seg.nap-done { stroke: var(--c-sleep); stroke-width: 16; }
+.arc-seg.nap-plan { stroke: var(--c-sleep); stroke-opacity: .28; stroke-width: 16; }
+@supports (stroke: color-mix(in srgb, red 50%, blue)) { .arc-seg.nap-plan { stroke: color-mix(in srgb, var(--c-sleep) 28%, var(--surface)); stroke-opacity: 1; } }
+.arc-lbl { font-size: 11.5px; font-weight: 700; fill: var(--ink-2); }
+.arc-lbl.soft { fill: var(--ink-3); font-weight: 600; }
+.arc-endt { font-size: 12px; font-weight: 700; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
+.arc-end { fill: var(--surface); stroke: var(--ink-3); stroke-width: 2; }
+.arc-sun circle { fill: var(--sun); }
+.arc-sun line { stroke: var(--sun); stroke-width: 2.2; stroke-linecap: round; }
+.arc-glow { opacity: .2; }
+.arc-moon path, .arc-moon circle { fill: #FFE3A8; }
+.arc-moon .arc-glow { opacity: .16; }
+@media (prefers-reduced-motion: no-preference) { .arc-sun .arc-glow, .arc-moon .arc-glow { animation: arc-pulse 3s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; } }
+@keyframes arc-pulse { from { transform: scale(.85); } to { transform: scale(1.1); } }
+.arc-c { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); width: 64%; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.arc-k { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.arc-s { font-size: 12.5px; line-height: 1.35; color: var(--ink-3); }
+.arc .live-clock { font-size: 40px; }
+.arc .live-clock.sm { font-size: 32px; }
+.arc-foot { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; font-size: 12.5px; color: var(--ink-3); }
+.arc-foot b { color: var(--ink); }
+.arc.on-dark .arc-track { stroke: #C9CCFF; }
+.arc.on-dark .arc-seg.nap-done, .arc.on-dark .arc-seg.sl-done { stroke: #A9ADFF; stroke-width: 16; }
+.arc.on-dark .arc-seg.nap-plan, .arc.on-dark .arc-seg.sl-plan { stroke: #A9ADFF; stroke-opacity: .22; stroke-width: 16; }
+.arc.on-dark .arc-seg.gap { stroke: #FF9F8F; stroke-width: 16; }
+.arc.on-dark .arc-seg.lat { stroke: #A9ADFF; stroke-opacity: .5; stroke-width: 8; }
+.arc.on-dark .arc-seg.ww-past, .arc.on-dark .arc-seg.ww-left { stroke: #FFE3A8; }
+.arc.on-dark .arc-lbl, .arc.on-dark .arc-endt { fill: #DADCFF; }
+.arc.on-dark .arc-lbl.soft { fill: #AEB2E8; }
+.arc.on-dark .arc-end { fill: transparent; stroke: #C9CCFF; }
+.arc.on-dark .arc-k, .arc.on-dark .arc-s { color: #C9CCFF; }
+.night-sky .arc .live-clock { font-size: 44px; }
+.arc-info { text-align: center; margin-top: -4px; }
+.live-q-t { font: 700 22px/1.25 var(--f-display); color: #fff; }
+.stale-end { display: flex; flex-direction: column; gap: 6px; }
+.stale-end small { font-size: 12px; font-weight: 600; color: #C9CCFF; }
+.stale-end input { font: inherit; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: #fff; color-scheme: dark; }
+@media (max-width: 420px) { .arc .live-clock { font-size: 34px; } .night-sky .arc .live-clock { font-size: 36px; } .arc .live-clock.sm { font-size: 28px; } .arc-c { width: 70%; } }

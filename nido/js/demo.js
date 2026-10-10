@@ -31,7 +31,7 @@
 
     const babyId = 'lucia';
     const st = {
-      version: 1, activeBabyId: babyId,
+      version: 1, activeBabyId: babyId, demoAt: now,
       settings: { theme: 'auto', caregiver: 'Mamá' },
       babies: [{ id: babyId, name: 'Lucía', sex: 'f', birth, birthTime: '04:37', gestWeeks: 39, gestDays: 4, birthWeight: 3.28, birthLength: 50, birthHead: 34, blood: 'A+', allergies: '', pediatrician: 'Dra. Marta Ruiz', center: 'Centro de Salud Delicias', healthCard: 'MRUIZ 1203 4478 90', notes: 'Parto vaginal, semana 39+4. Lactancia materna exclusiva hasta los 6 meses.' }],
       milestones: {}, teeth: {}, timers: {},

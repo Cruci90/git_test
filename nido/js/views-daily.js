@@ -36,18 +36,13 @@
       <p class="muted">Registra un sueño para calcular las ventanas de vigilia.</p>
       <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button><button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button></div></section>`;
     const over = p.awakeMin > p.windowRange[1];
-    const pct = Math.round(U.clamp(p.progress, 0, 1) * 100);
     return `<section class="live">
       <div class="live-top"><span class="eyebrow">${icon('sun')} Despierta desde las ${U.time(p.awakeSince)}</span>${over ? UI.pill('Buen momento para dormir', 'warn') : p.progress > 0.8 ? UI.pill('Busca señales de sueño', 'soft') : ''}</div>
-      <div class="ww">
-        <div class="ww-head"><b class="live-clock sm" data-since="${p.awakeSince}">00:00</b><span class="muted">de ${U.dur(p.ww)} de ventana</span></div>
-        <div class="ww-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Ventana de vigilia"><i style="width:${pct}%"></i><span class="ww-mark" style="left:${Math.round((p.windowRange[0] / p.ww) * 100 * 0.999)}%"></span></div>
-      </div>
-      <div class="pred">
-        ${p.nextNap ? `<div><small>Próxima siesta</small><b>${U.time(p.nextNap)}</b><span>${p.nextNap < Date.now() + U.MIN ? 'ahora' : `entre ${U.time(p.plan.next.from)} y ${U.time(p.plan.next.to)}`}</span></div>` : `<div><small>Siestas</small><b>${p.napsToday}/${p.expectedNaps}</b><span>completadas</span></div>`}
-        <div><small>A la cama</small><b>${U.time(p.bedtime)}</b><span>aprox.</span></div>
-        <div><small>Siestas hoy</small><b>${p.napsToday}<em>/${p.expectedNaps}</em></b><span>${p.learned ? 'ajustado a su ritmo' : 'según su edad'}</span></div>
-      </div>
+      ${W.dayArc(W.arcCenter(
+        p.nextNap ? (p.nextNap < Date.now() + U.MIN ? `Siesta ${p.plan.next.idx + 1}` : `Siesta ${p.plan.next.idx + 1} en`) : 'A la cama en',
+        p.nextNap && p.nextNap < Date.now() + U.MIN ? '<b class="live-clock sm">Ya toca</b>' : `<b class="live-clock sm" data-until="${p.nextNap || p.bedtime}">00:00</b>`,
+        `${p.nextNap ? `~${U.time(p.nextNap)} · ` : `~${U.time(p.bedtime)} · `}despierta <span data-since="${p.awakeSince}"></span>`))}
+      <div class="arc-foot"><span><b>${p.napsToday}</b>/${p.expectedNaps} siestas</span><span>ventana de ${U.dur(p.ww)}</span><span>a la cama ~<b>${U.time(p.bedtime)}</b></span><span>${p.learned ? 'ajustado a su ritmo' : 'según su edad'}</span></div>
       <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-down">${icon('bed')}A la cuna</button>
         <button type="button" class="btn soft" data-act="sleep-start">${icon('moon')}Ya duerme</button>
         ${p.nextNap && p.plan.next.state === 'overdue' ? `<button type="button" class="btn soft" data-act="nap-skip">Saltar siesta</button>` : ''}</div>

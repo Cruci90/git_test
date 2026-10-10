@@ -164,13 +164,94 @@
   /* ---------- Tarjetas en vivo ---------- */
   const chips = (list, sel, act) => `<div class="live-chips">${list.map((x) => `<button type="button" class="lchip ${sel === x.id ? 'on' : ''}" data-act="${act}" data-${act === 'sleep-how' ? 'how' : 'v'}="${x.id}" aria-pressed="${sel === x.id}">${x.emoji} ${x.name}</button>`).join('')}</div>`;
 
+  /* ---------- Arcos: el día como la trayectoria del sol y la noche como la de la luna ---------- */
+  const arcBox = (svg, center, cls = '') => `<div class="arc ${cls}">${svg}<div class="arc-c">${center}</div></div>`;
+  const centerHtml = (small, big, sub) => `<small class="arc-k">${small}</small>${big}${sub ? `<span class="arc-s">${sub}</span>` : ''}`;
+
+  N.W.dayArc = (center, opts = {}) => {
+    const p = S.dayPlan(), now = Date.now();
+    const wake = p.items[0].t, bed = p.items[p.items.length - 1].t;
+    const from = Math.min(wake, now), to = Math.max(bed, now + 10 * U.MIN);
+    const segs = [], labels = [];
+    const pr = S.predict();
+    if (pr) {
+      const until = pr.nextNap || pr.bedtime;
+      segs.push({ a: pr.awakeSince, b: now, cls: 'ww-past', tip: `Despierta desde las ${U.time(pr.awakeSince)}` });
+      if (until > now) segs.push({ a: now, b: until, cls: 'ww-left', tip: `${pr.nextNap ? 'Hasta la siesta' : 'Hasta dormir'}|~${U.time(until)}` });
+    }
+    p.items.filter((x) => x.kind === 'nap' && x.state !== 'skipped').forEach((x) => {
+      const name = `Siesta ${x.idx + 1}`;
+      if (x.state === 'done') {
+        segs.push({ a: x.start, b: x.end, cls: 'nap-done', tip: `${name}|${U.time(x.start)} – ${U.time(x.end)} · ${U.dur(x.min)}` });
+        labels.push({ t: (x.start + x.end) / 2, text: U.dur(x.min, true) });
+      } else if (x.state === 'now') {
+        segs.push({ a: x.start, b: now, cls: 'nap-done', tip: `${name}|desde las ${U.time(x.start)}` }, { a: now, b: x.end, cls: 'nap-plan', tip: `${name}|hasta ~${U.time(x.end)}` });
+        labels.push({ t: x.start, text: U.time(x.start) });
+      } else {
+        segs.push({ a: x.start, b: x.end, cls: 'nap-plan', tip: `${name} prevista|entre ${U.time(x.from)} y ${U.time(x.to)} · ~${U.dur((x.end - x.start) / U.MIN)}` });
+        labels.push({ t: x.start, text: '~' + U.time(x.start), cls: 'soft' });
+      }
+    });
+    const svg = N.Charts.arc({ from, to, now, segs, labels, marker: opts.moon ? 'moon' : 'sun', ends: [U.time(wake), (p.items[p.items.length - 1].state === 'done' ? '' : '~') + U.time(bed)], label: `Día de ${U.time(wake)} a ${U.time(bed)}` });
+    return arcBox(svg, center, opts.cls);
+  };
+
+  N.W.nightArc = (center) => {
+    const now = Date.now(), t = S.activeSleep(), w = S.activeNightWake(), chain = S.tonight(now);
+    const first = chain[0] || t || w;
+    const from = Math.min(now, first.down || first.start);
+    const wake = Math.max(S.expectedWake(from, now), now + 10 * U.MIN);
+    const segs = [];
+    let prevEnd = null;
+    const addSleep = (a, b, down) => {
+      if (prevEnd && a - prevEnd > U.MIN) segs.push({ a: prevEnd, b: a, cls: 'gap', tip: `Despierta|${U.time(prevEnd)} – ${U.time(a)} · ${U.dur((a - prevEnd) / U.MIN)}` });
+      if (down && down < a) segs.push({ a: down, b: a, cls: 'lat', tip: `Durmiéndose|${U.dur((a - down) / U.MIN)}` });
+      segs.push({ a, b, cls: 'sl-done', tip: `Durmiendo|${U.time(a)} – ${U.time(b)} · ${U.dur((b - a) / U.MIN)}` });
+      prevEnd = b;
+    };
+    chain.forEach((s) => addSleep(s.start, s.end, s.down));
+    if (t && t.phase !== 'down') addSleep(t.start, now, t.down);
+    if (w && prevEnd) segs.push({ a: prevEnd, b: now, cls: 'gap', tip: 'Despierta ahora' });
+    segs.push({ a: now, b: wake, cls: 'sl-plan', tip: `Hasta ~${U.time(wake)}` });
+    const svg = N.Charts.arc({ from, to: wake, now, segs, marker: 'moon', ends: [U.time(from), '~' + U.time(wake)], label: `Noche de ${U.time(from)} a ${U.time(wake)}` });
+    return arcBox(svg, center, 'on-dark');
+  };
+  N.W.arcCenter = centerHtml;
+
+  /* Un cronómetro que lleva demasiado en marcha casi seguro se quedó sin parar. */
+  const staleCard = (t, type) => {
+    const start = t.start || t.down;
+    const wake = type === 'night' ? S.expectedWake(start) : 0;
+    const est = Math.min(Date.now(), wake > start + 30 * U.MIN ? wake : start + 60 * U.MIN);
+    const h = (Date.now() - start) / U.HOUR;
+    const val = (x) => `${U.dayKey(x)}T${U.time(x)}`;
+    return `<section class="live live-sleep night-sky">
+      <div class="live-top"><span class="eyebrow">${icon('clock')} ${type === 'nap' ? 'Siesta' : 'Noche'} desde el ${U.dateLong(start)} a las ${U.time(start)}</span></div>
+      <div><b class="live-q-t">¿Se quedó el cronómetro sin parar?</b><p class="live-sub">Lleva ${h >= 48 ? `${Math.floor(h / 24)} días` : `${Math.floor(h)} horas`} en marcha. Dinos a qué hora se despertó y lo guardamos bien.</p></div>
+      <label class="stale-end"><small>Se despertó</small><input type="datetime-local" id="stale-end" value="${val(est)}" min="${val(start)}" max="${val(Date.now())}"></label>
+      <div class="live-actions"><button type="button" class="btn primary" data-act="sleep-stop-at">${icon('check')}Guardar</button><button type="button" class="link on-dark" data-act="sleep-cancel">Descartar</button></div>
+    </section>`;
+  };
+  N.W.isStale = (t) => t && Date.now() - (t.start || t.down) > (S.timerType(t) === 'nap' ? 6 : 16) * U.HOUR;
+  A['sleep-stop-at'] = () => {
+    const t = S.activeSleep(); if (!t) return;
+    const el = document.getElementById('stale-end');
+    const end = el && el.value ? new Date(el.value).getTime() : NaN;
+    if (!(end > (t.start || t.down)) || end > Date.now()) { UI.toast('Elige una hora entre el inicio y ahora'); return; }
+    if (t.phase === 'down') t.start = t.down;
+    delete T().sleep;
+    const rec = closeSleep(Object.assign({}, t, { phase: 'asleep' }), end);
+    if (!rec) { Store.commit(); return; }
+    UI.toast(`Guardado: ${U.dur(S.sleepMin(rec))} de ${rec.type === 'night' ? 'noche' : 'siesta'}`, () => Store.remove('sleeps', rec.id));
+  };
+
   N.W.liveSleep = () => {
     const w = S.activeNightWake();
     if (w) {
       const fed = w.soothe === 'pecho' || w.soothe === 'biberon';
       return `<section class="live live-sleep night-sky is-awake">
         <div class="live-top"><span class="eyebrow">${icon('sun')} Despierta de noche desde las ${U.time(w.start)}</span><button type="button" class="link" data-act="nw-cancel">Descartar</button></div>
-        <b class="live-clock sm" data-since="${w.start}">00:00</b>
+        ${N.W.nightArc(centerHtml('Despierta', `<b class="live-clock sm" data-since="${w.start}">00:00</b>`, `se suele despertar ~${U.time(S.expectedWake(S.tonight()[0] ? S.tonight()[0].start : w.start))}`))}
         <div class="live-q"><small>¿Por qué se ha despertado?</small>${chips(N.WAKE_REASONS, w.reason, 'nw-reason')}</div>
         <div class="live-q"><small>¿Cómo vuelve a dormirse?</small>${chips(N.SOOTHE, w.soothe, 'nw-soothe')}</div>
         ${fed ? `<label class="lcheck"><input type="checkbox" data-act="nw-feed" ${w.feed ? 'checked' : ''}><span>Anotar también como toma</span></label>` : ''}
@@ -179,6 +260,7 @@
     }
     const t = S.activeSleep(); if (!t) return '';
     const type = S.timerType(t);
+    if (N.W.isStale(t)) return staleCard(t, type);
     const typeSeg = `<div class="seg seg-dark">${[['nap', 'Siesta'], ['night', 'Noche']].map(([v, l]) => `<button type="button" class="${type === v ? 'on' : ''}" data-act="sleep-type" data-type="${v}">${l}</button>`).join('')}</div>`;
     if (t.phase === 'down') {
       return `<section class="live live-sleep night-sky">
@@ -191,9 +273,21 @@
     const p = openPause(t);
     const lat = t.down && t.down < t.start ? `tardó ${U.dur((t.start - t.down) / U.MIN)} en dormirse` : '';
     const pausedMin = U.sum((t.pauses || []).filter((x) => x.b), (x) => x.b - x.a) / U.MIN;
+    const info = [lat, t.how ? `${emo(N.SLEEP_HOW, t.how)} ${name(N.SLEEP_HOW, t.how).toLowerCase()}` : '', pausedMin >= 1 ? `${U.dur(pausedMin)} despierta en pausas` : ''].filter(Boolean).join(' · ');
+    const clock = `<b class="live-clock" data-since="${p ? p.a : t.start}">00:00</b>`;
+    let arc;
+    if (type === 'nap') {
+      const cur = S.dayPlan().items.find((x) => x.state === 'now');
+      arc = N.W.dayArc(centerHtml(p ? 'Despierta un momento' : `Siesta ${cur ? cur.idx + 1 : ''}`, clock, cur ? `hasta ~${U.time(cur.end)}` : ''), { moon: true, cls: 'on-dark' });
+    } else {
+      const chain = S.tonight(), wakes = chain.length;
+      const slept = U.sum(chain, (x) => S.sleepMin(x)) + (Date.now() - t.start) / U.MIN;
+      arc = N.W.nightArc(centerHtml('Durmiendo', clock, `${U.dur(slept)} esta noche${wakes ? ` · ${wakes} despertar${wakes > 1 ? 'es' : ''}` : ''}<br>se despierta ~${U.time(S.expectedWake(chain[0] ? chain[0].start : t.start))}`));
+    }
     return `<section class="live live-sleep night-sky ${p ? 'is-awake' : ''}">
       <div class="live-top"><span class="eyebrow">${icon(p ? 'sun' : 'moon')} ${p ? `Despierta un momento desde las ${U.time(p.a)}` : `${type === 'nap' ? 'Siesta' : 'Durmiendo'} desde las ${U.time(t.start)}`}</span>${typeSeg}</div>
-      <div><b class="live-clock" data-since="${p ? p.a : t.start}">00:00</b><p class="live-sub">${[lat, t.how ? `${emo(N.SLEEP_HOW, t.how)} ${name(N.SLEEP_HOW, t.how).toLowerCase()}` : '', pausedMin >= 1 ? `${U.dur(pausedMin)} despierta en pausas` : ''].filter(Boolean).join(' · ')}</p></div>
+      ${arc}
+      ${info ? `<p class="live-sub arc-info">${info}</p>` : ''}
       ${!t.how && !p ? `<div class="live-q"><small>¿Cómo se durmió?</small>${chips(N.SLEEP_HOW, t.how, 'sleep-how')}</div>` : ''}
       <div class="live-actions">${type === 'nap'
         ? (p ? `<button type="button" class="btn primary" data-act="sleep-resume">${icon('moon')}Sigue durmiendo</button><button type="button" class="btn soft on-dark" data-act="sleep-stop">${icon('sun')}Terminar siesta</button>`

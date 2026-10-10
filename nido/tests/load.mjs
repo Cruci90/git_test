@@ -15,6 +15,7 @@ export function loadNido(files = ['data.js', 'core.js', 'demo.js']) {
   ctx.window = ctx;
   vm.createContext(ctx);
   for (const f of files) vm.runInContext(readFileSync(new URL(f, dir), 'utf8'), ctx, { filename: f });
+  Object.defineProperty(ctx.Nido, '_ctx', { value: ctx }); // para simular el DOM en un test
   return ctx.Nido;
 }
 

@@ -122,14 +122,16 @@
     /* CRUD genérico sobre colecciones del bebé activo. */
     add(col, rec) {
       const item = Object.assign({ id: U.uid(), babyId: this.state.activeBabyId, by: this.state.settings.caregiver }, rec);
-      this.state[col].push(item); this.commit(); return item;
+      this.state[col].push(item); this.touchDemo(); this.commit(); return item;
     },
     update(col, id, patch) {
       const it = this.state[col].find((x) => x.id === id);
-      if (it) { Object.assign(it, patch); this.commit(); }
+      if (it) { Object.assign(it, patch); this.touchDemo(); this.commit(); }
       return it;
     },
-    remove(col, id) { this.state[col] = this.state[col].filter((x) => x.id !== id); this.commit(); },
+    remove(col, id) { this.state[col] = this.state[col].filter((x) => x.id !== id); this.touchDemo(); this.commit(); },
+    /* Si la familia ya ha tocado los datos de ejemplo, la demo no se regenera sola. */
+    touchDemo() { if (this.state.demoAt) this.state.demoTouched = true; },
     get(col, id) { return this.state[col].find((x) => x.id === id); },
     list(col) { const b = this.state.activeBabyId; return this.state[col].filter((x) => x.babyId === b); },
     babyMap(key) { const b = this.state.activeBabyId; return (this.state[key][b] = this.state[key][b] || {}); },
@@ -511,6 +513,26 @@
   S.sleepWeeks = (n = 8, now = Date.now()) => {
     const first = U.addDays(S.weekStart(now), -7 * (n - 1));
     return Array.from({ length: n }, (_, w) => S.sleepStats(U.addDays(first, 7 * w), 7, now));
+  };
+
+  /* Hora prevista de despertar tras una noche que empezó en `from`. */
+  S.expectedWake = (from, now = Date.now()) => {
+    const r = S.learnRhythm(now), prefs = S.prefs();
+    const day = new Date(from).getHours() >= 12 ? U.addDays(U.dayStart(from), 1) : U.dayStart(from);
+    return prefs.wakeTarget ? U.fromInputs(U.dayKey(day), prefs.wakeTarget) : day + r.wakeHour * HOUR;
+  };
+  /* Tramos ya cerrados de la noche en curso (encadenados con huecos de menos de 3 h). */
+  S.tonight = (now = Date.now()) => {
+    const t = S.activeSleep(), w = S.activeNightWake();
+    const cur = t ? (t.down || t.start) : w ? w.start : now;
+    const all = S.sleeps().filter((s) => s.type === 'night' && s.end <= cur + MIN);
+    const chain = [];
+    let edge = cur;
+    for (let i = all.length - 1; i >= 0; i--) {
+      if (edge - all[i].end > 3 * HOUR) break;
+      chain.unshift(all[i]); edge = all[i].down || all[i].start;
+    }
+    return chain;
   };
 
   /* ---- Actividades ---- */
