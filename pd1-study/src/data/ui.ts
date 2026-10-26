@@ -1,0 +1,271 @@
+import { makeFactory } from './helper';
+
+const q = makeFactory('ui', 'UI');
+
+export const ui = [
+  q(
+    'Which decorator exposes a property of a Lightning Web Component so that a parent component can set it?',
+    ['@track', '@api', '@wire', '@public'],
+    1,
+    '@api convierte una propiedad o método en pública: el padre puede establecerla/llamarla. @wire conecta datos reactivos y @track hace profunda la reactividad de objetos/arrays (ya no es necesario en la mayoría de casos).'
+  ),
+  q(
+    'In which lifecycle hook should a LWC typically fetch data or subscribe to events when it is inserted into the DOM?',
+    ['constructor()', 'connectedCallback()', 'renderedCallback()', 'disconnectedCallback()'],
+    1,
+    'connectedCallback() se ejecuta cuando el componente se inserta en el DOM; es el sitio habitual para inicializar datos o suscripciones. disconnectedCallback() sirve para limpiar. En el constructor no se puede acceder a los hijos ni atributos.'
+  ),
+  q(
+    'A child LWC must notify its parent that a button was clicked. What is the recommended approach?',
+    [
+      'Call a method on the parent directly using document.querySelector',
+      'Dispatch a CustomEvent from the child and handle it in the parent',
+      'Use an @api method on the child',
+      'Update a static variable shared between both components'
+    ],
+    1,
+    'La comunicación hijo→padre se hace con eventos: this.dispatchEvent(new CustomEvent(\'nombre\', { detail })). El padre lo escucha con on<nombre>. Padre→hijo se hace con propiedades/métodos @api.'
+  ),
+  q(
+    'Which wire adapter or approach should be used so that an Apex method can be called with @wire in a LWC?',
+    [
+      'The method must be annotated with @AuraEnabled(cacheable=true)',
+      'The method must be annotated with @future',
+      'The method must be declared global',
+      'The method must return void'
+    ],
+    0,
+    'Para usar @wire con Apex el método debe ser static y @AuraEnabled(cacheable=true). Los métodos que modifican datos no pueden ser cacheable y se llaman de forma imperativa.'
+  ),
+  q(
+    'A LWC needs to call an Apex method that inserts a record when the user clicks a button. How should the call be made?',
+    [
+      'Imperatively, importing the Apex method and calling it in a handler',
+      'With @wire because wire supports DML',
+      'Through a lightning-formatted-text component',
+      'Using Visualforce remoting'
+    ],
+    0,
+    'Los métodos con DML no pueden ser cacheable, por tanto no se pueden usar con @wire; se importan (@salesforce/apex/Clase.metodo) y se invocan imperativamente, devolviendo una Promise.'
+  ),
+  q(
+    'Which base component displays a form to view or edit a record using Lightning Data Service with minimal code?',
+    ['lightning-datatable', 'lightning-record-form', 'lightning-input-field only', 'lightning-card'],
+    1,
+    'lightning-record-form genera automáticamente un formulario (ver/editar/crear) con LDS sin necesidad de Apex. Para más control se usan lightning-record-edit-form y lightning-record-view-form.'
+  ),
+  q(
+    'Which directive should be used to render a list of items in a LWC template, and what is required on each item?',
+    [
+      'for:each with a unique key attribute on the first element inside',
+      'for:each with an id attribute on the template tag',
+      'iterate with a name attribute',
+      'repeat with an index attribute'
+    ],
+    0,
+    'for:each={coleccion} for:item="item" requiere un atributo key único y estable en el primer elemento del bucle para el renderizado eficiente del DOM.'
+  ),
+  q(
+    'What is the modern directive used to conditionally render content in a LWC template?',
+    ['if:true', 'lwc:if (with lwc:elseif / lwc:else)', 'v-if', 'rendered'],
+    1,
+    'lwc:if, lwc:elseif y lwc:else son las directivas actuales; if:true/if:false siguen funcionando pero están obsoletas.'
+  ),
+  q(
+    'How does a LWC access an element in its own template from JavaScript?',
+    [
+      'document.querySelector()',
+      'this.template.querySelector()',
+      'window.find()',
+      'this.querySelector() always'
+    ],
+    1,
+    'Por el Shadow DOM, los elementos del template propio se obtienen con this.template.querySelector(); document.querySelector no atraviesa los límites del shadow.'
+  ),
+  q(
+    'Which file configures where a LWC can be used (for example App Page, Record Page, Home Page)?',
+    [
+      'The .js-meta.xml file',
+      'The .html file',
+      'The .css file',
+      'The package.xml file'
+    ],
+    0,
+    'El archivo componente.js-meta.xml contiene isExposed, apiVersion y los targets (lightning__RecordPage, lightning__AppPage, etc.) que determinan dónde se puede usar el componente.'
+  ),
+  q(
+    'A developer needs two unrelated LWCs on the same page to communicate. Which option is appropriate?',
+    ['Lightning Message Service', 'Custom setting', 'Static variable', 'A formula field'],
+    0,
+    'Lightning Message Service (canales de mensajes) permite comunicar componentes LWC, Aura y Visualforce que no tienen relación padre-hijo dentro de la misma página.'
+  ),
+  q(
+    'In a LWC, how do you navigate to a record page programmatically?',
+    [
+      'window.location.href = "/" + recordId',
+      'Use NavigationMixin.Navigate with a PageReference',
+      'Call Apex and redirect',
+      'Use lightning-navigation-helper'
+    ],
+    1,
+    'NavigationMixin (lightning/navigation) con un PageReference (type standard__recordPage) es el método soportado y funciona en Lightning Experience, Experience Cloud y app móvil.'
+  ),
+  q(
+    'After an imperative Apex call updates data, how can a component refresh the cached data provided by a @wire adapter?',
+    ['refreshApex()', 'location.reload()', 'this.wire.reset()', 'Database.refresh()'],
+    0,
+    'refreshApex(valorWireado) invalida la caché del adaptador de Apex wire y vuelve a solicitar los datos al servidor.'
+  ),
+  q(
+    'Which statement about the renderedCallback() hook is correct?',
+    [
+      'It runs once, only after the first render.',
+      'It runs after every render of the component, so logic should be guarded to avoid infinite loops.',
+      'It runs before connectedCallback().',
+      'It is only used for server-side rendering.'
+    ],
+    1,
+    'renderedCallback() se ejecuta tras cada renderizado; si dentro cambias estado reactivo puedes causar un bucle infinito, por eso se suele proteger con un flag (por ejemplo, hasRendered).'
+  ),
+  q(
+    'Which tools can be used to unit test Lightning Web Components?',
+    ['Jest', 'ApexUnit', 'JUnit', 'Selenium only'],
+    0,
+    'Los LWC se prueban con Jest (sfdx-lwc-jest). Los métodos Apex se prueban con clases @isTest.'
+  ),
+  q(
+    'Which Visualforce attribute binds a page to the standard controller for the Account object?',
+    [
+      '<apex:page standardController="Account">',
+      '<apex:page controller="Account">',
+      '<apex:page object="Account">',
+      '<apex:page extensions="Account">'
+    ],
+    0,
+    'standardController="Account" proporciona la funcionalidad estándar (save, edit, delete...). controller se usa para un controlador Apex personalizado; extensions para añadir lógica a uno estándar.'
+  ),
+  q(
+    'A Visualforce page needs additional logic on top of the standard controller. What should a developer do?',
+    [
+      'Create a controller extension class with a constructor that accepts ApexPages.StandardController',
+      'Replace the standard controller with a trigger',
+      'Use a static resource',
+      'Create a custom setting'
+    ],
+    0,
+    'Las controller extensions amplían un standard o custom controller. Su constructor recibe ApexPages.StandardController (o el controller personalizado) y se declara con extensions="MiClase".'
+  ),
+  q(
+    'Which Visualforce expression displays the Name field of the record in a standard controller page?',
+    ['{!Account.Name}', '{Account.Name}', '${Account.Name}', '<%= Account.Name %>'],
+    0,
+    'Las expresiones en Visualforce usan la sintaxis {! }. Con el standard controller de Account la variable es Account.'
+  ),
+  q(
+    'What is the purpose of the "rendered" attribute on Visualforce components?',
+    [
+      'To conditionally display the component based on a Boolean expression',
+      'To choose the PDF rendering engine',
+      'To refresh the page automatically',
+      'To bind a CSS class'
+    ],
+    0,
+    'rendered controla si el componente se incluye en la salida HTML, según una expresión booleana. Con renderAs="pdf" en apex:page se genera un PDF.'
+  ),
+  q(
+    'In Aura components, which type of event can be handled by any component in the application, regardless of hierarchy?',
+    ['Component event', 'Application event', 'DOM event', 'Platform event'],
+    1,
+    'Los application events se difunden a todos los componentes que los escuchen. Los component events solo suben por la jerarquía contenedora (bubble/capture).'
+  ),
+  q(
+    'Which Aura attribute tag declares a variable in a component?',
+    ['<aura:attribute name="x" type="String"/>', '<aura:var name="x"/>', '<aura:property name="x"/>', '<aura:data name="x"/>'],
+    0,
+    '<aura:attribute> define los atributos (variables) con su nombre, tipo y valor por defecto. Se accede con {!v.x} en la plantilla.'
+  ),
+  q(
+    'A security review warns about cross-site scripting (XSS) in a Visualforce page. Which practice helps prevent it?',
+    [
+      'Use HTMLENCODE, JSENCODE or URLENCODE functions when merging user-supplied data',
+      'Disable the browser cache',
+      'Use <apex:outputText escape="false"> for all fields',
+      'Move the logic to a trigger'
+    ],
+    0,
+    'Hay que escapar los datos de usuario al renderizarlos con HTMLENCODE, JSENCODE, JSINHTMLENCODE o URLENCODE. escape="false" es el error común que provoca XSS.'
+  ),
+  q(
+    'What is the purpose of lightning-record-edit-form compared with lightning-record-form?',
+    [
+      'It provides more control over the layout and fields while still using Lightning Data Service',
+      'It requires a custom Apex controller',
+      'It can only display read-only data',
+      'It replaces Visualforce pages'
+    ],
+    0,
+    'lightning-record-edit-form permite diseñar los campos libremente con lightning-input-field y personalizar los botones, manteniendo la validación y seguridad de LDS.'
+  ),
+  q(
+    'A user needs to reference a static resource image in a LWC. Which import is correct?',
+    [
+      "import LOGO from '@salesforce/resourceUrl/companyLogo';",
+      "import LOGO from '@salesforce/staticResource/companyLogo';",
+      "import LOGO from 'c/companyLogo';",
+      "import LOGO from '@salesforce/image/companyLogo';"
+    ],
+    0,
+    '@salesforce/resourceUrl/nombre devuelve la URL del recurso estático. Otros módulos útiles: @salesforce/label, @salesforce/schema, @salesforce/apex.'
+  ),
+  q(
+    'Which tool lets an admin build Lightning pages and place both standard and custom components without code?',
+    ['Lightning App Builder', 'Developer Console', 'Schema Builder', 'Process Builder'],
+    0,
+    'Lightning App Builder arrastra y suelta componentes para crear páginas de aplicación, de registro y de inicio. Los LWC deben exponerse con isExposed y targets adecuados.'
+  ),
+  q(
+    'How can a developer let users run a custom action (for example "Convert") from the record page without leaving it?',
+    ['A quick action', 'A custom tab', 'A validation rule', 'A page layout section only'],
+    0,
+    'Las Quick Actions (acciones globales o de objeto) pueden abrir un LWC, un flow o un formulario en un modal desde la página de registro.'
+  ),
+  q(
+    'Which LWC feature allows a parent component to inject content into a child component\'s template?',
+    ['Slots', 'Wire adapters', 'Static resources', 'Decorators'],
+    0,
+    '<slot> permite que el componente padre proporcione contenido HTML que el hijo renderiza en una posición definida, habilitando composición reutilizable.'
+  ),
+  q(
+    'What does Lightning Web Security (LWS) provide?',
+    [
+      'A security architecture that isolates component namespaces and sandboxes JavaScript execution',
+      'A replacement for sharing rules',
+      'Encryption of fields at rest',
+      'Login IP restrictions'
+    ],
+    0,
+    'LWS (sucesor de Lightning Locker) aísla los componentes por namespace y limita el acceso a APIs del navegador y al DOM de otros componentes.'
+  ),
+  q(
+    'In LWC, how do you let a custom event bubble up through the DOM and cross shadow boundaries?',
+    [
+      'new CustomEvent(\'x\', { bubbles: true, composed: true })',
+      'new CustomEvent(\'x\', { global: true })',
+      'new CustomEvent(\'x\', { cross: true })',
+      'dispatchEvent(\'x\', true)'
+    ],
+    0,
+    'bubbles: true hace que el evento suba en el DOM y composed: true le permite atravesar el límite del shadow DOM. Se recomienda usarlos con cuidado, solo cuando sea necesario.'
+  ),
+  q(
+    'A LWC must use the current record\'s Id on a Record Page. How is it obtained?',
+    [
+      'Declare @api recordId; the platform sets it on record pages',
+      'Call Apex to get the Id',
+      'Parse window.location',
+      'Use a custom setting'
+    ],
+    0,
+    'En páginas de registro, declarar @api recordId (y opcionalmente @api objectApiName) hace que la plataforma inyecte el Id del registro actual.'
+  )
+];
