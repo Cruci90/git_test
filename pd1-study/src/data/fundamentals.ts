@@ -264,5 +264,73 @@ System.debug(d.setScale(2));`
     ['Schema describe methods', 'Custom metadata types', 'The Tooling API only', 'Static resources'],
     0,
     'Las clases Schema (Schema.getGlobalDescribe(), DescribeSObjectResult, DescribeFieldResult) permiten conocer objetos, campos, picklists y permisos dinámicamente desde Apex.'
+  ),
+
+  q(
+    'Each Ticket__c belongs to exactly one Project__c. The business wants the project record to show the number of tickets and the sum of Hours__c, with no code. Which field should be created?',
+    [
+      'A lookup field on Ticket__c that points to Project__c',
+      'A master-detail field on Ticket__c that points to Project__c',
+      'A master-detail field on Project__c that points to Ticket__c',
+      'A text field on Ticket__c that stores the project name'
+    ],
+    1,
+    'Los roll-up summary solo existen en el lado maestro de una relación Master-Detail. El campo de relación siempre se crea en el objeto hijo (Ticket__c) apuntando al padre (Project__c); por eso la opción 3 es imposible.'
+  ),
+  q(
+    'A developer defines: public class InvoiceException extends Exception {}. Which TWO statements actually raise the exception? (Choose 2.)',
+    [
+      "throw new InvoiceException('Total is negative');",
+      'throw new InvoiceException();',
+      "new InvoiceException('Total is negative');",
+      'return new InvoiceException();'
+    ],
+    [0, 1],
+    'Una excepción solo se lanza con la palabra clave throw. Crear la instancia (new ...) sin throw no hace nada. Las excepciones personalizadas incluyen constructores con mensaje y sin argumentos automáticamente.'
+  ),
+  q(
+    'Which statement returns Id and Name of Accounts, Contacts and Leads whose text fields contain the term "Acme"?',
+    [
+      "FIND 'Acme' IN ALL FIELDS RETURNING Account(Id, Name), Contact(Id, Name), Lead(Id, Name)",
+      "SELECT Id, Name FROM Account, Contact, Lead WHERE Name LIKE '%Acme%'",
+      "FIND 'Acme' FROM Account, Contact, Lead",
+      "SEARCH 'Acme' IN Account, Contact, Lead"
+    ],
+    0,
+    'Buscar texto en varios objetos a la vez es trabajo de SOSL: FIND ... IN ... RETURNING. SOQL solo consulta un objeto en FROM; FIND no usa FROM y SEARCH no existe en Apex.'
+  ),
+  q(
+    'BaseValidator is declared as a virtual class. How should AddressValidator reuse its behavior?',
+    [
+      'public class AddressValidator extends BaseValidator',
+      'public class AddressValidator implements BaseValidator',
+      "@Extends(class='BaseValidator') public class AddressValidator",
+      'public class AddressValidator : BaseValidator'
+    ],
+    0,
+    'Una clase hereda de otra con "extends" (la clase base debe ser virtual o abstract). "implements" es solo para interfaces; Apex no tiene anotación @Extends ni la sintaxis con dos puntos.'
+  ),
+  q(
+    'Room__c has a lookup field Hotel__c to the Hotel__c object, and the child relationship name is Rooms. Which query returns the hotel "Alpine" with all of its rooms?',
+    [
+      "SELECT Id, (SELECT Id FROM Rooms__r) FROM Hotel__c WHERE Name = 'Alpine'",
+      "SELECT Id, (SELECT Id FROM Room__c) FROM Hotel__c WHERE Name = 'Alpine'",
+      "SELECT Id FROM Room__c WHERE Hotel__c.Name = 'Alpine'",
+      "SELECT Id, Rooms__r.Id FROM Hotel__c WHERE Name = 'Alpine'"
+    ],
+    0,
+    'En una subconsulta padre→hijo se usa el nombre de la relación hija (child relationship name) más __r, no el nombre del objeto. La opción 3 mezcla la notación hijo→padre (que sería Hotel__r.Name) y la 4 no admite relaciones de hijos con punto.'
+  ),
+  q(
+    'Which THREE results can a SOQL query produce in Apex? (Choose 3.)',
+    [
+      'A single sObject record',
+      'A List of sObject records',
+      'An Integer from SELECT COUNT() FROM Account',
+      'A Map<String, String> returned directly by the query',
+      'A Set<Id> returned directly by the query'
+    ],
+    [0, 1, 2],
+    'Una consulta SOQL puede asignarse a un sObject (si devuelve una fila), a una List<sObject> o, con COUNT(), a un Integer. Los Map y Set no se devuelven directamente: se construyen a partir de la lista.'
   )
 ];

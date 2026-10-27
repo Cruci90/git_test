@@ -229,5 +229,28 @@ export const testing = [
     ['Execute Anonymous', 'Run All Tests', 'Open Log', 'Query Editor'],
     0,
     'Debug → Open Execute Anonymous Apex permite ejecutar código ad-hoc y ver el log; no guarda la clase en la org.'
+  ),
+
+  q(
+    'A helper class TestDataFactory creates Accounts for unit tests and must never be callable from production code. What should the developer add?',
+    [
+      '@IsTest on the class declaration',
+      'The private modifier on every method',
+      '@TestVisible on the class',
+      'The static keyword on every method'
+    ],
+    0,
+    'Una clase anotada con @IsTest solo puede usarse desde código de prueba y además no cuenta para el límite de tamaño de código Apex de la org. Los métodos deben seguir siendo public/global para que otras clases de test los usen.'
+  ),
+  q(
+    'Which TWO tools can run a script that automatically deploys metadata to a sandbox? (Choose 2.)',
+    [
+      'Salesforce CLI',
+      'Ant Migration Tool',
+      'Change sets',
+      'Developer Console'
+    ],
+    [0, 1],
+    'Salesforce CLI y la Ant Migration Tool (Metadata API) se pueden invocar desde scripts y pipelines de CI/CD. Los change sets se crean manualmente en la interfaz y la Developer Console no despliega metadatos.'
   )
 ];

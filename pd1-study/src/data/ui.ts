@@ -267,5 +267,84 @@ export const ui = [
     ],
     0,
     'En páginas de registro, declarar @api recordId (y opcionalmente @api objectApiName) hace que la plataforma inyecte el Id del registro actual.'
+  ),
+
+  q(
+    'A Lightning web component must display data from a complex SOQL query that includes parent fields and a child subquery. How should the component obtain the data?',
+    [
+      'Call an Apex method annotated with @AuraEnabled (cacheable=true when read-only)',
+      'Write the SOQL directly in the component JavaScript',
+      'Subscribe to the Streaming API',
+      'Embed a flow that runs the query'
+    ],
+    0,
+    'Las consultas SOQL complejas viven en Apex; el LWC importa el método (@salesforce/apex/...) y lo usa con @wire (si es cacheable=true) o de forma imperativa. JavaScript no puede ejecutar SOQL directamente.'
+  ),
+  q(
+    'Which THREE elements are needed to render a Lightning component inside a Visualforce page (Lightning Out)? (Choose 3.)',
+    [
+      '<apex:includeLightning />',
+      '$Lightning.use() referencing a Lightning app that declares the dependency',
+      '$Lightning.createComponent() to insert the component',
+      '<apex:slds />',
+      '$Lightning.useComponent()'
+    ],
+    [0, 1, 2],
+    'Se necesita la librería (<apex:includeLightning/>), $Lightning.use() para cargar la app Aura con la dependencia y $Lightning.createComponent() para crear el componente en un elemento DOM. <apex:slds/> solo carga estilos.'
+  ),
+  q(
+    'Which Visualforce markup is the most likely to introduce a cross-site scripting (XSS) vulnerability?',
+    [
+      '<apex:outputText value="{!$CurrentPage.parameters.q}" escape="false" />',
+      '<apex:outputText value="{!$CurrentPage.parameters.q}" />',
+      '<apex:outputText value="{!Account.Name}" />',
+      '<apex:outputText value="{!HTMLENCODE($CurrentPage.parameters.q)}" />'
+    ],
+    0,
+    'Mostrar un parámetro de la URL (controlado por el atacante) con escape="false" desactiva el escapado HTML y permite inyectar scripts. Por defecto outputText escapa el contenido.'
+  ),
+  q(
+    'A flow named accountOnboarding must be shown inside an Aura component. Which markup should the developer use?',
+    [
+      '<lightning:flow aura:id="flow" />',
+      '<aura:flow name="accountOnboarding" />',
+      '<lightning-flow flow="accountOnboarding"></lightning-flow>',
+      '<force:flow />'
+    ],
+    0,
+    'En Aura se usa el componente <lightning:flow> y se inicia desde el controlador con component.find("flow").startFlow("accountOnboarding"). La sintaxis con guion (lightning-) pertenece a LWC.'
+  ),
+  q(
+    'A team needs a custom form that validates user input in the browser before saving and can be placed on Lightning pages. Which technology is the best fit?',
+    [
+      'A Lightning web component using lightning-input and its validity checks',
+      'A schedule-triggered flow',
+      'A batch Apex class',
+      'A custom setting'
+    ],
+    0,
+    'Los LWC permiten UI personalizada, validación en cliente (reportValidity/setCustomValidity) y se pueden exponer en Lightning App Builder. Las otras opciones no tienen interfaz de usuario.'
+  ),
+  q(
+    'A developer must override the standard Edit button for Contacts so that users get a custom UI in both Salesforce Classic and Lightning Experience. What should be used?',
+    [
+      'A Visualforce page for Classic and a Lightning component for Lightning Experience',
+      'A Lightning component for Classic and a Visualforce page for Lightning Experience',
+      'A Lightning component for both experiences',
+      'A flow for both experiences'
+    ],
+    0,
+    'Classic solo admite sobrescribir botones con páginas Visualforce; Lightning Experience permite componentes Lightning (o páginas Lightning/Visualforce). Hay que proveer una implementación para cada runtime.'
+  ),
+  q(
+    'Sales Reps may read Commission__c; Sales Assistants may not. A single Apex method feeds an LWC and must work for both users without throwing errors. What should the developer do?',
+    [
+      'Query the field and then apply Security.stripInaccessible(AccessType.READABLE, records)',
+      'Add WITH SECURITY_ENFORCED to the query',
+      'Rely on Lightning Web Security to remove the field',
+      'Check the user\'s profile name and branch the query'
+    ],
+    0,
+    'stripInaccessible elimina de los resultados los campos a los que el usuario no tiene acceso, sin error. WITH SECURITY_ENFORCED lanza una excepción si el usuario no puede leer algún campo de la consulta; LWS no aplica FLS y comprobar nombres de perfil es frágil.'
   )
 ];

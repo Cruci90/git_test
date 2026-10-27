@@ -2,7 +2,7 @@
 
 Aplicación web (React + TypeScript + Vite, PWA) para preparar el examen **Salesforce Platform Developer I**.
 
-- **121 preguntas originales** en inglés con explicaciones en español, en los 4 temas oficiales:
+- **140 preguntas originales** en inglés con explicaciones en español, en los 4 temas oficiales:
   Developer Fundamentals (23 %), Process Automation & Logic (30 %), User Interface (25 %), Testing, Debugging & Deployment (22 %).
 - **Modo práctica**: elige temas, cantidad y filtro (todas / sin ver / falladas); feedback inmediato con explicación.
 - **Modo examen**: 60 preguntas, 105 minutos, distribución según los pesos oficiales, aprobado con 68 %. Temporizador, marcar para revisar, navegación libre; el examen en curso sobrevive a recargas y el reloj sigue corriendo.

@@ -322,5 +322,45 @@ export const automation = [
     ['Limits.getQueries()', 'System.getQueries()', 'Limits.getSoqlCount()', 'Database.queryCount()'],
     0,
     'La clase Limits expone el uso actual (getQueries()) y el máximo (getLimitQueries()) de cada governor limit para monitorear el consumo.'
+  ),
+
+  q(
+    'A call-center agent must follow a guided script, entering many pieces of information from a caller and creating a record at the end. What is the most efficient solution?',
+    ['An Apex trigger', 'A Screen Flow', 'A before-save record-triggered flow', 'A scheduled batch Apex job'],
+    1,
+    'Un Screen Flow guía al usuario por pantallas, recoge datos y crea registros sin código. Los triggers y los flows record-triggered no tienen interfaz de usuario.'
+  ),
+  q(
+    'New Cases must be assigned to Tier 1 or Tier 2 support depending on Case Origin. Which TWO declarative options can do this? (Choose 2.)',
+    [
+      'Case assignment rules',
+      'A record-triggered flow that sets the Case owner',
+      'A validation rule',
+      'A formula field on Case'
+    ],
+    [0, 1],
+    'Las assignment rules están diseñadas para enrutar Cases (y Leads) y un flow record-triggered puede actualizar OwnerId (o un campo propio) con decisiones/asignaciones. Una validation rule solo bloquea guardados y una fórmula no puede asignar propietario.'
+  ),
+  q(
+    'When Order__c.Status first changes to "Placed", each order must be sent to an external REST endpoint that accepts one order per request. Orders can also arrive in CSV loads of thousands. What should the developer implement?',
+    [
+      'A trigger that enqueues a Queueable class implementing Database.AllowsCallouts',
+      'An Http callout directly in the trigger body',
+      'A before-update trigger with a synchronous callout',
+      'A workflow field update that calls the endpoint'
+    ],
+    0,
+    'Un trigger no puede hacer callouts síncronos; hay que delegar en un proceso asíncrono (Queueable con Database.AllowsCallouts, @future(callout=true) o Platform Events). Con cargas masivas hay que respetar el límite de 100 callouts por transacción, por ejemplo con varios jobs o lotes.'
+  ),
+  q(
+    'Which TWO statements describe declarative development compared with programmatic customization? (Choose 2.)',
+    [
+      'It is configured through Setup using clicks instead of code',
+      'It does not require writing Apex code or Apex test classes',
+      'It is never subject to any platform limits',
+      'It cannot be deployed between orgs'
+    ],
+    [0, 1],
+    'Lo declarativo se configura con clics en Setup (objetos, campos, flows, validation rules...) y no requiere código ni clases de prueba Apex. Sigue teniendo límites de plataforma y se despliega como metadatos.'
   )
 ];
