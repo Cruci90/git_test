@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QuestionCard from '../components/QuestionCard';
+import { useCountUp } from '../lib/useCountUp';
 import Bar from '../components/Bar';
 import { QUESTIONS, QUESTION_BY_ID } from '../data';
 import { CATEGORIES } from '../lib/categories';
@@ -126,6 +127,7 @@ function Running({ session }: { session: ExamSession }) {
       </div>
 
       <QuestionCard
+        key={q.id}
         q={q}
         order={session.orders[q.id]}
         selected={selected}
@@ -180,12 +182,13 @@ function ResultView({ result }: { result: ExamResult }) {
   const [onlyWrong, setOnlyWrong] = useState(true);
   const items = useMemo(() => result.items.filter((i) => (onlyWrong ? !i.ok : true)), [result, onlyWrong]);
   const mins = Math.round(result.usedMs / 60000);
+  const shownPct = useCountUp(result.pct);
 
   return (
     <>
       <section className="card result">
         <span className={`badge big ${result.passed ? 'ok' : 'ko'}`}>{result.passed ? 'APROBADO' : 'SUSPENSO'}</span>
-        <p className="big-score">{result.pct}%</p>
+        <p className="big-score">{shownPct.toFixed(1)}%</p>
         <p className="muted">
           {result.correct} / {result.total} correctas · {mins} min · mínimo {PASS_PCT}%
         </p>

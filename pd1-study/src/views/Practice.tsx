@@ -147,7 +147,7 @@ export default function Practice({ preset }: { preset?: 'failed' }) {
         <span>Pregunta {idx + 1} / {session.qs.length}</span>
         <button className="btn small" onClick={() => setSession(null)}>Salir</button>
       </div>
-      <QuestionCard q={q} order={session.orders[q.id]} selected={selected} onChange={setSelected} reveal={revealed} />
+      <QuestionCard key={q.id} q={q} order={session.orders[q.id]} selected={selected} onChange={setSelected} reveal={revealed} />
       <div className="actions sticky">
         {!revealed ? (
           <button className="btn primary" disabled={selected.length === 0} onClick={check}>Comprobar</button>

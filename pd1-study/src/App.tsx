@@ -1,3 +1,4 @@
+import type React from 'react';
 import { useHash } from './lib/useHash';
 import Home from './views/Home';
 import Practice from './views/Practice';
@@ -41,7 +42,8 @@ export default function App() {
         <a href="#/" className="brand">
           <span className="logo">PD1</span> Study
         </a>
-        <nav className="nav" aria-label="Principal">
+        <nav className="nav" aria-label="Principal" style={{ '--i': Math.max(0, LINKS.findIndex((l) => l.to === route)), '--n': LINKS.length } as React.CSSProperties}>
+          <span className="nav-pill" aria-hidden="true" />
           {LINKS.map((l) => (
             <a key={l.to} href={`#${l.to}`} className={route === l.to ? 'active' : ''} aria-current={route === l.to ? 'page' : undefined}>
               <span aria-hidden="true">{l.icon}</span>
@@ -50,7 +52,9 @@ export default function App() {
           ))}
         </nav>
       </header>
-      <main className="content">{view}</main>
+      <main className="content">
+        <div className="view" key={`${route}/${param}`}>{view}</div>
+      </main>
     </div>
   );
 }

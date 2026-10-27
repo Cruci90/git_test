@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { Question } from '../types';
 import { CATEGORY_BY_ID } from '../lib/categories';
 
@@ -52,7 +53,7 @@ export default function QuestionCard({ q, order, selected, onChange, reveal = fa
           if (reveal && isAns) cls += ' correct';
           if (reveal && isSel && !isAns) cls += ' wrong';
           return (
-            <li key={idx}>
+            <li key={idx} style={{ '--k': pos } as React.CSSProperties}>
               <label className={cls}>
                 <input
                   type={multi ? 'checkbox' : 'radio'}
