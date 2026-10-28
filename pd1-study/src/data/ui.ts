@@ -346,5 +346,132 @@ export const ui = [
     ],
     0,
     'stripInaccessible elimina de los resultados los campos a los que el usuario no tiene acceso, sin error. WITH SECURITY_ENFORCED lanza una excepción si el usuario no puede leer algún campo de la consulta; LWS no aplica FLS y comprobar nombres de perfil es frágil.'
+  ),
+
+  q(
+    'Which wire adapter should a LWC use to read fields of a record via Lightning Data Service?',
+    ['getRecord from lightning/uiRecordApi', 'getRecords from lightning/apex', 'queryRecord from lightning/data', 'fetchRecord from lightning/ldsApi'],
+    0,
+    'getRecord (lightning/uiRecordApi) es el adaptador wire estándar para leer un registro y sus campos respetando CRUD, FLS y sharing, sin Apex.'
+  ),
+  q(
+    'A LWC must create a record in JavaScript without writing Apex. What should the developer use?',
+    ['createRecord from lightning/uiRecordApi', 'insert from lightning/dml', 'Database.insert in the component', 'A SOQL query'],
+    0,
+    'createRecord (lightning/uiRecordApi) crea registros mediante LDS de forma imperativa; también existen updateRecord y deleteRecord.'
+  ),
+  q(
+    'How does a LWC display a toast message?',
+    [
+      'Dispatch a ShowToastEvent imported from lightning/platformShowToastEvent',
+      'Call alert() from the component',
+      'Call System.debug() in JavaScript',
+      'Use the lightning-toast Apex class'
+    ],
+    0,
+    'Se crea new ShowToastEvent({ title, message, variant }) y se lanza con this.dispatchEvent(). alert() no se recomienda en Lightning.'
+  ),
+  q(
+    'Which LWC lifecycle hook captures errors thrown by child components in its template?',
+    ['errorCallback(error, stack)', 'catchCallback()', 'disconnectedCallback()', 'renderedCallback()'],
+    0,
+    'errorCallback es el "error boundary" del componente: captura errores en los hijos durante la creación, renderizado, callbacks de ciclo de vida, etc.'
+  ),
+  q(
+    'A parent LWC must call a method on its child component. What is required?',
+    [
+      'Decorate the child method with @api and call it through this.template.querySelector()',
+      'Make the child method static',
+      'Dispatch a DOM event from the parent',
+      'Import the child class into the parent JavaScript'
+    ],
+    0,
+    'Los métodos públicos del hijo se exponen con @api y el padre los invoca sobre el elemento hijo obtenido con this.template.querySelector("c-hijo").'
+  ),
+  q(
+    'Which THREE attributes are required by lightning-datatable? (Choose 3.)',
+    ['key-field', 'columns', 'data', 'sortable-all', 'hide-checkbox-column'],
+    [0, 1, 2],
+    'lightning-datatable necesita key-field (identificador único de fila), columns (definición de columnas) y data (filas). sortable y hide-checkbox-column son opcionales.'
+  ),
+  q(
+    'Which target in the .js-meta.xml file makes a LWC available as a quick action on a record page?',
+    ['lightning__RecordPage', 'lightning__RecordAction', 'lightning__AppPage', 'lightning__Tab'],
+    1,
+    'lightning__RecordAction (con actionType Action/ScreenAction) permite usar el LWC como quick action. lightning__RecordPage lo coloca como componente en la página de registro.'
+  ),
+  q(
+    'Which Visualforce controller provides built-in pagination and handling of record lists?',
+    ['StandardController', 'StandardSetController', 'ApexPages.Message', 'A controller extension only'],
+    1,
+    'StandardSetController maneja listas de registros (list views, selección y paginación), usado con standardController + recordSetVar.'
+  ),
+  q(
+    'A Visualforce controller holds a large collection that is not needed after the page loads. How can the view state size be reduced?',
+    ['Declare the variable as transient', 'Declare the variable as static final', 'Mark it with @AuraEnabled', 'Move it to a trigger'],
+    0,
+    'Las variables "transient" no se serializan en el view state, reduciendo su tamaño (el límite es de 170 KB).'
+  ),
+  q(
+    'Which Visualforce component lets JavaScript call a controller action with AJAX and re-render part of the page?',
+    ['apex:actionFunction', 'apex:includeScript', 'apex:param', 'apex:outputPanel only'],
+    0,
+    'apex:actionFunction define una función JavaScript que invoca una acción del controlador por AJAX y puede refrescar áreas con rerender.'
+  ),
+  q(
+    'Which interface must an Aura component implement to receive the current record Id on a record page?',
+    ['force:hasRecordId', 'force:appHostable', 'lightning:isUrlAddressable', 'flexipage:hasPageId'],
+    0,
+    'force:hasRecordId añade el atributo recordId con el Id del registro actual. Para mostrarlo en App Builder además se usa flexipage:availableForRecordHome.'
+  ),
+  q(
+    'In a LWC, which change to a class field reliably triggers a re-render?',
+    [
+      'this.items = [...this.items, newItem];',
+      'this.items.push(newItem); on a plain array field without @track',
+      'Changing an object property that is not tracked',
+      'Calling this.items.length'
+    ],
+    0,
+    'Todos los campos son reactivos, pero para valores no primitivos sin @track solo se detecta la reasignación del campo. Crear un array nuevo (spread) asegura el re-render.'
+  ),
+  q(
+    'Which TWO are benefits of using Lightning Data Service instead of Apex for record access? (Choose 2.)',
+    [
+      'No Apex code or SOQL is needed for basic record operations',
+      'CRUD, field-level security and sharing are enforced automatically',
+      'It bypasses all governor limits',
+      'It supports unrestricted aggregate queries'
+    ],
+    [0, 1],
+    'LDS ofrece acceso a registros sin Apex, respeta automáticamente los permisos del usuario y comparte caché entre componentes. No elimina governor limits ni ejecuta consultas arbitrarias.'
+  ),
+  q(
+    'How does a LWC reference a custom label named Welcome_Msg?',
+    [
+      "import WELCOME from '@salesforce/label/c.Welcome_Msg';",
+      "import WELCOME from '@salesforce/customLabel/Welcome_Msg';",
+      "import WELCOME from 'c/Welcome_Msg';",
+      'Custom labels cannot be used in LWC.'
+    ],
+    0,
+    'Las etiquetas personalizadas se importan con @salesforce/label/c.NombreEtiqueta (c es el namespace por defecto) y se exponen como propiedad del componente.'
+  ),
+  q(
+    'An administrator wants to show or hide fields on a record page based on field values, without code. Which feature should be used?',
+    ['Dynamic Forms with visibility filters', 'Validation rules', 'Page layout assignments only', 'Apex triggers'],
+    0,
+    'Dynamic Forms permite colocar campos como componentes en Lightning App Builder con filtros de visibilidad por valor de campo, perfil, etc.'
+  ),
+  q(
+    'How does a LWC read the Id of the current user?',
+    [
+      "import USER_ID from '@salesforce/user/Id';",
+      "import USER_ID from '@salesforce/currentUser/Id';",
+      'It must call Apex UserInfo.getUserId() always',
+      "import USER_ID from 'lightning/user';"
+    ],
+    0,
+    '@salesforce/user/Id exporta el Id del usuario actual directamente en el componente, sin llamar a Apex.'
   )
 ];

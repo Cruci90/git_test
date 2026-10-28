@@ -362,5 +362,122 @@ export const automation = [
     ],
     [0, 1],
     'Lo declarativo se configura con clics en Setup (objetos, campos, flows, validation rules...) y no requiere código ni clases de prueba Apex. Sigue teniendo límites de plataforma y se despliega como metadatos.'
+  ),
+
+  q(
+    'Which Flow element lets one flow call another flow so logic can be reused?',
+    ['Subflow', 'Loop', 'Decision', 'Wait'],
+    0,
+    'El elemento Subflow invoca otro flow autolaunched o de pantalla, permitiendo modularizar y reutilizar lógica.'
+  ),
+  q(
+    'A flow must update a field on every record in a collection. How can DML limits be avoided?',
+    [
+      'Add each modified record to a collection inside the loop and use one Update Records element after the loop',
+      'Place an Update Records element inside the loop',
+      'Call a separate subflow for each record',
+      'Use a Screen element for each record'
+    ],
+    0,
+    'Igual que en Apex, no se debe hacer DML dentro de un bucle. Se acumulan los registros en una colección y se hace una sola actualización al final.'
+  ),
+  q(
+    'In which trigger event is Trigger.newMap NOT available?',
+    ['after insert', 'before update', 'before insert', 'after update'],
+    2,
+    'En before insert los registros todavía no tienen Id, por lo que no existe un mapa por Id. Trigger.newMap sí está en after insert, before/after update y undelete.'
+  ),
+  q(
+    'A trigger must create a related Contact for every new Account using the Account Id. Which event should it use?',
+    ['before insert', 'after insert', 'before update', 'before delete'],
+    1,
+    'El Id del registro no existe hasta que se inserta; por eso los hijos que necesitan el Id del padre se crean en after insert.'
+  ),
+  q(
+    'How many child jobs can a Queueable job\'s execute() method add to the queue?',
+    ['1', '5', '50', 'Unlimited'],
+    0,
+    'Desde un job asíncrono en ejecución solo se puede encolar un job hijo (encadenamiento). Desde una transacción síncrona se pueden encolar hasta 50.'
+  ),
+  q(
+    'What is the maximum number of records that a Database.QueryLocator returned in start() of a batch class can retrieve?',
+    ['50,000', '10 million', '50 million', 'Unlimited'],
+    2,
+    'Un QueryLocator puede recuperar hasta 50 millones de registros, muy por encima del límite de 50,000 de SOQL normal.'
+  ),
+  q(
+    'How many batch jobs can be held in the Apex flex queue (Holding status)?',
+    ['5', '25', '100', '250'],
+    2,
+    'La flex queue admite hasta 100 jobs en estado Holding; hasta 5 jobs batch pueden estar en cola o ejecutándose a la vez.'
+  ),
+  q(
+    'What is the maximum number of @future method calls in one Apex invocation?',
+    ['10', '50', '100', '200'],
+    1,
+    'Se permiten hasta 50 llamadas a métodos @future por invocación de Apex. Además, un método @future no puede invocar a otro @future.'
+  ),
+  q(
+    'Which feature automatically publishes events when records are created, updated, deleted or undeleted, without writing publish code?',
+    ['Change Data Capture', 'A custom platform event', 'An @future method', 'Batch Apex'],
+    0,
+    'Change Data Capture publica eventos de cambio de registros de forma automática una vez habilitado para el objeto. Los eventos de plataforma personalizados requieren publicarlos con EventBus.publish o un flow.'
+  ),
+  q(
+    'How does an Apex trigger on a platform event object run relative to the transaction that published the event?',
+    [
+      'In its own separate transaction, asynchronously from the publisher',
+      'In the same transaction, before the publisher commits',
+      'Only when the publisher transaction fails',
+      'Only once per day'
+    ],
+    0,
+    'Los triggers de platform events se ejecutan en una transacción distinta y asíncrona (como el usuario Automated Process), por lo que no comparten rollback con el publicador.'
+  ),
+  q(
+    'What is the default timeout for an Apex HTTP callout?',
+    ['10 seconds', '30 seconds', '60 seconds', '120 seconds'],
+    0,
+    'El timeout por defecto de HttpRequest es 10 segundos; se puede ampliar con setTimeout() hasta un máximo de 120 segundos.'
+  ),
+  q(
+    'Which SOQL clause filters groups based on an aggregate value such as COUNT(Id) > 5?',
+    ['WHERE', 'HAVING', 'FILTER', 'LIMIT'],
+    1,
+    'WHERE filtra filas antes de agrupar; HAVING filtra los grupos resultantes usando funciones agregadas.'
+  ),
+  q(
+    'A query assigned to a single Account variable, [SELECT Id FROM Account WHERE Name = \'None\'], returns no rows. What happens?',
+    ['The variable is null', 'A System.QueryException is thrown', 'A System.NullPointerException is thrown', 'An empty Account is created'],
+    1,
+    'Asignar una consulta a un sObject único exige exactamente una fila; con 0 filas lanza QueryException ("List has no rows for assignment to SObject"). Por eso se recomienda usar una List o LIMIT 1 con comprobación.'
+  ),
+  q(
+    'A transaction exceeds a governor limit such as the number of SOQL queries. What happens?',
+    [
+      'A System.LimitException is thrown that cannot be caught and the transaction is rolled back',
+      'A catchable DmlException is thrown',
+      'The remaining queries run more slowly',
+      'The remaining queries return empty results'
+    ],
+    0,
+    'Al superar un governor limit se lanza una LimitException no capturable; la transacción se aborta y se hace rollback.'
+  ),
+  q(
+    'A record-triggered flow must run only when a record first meets the criteria, not on every later edit. Which setting should be selected?',
+    [
+      'Run the flow only when a record is updated to meet the condition requirements',
+      'Run the flow every time a record is updated and meets the condition requirements',
+      'Use a scheduled path with no conditions',
+      'Add a Wait element at the start'
+    ],
+    0,
+    'Con "only when a record is updated to meet the condition requirements" el flow se ejecuta solo cuando el registro pasa de no cumplir a cumplir las condiciones, evitando ejecuciones repetidas.'
+  ),
+  q(
+    'What is the maximum number of scheduled Apex jobs that can be active at the same time?',
+    ['5', '25', '100', '250'],
+    2,
+    'Se pueden tener hasta 100 jobs de Apex programados simultáneamente.'
   )
 ];

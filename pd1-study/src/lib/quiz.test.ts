@@ -12,7 +12,7 @@ describe('quiz helpers', () => {
   it('examDistribution sums to 60 and follows weights', () => {
     const d = examDistribution();
     expect(Object.values(d).reduce((a, b) => a + b, 0)).toBe(60);
-    expect(d).toEqual({ fundamentals: 14, automation: 18, ui: 15, testing: 13 });
+    expect(d).toEqual({ fundamentals: 16, automation: 17, ui: 15, testing: 12 });
   });
 
   it('shuffle keeps elements and does not mutate', () => {

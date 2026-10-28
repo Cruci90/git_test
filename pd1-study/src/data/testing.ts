@@ -252,5 +252,109 @@ export const testing = [
     ],
     [0, 1],
     'Salesforce CLI y la Ant Migration Tool (Metadata API) se pueden invocar desde scripts y pipelines de CI/CD. Los change sets se crean manualmente en la interfaz y la Developer Console no despliega metadatos.'
+  ),
+
+  q(
+    'Which class, introduced in recent releases, provides methods such as areEqual, isTrue and fail for test assertions?',
+    ['Assert', 'Limits', 'Schema', 'Messaging'],
+    0,
+    'La clase Assert (Assert.areEqual, Assert.isTrue, Assert.fail...) es la forma moderna de hacer aserciones y ofrece mensajes más claros que System.assert.'
+  ),
+  q(
+    'How can a test load records from a CSV file stored as a static resource?',
+    [
+      "Test.loadData(Account.sObjectType, 'accountsCsv')",
+      "Database.loadCsv('accountsCsv')",
+      "Test.importFile('accountsCsv')",
+      "StaticResource.insertRecords('accountsCsv')"
+    ],
+    0,
+    'Test.loadData(sObjectType, nombreRecursoEstatico) inserta los registros del CSV y devuelve la lista, útil para grandes conjuntos de datos de prueba.'
+  ),
+  q(
+    'Which interface and method allow a developer to create a mock (stub) of an Apex class for unit tests?',
+    ['System.StubProvider with Test.createStub()', 'HttpCalloutMock with Test.setMock()', 'Schedulable with System.schedule()', 'Comparable with sort()'],
+    0,
+    'Apex Stub API: se implementa System.StubProvider y se crea el stub con Test.createStub(Clase.class, proveedor). HttpCalloutMock es específico para callouts.'
+  ),
+  q(
+    'SOSL queries in test methods return no results by default. Which method defines the results they return?',
+    ['Test.setFixedSearchResults()', 'Test.setSearchResults()', 'Database.setSearch()', 'Test.mockSosl()'],
+    0,
+    'Test.setFixedSearchResults(List<Id>) fija los Ids que devolverán las consultas SOSL durante el test, porque los índices de búsqueda no se actualizan en pruebas.'
+  ),
+  q(
+    'What happens to records created in a test method when the test finishes?',
+    [
+      'They are rolled back and never committed to the database',
+      'They are committed to the org',
+      'They remain until the next deployment',
+      'They are kept only if the test passed'
+    ],
+    0,
+    'Los datos creados en una prueba se revierten automáticamente al terminar (no se confirman en la base de datos), tanto si pasa como si falla.'
+  ),
+  q(
+    'How can a test access custom metadata type records?',
+    [
+      'It can query them directly; they are available without SeeAllData',
+      'It must create them with DML in the test',
+      'It requires @isTest(SeeAllData=true)',
+      'They cannot be used in tests'
+    ],
+    0,
+    'Los registros de custom metadata son metadatos: las pruebas pueden consultarlos directamente, aunque no pueden crearse con DML en un test.'
+  ),
+  q(
+    'Which package type is typically used by ISVs to distribute IP-protected apps through AppExchange?',
+    ['Managed package', 'Unlocked package', 'Change set', 'Unmanaged package'],
+    0,
+    'Los managed packages ofrecen protección de código, namespace y control de versiones/actualizaciones, y se usan para distribuir en AppExchange. Los unlocked packages son para modularizar proyectos propios.'
+  ),
+  q(
+    'What is the default email deliverability setting in a newly created or refreshed sandbox?',
+    ['System email only', 'All email', 'No access', 'Only email to administrators'],
+    0,
+    'En los sandboxes el acceso al envío de correo se establece en "System email" por defecto para evitar enviar correos a clientes reales.'
+  ),
+  q(
+    'What is the minimum Apex Code log level needed for System.debug() messages to appear in a debug log?',
+    ['ERROR', 'WARN', 'INFO', 'DEBUG'],
+    3,
+    'System.debug escribe por defecto en nivel DEBUG, por lo que la categoría Apex Code debe estar en DEBUG o superior (FINE, FINER, FINEST) para verlos.'
+  ),
+  q(
+    'In a source-driven development model, what is considered the source of truth?',
+    ['The version control repository', 'The production org', 'The most recent sandbox', 'A change set'],
+    0,
+    'En el desarrollo basado en código fuente, el repositorio de control de versiones es la fuente de verdad; las orgs (scratch, sandbox, producción) se despliegan desde él.'
+  ),
+  q(
+    'Which Salesforce CLI command runs Apex tests and can return code coverage?',
+    ['sf apex run test --code-coverage', 'sf project deploy start --tests', 'sf org create scratch', 'sf apex log tail'],
+    0,
+    'sf apex run test ejecuta pruebas Apex; la opción --code-coverage incluye la cobertura. sf apex log tail muestra logs en vivo.'
+  ),
+  q(
+    'What does a checkpoint in the Developer Console capture?',
+    [
+      'A snapshot of the heap at a specific line when the code runs',
+      'The result of every SOQL query',
+      'A copy of the database',
+      'The list of failing tests'
+    ],
+    0,
+    'Los checkpoints toman una captura del heap en la línea marcada durante la ejecución y se inspeccionan en la pestaña Checkpoints (hasta 5 a la vez).'
+  ),
+  q(
+    'A deployment to production contains only custom fields and page layouts, with no Apex classes or triggers. Are Apex tests required?',
+    [
+      'No, Apex tests are only required when the deployment includes Apex classes or triggers',
+      'Yes, always at least RunLocalTests',
+      'Yes, 75% coverage of the whole org must be verified',
+      'Yes, but only in a Full sandbox'
+    ],
+    0,
+    'Las pruebas Apex son obligatorias en producción cuando se despliegan clases o triggers. Un despliegue solo de metadatos declarativos (campos, layouts) no ejecuta pruebas.'
   )
 ];

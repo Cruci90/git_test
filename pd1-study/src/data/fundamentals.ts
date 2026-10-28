@@ -332,5 +332,137 @@ System.debug(d.setScale(2));`
     ],
     [0, 1, 2],
     'Una consulta SOQL puede asignarse a un sObject (si devuelve una fila), a una List<sObject> o, con COUNT(), a un Integer. Los Map y Set no se devuelven directamente: se construyen a partir de la lista.'
+  ),
+
+  q(
+    'A company must load 2 million records and wants to schedule recurring loads from the command line. Which tool is appropriate?',
+    ['Data Import Wizard', 'Data Loader', 'Change sets', 'Schema Builder'],
+    1,
+    'Data Loader maneja hasta 150 millones de registros, permite exportar/borrado masivo y tiene modo línea de comandos para automatizar cargas. El Data Import Wizard está limitado a 50,000 registros por importación y no se programa.'
+  ),
+  q(
+    'Contacts are synchronized from an external system. The load must create new records and update existing ones without knowing Salesforce Ids. What should be used?',
+    ['Insert', 'Update matching on Name', 'Upsert using an External ID field', 'Delete and re-insert'],
+    2,
+    'Upsert con un campo External ID crea el registro si no existe y lo actualiza si ya existe, sin necesitar el Id de Salesforce. Los campos External ID están indexados y pueden marcarse como únicos.'
+  ),
+  q(
+    'The org-wide default for Account is Private. Which TWO mechanisms can give additional users access to Account records? (Choose 2.)',
+    ['Sharing rules', 'Role hierarchy (grant access using hierarchies)', 'Field-level security', 'Validation rules'],
+    [0, 1],
+    'Los OWD establecen el acceso más restrictivo; después se abre con role hierarchy, sharing rules, compartición manual, teams, etc. FLS controla campos, no registros, y las validation rules no dan acceso.'
+  ),
+  q(
+    'Which TWO practices help prevent SOQL injection in dynamic SOQL built from user input? (Choose 2.)',
+    [
+      'Use bind variables (:variable) in Database.query()',
+      'Sanitize input with String.escapeSingleQuotes()',
+      'Concatenate the raw input into the query string',
+      'Declare the class as without sharing'
+    ],
+    [0, 1],
+    'Los bind variables tratan el valor como dato, no como código, y escapeSingleQuotes neutraliza las comillas. Concatenar entrada sin tratar es la causa de la inyección y "without sharing" no tiene relación.'
+  ),
+  q(
+    'What is the value of n after the following code runs?',
+    ['A NullPointerException is thrown', 'null', 'An empty string', 'The code does not compile'],
+    1,
+    'El operador de navegación segura ?. devuelve null si el objeto es null en lugar de lanzar NullPointerException.',
+    `Account a = null;
+String n = a?.Name;`
+  ),
+  q(
+    'What does the following code output?',
+    ['one', 'few', 'many', 'The code does not compile'],
+    1,
+    'En switch on, cada "when" puede listar varios valores separados por comas. x = 3 coincide con "when 2, 3", así que r = "few". "when else" es el caso por defecto.',
+    `Integer x = 3;
+String r;
+switch on x {
+    when 1 { r = 'one'; }
+    when 2, 3 { r = 'few'; }
+    when else { r = 'many'; }
+}
+System.debug(r);`
+  ),
+  q(
+    'Which statement about Salesforce record Ids is correct?',
+    [
+      'The 15-character Id is case-insensitive.',
+      'The 18-character Id is case-insensitive and safe for tools that ignore case.',
+      'Only the 15-character Id can be used in Apex.',
+      'The 18-character Id is a hash of the record name.'
+    ],
+    1,
+    'El Id de 15 caracteres distingue mayúsculas y minúsculas; el de 18 añade 3 caracteres de control que lo hacen insensible a mayúsculas (útil en Excel). Apex acepta ambos.'
+  ),
+  q(
+    'A field must automatically show a unique sequential identifier such as INV-0001 on each new record. Which field type fits?',
+    ['Formula', 'Auto Number', 'Roll-Up Summary', 'Text (Unique)'],
+    1,
+    'Auto Number genera valores secuenciales con un formato configurable (por ejemplo INV-{0000}) al crear cada registro.'
+  ),
+  q(
+    'Which declaration creates a constant that cannot be reassigned after initialization?',
+    ['static Integer MAX = 5;', 'static final Integer MAX = 5;', 'const Integer MAX = 5;', 'private Integer MAX = 5;'],
+    1,
+    'En Apex las constantes se declaran con "final" (normalmente static final). No existe la palabra clave const.'
+  ),
+  q(
+    'Which statement about Apex interfaces is correct?',
+    [
+      'A class that implements an interface must implement every method declared in it (unless the class is abstract).',
+      'An interface can contain method bodies.',
+      'A class can implement only one interface.',
+      'Interfaces are instantiated with the new keyword.'
+    ],
+    0,
+    'Una interfaz define firmas; la clase que la implementa debe proporcionar todos los métodos (o ser abstract). Una clase puede implementar varias interfaces y las interfaces no se instancian.'
+  ),
+  q(
+    'Which SOQL clause returns Accounts created during the current fiscal year?',
+    [
+      'WHERE CreatedDate = THIS_FISCAL_YEAR',
+      'WHERE CreatedDate = CURRENT_FISCAL_YEAR',
+      'WHERE CreatedDate = FISCAL_THIS_YEAR',
+      'WHERE CreatedDate = THIS_YEAR_FISCAL'
+    ],
+    0,
+    'THIS_FISCAL_YEAR es un literal de fecha válido de SOQL; los otros nombres no existen. Otros literales: LAST_N_DAYS:n, THIS_QUARTER, NEXT_MONTH, etc.'
+  ),
+  q(
+    'Which DML statement combines up to three records of the same type into a single record?',
+    ['upsert', 'merge', 'undelete', 'convert'],
+    1,
+    'merge combina hasta 3 registros (leads, contacts, cases o accounts): uno maestro y hasta dos duplicados que se eliminan y cuyos hijos se reasignan.'
+  ),
+  q(
+    'What prevents an administrator from converting an existing lookup relationship to master-detail?',
+    [
+      'The lookup field is empty on some existing records.',
+      'The object already has a lookup.',
+      'The parent object has too many fields.',
+      'The lookup was created by a different user.'
+    ],
+    0,
+    'Para convertir un lookup en master-detail, todos los registros existentes deben tener el campo informado, porque en master-detail el padre es obligatorio.'
+  ),
+  q(
+    'A developer wants a List of custom Apex objects to be sortable with the list sort() method. What must the class implement?',
+    ['Comparable', 'Iterable', 'Schedulable', 'Database.Stateful'],
+    0,
+    'Si la clase implementa Comparable y define compareTo(Object), List.sort() ordena sus instancias con esa lógica.'
+  ),
+  q(
+    'Which Apex method returns the Id of the user running the code?',
+    ['UserInfo.getUserId()', 'System.currentUser().Id', 'Database.getUser()', 'Trigger.userId'],
+    0,
+    'UserInfo.getUserId() devuelve el Id del usuario actual. La clase UserInfo también ofrece getUserName(), getProfileId(), getLocale(), etc.'
+  ),
+  q(
+    'A developer needs to explore objects and relationships visually and create fields by drag and drop. Which tool should be used?',
+    ['Schema Builder', 'Developer Console', 'Workbench Query', 'Event Monitoring'],
+    0,
+    'Schema Builder muestra objetos y relaciones de forma gráfica y permite crear objetos, campos y relaciones arrastrando.'
   )
 ];
